@@ -1,0 +1,79 @@
+name: Deploy demo to GitHub Pages
+
+# Builds a frontend-only static-export of the site and publishes it to
+# GitHub Pages at https://avk1995.github.io/Akhila-Funnel/ for client preview.
+#
+# TEMPORARY — for visual demo only.
+#   - Razorpay payments DO NOT work here (API routes are stripped before build).
+#   - Real production goes to Vercel/Netlify, which deploys the main branch
+#     directly (this workflow does not touch the main branch source).
+#
+# The destructive `rm` steps below only affect the CI runner's fresh checkout.
+# Your repo's main branch source is untouched.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Strip server-only files (incompatible with static export)
+        run: |
+          rm -rf src/app/api
+          rm -f src/app/opengraph-image.tsx
+          echo "Removed API routes and edge-runtime OG image (CI runner only)."
+
+      - name: Build static export
+        env:
+          STATIC_EXPORT: "true"
+          # Demo env vars — public values only, no secrets.
+          NEXT_PUBLIC_ASSESSMENT_FEE_INR: "497"
+          NEXT_PUBLIC_SITE_URL: "https://avk1995.github.io/Akhila-Funnel"
+          NEXT_PUBLIC_SITE_NAME: "Dr. Aditya & Akhila's PCOS Metabolic Programme"
+          # Placeholder — the Pay button on /checkout will render but no
+          # transaction will execute (api/ was stripped above).
+          NEXT_PUBLIC_RAZORPAY_KEY_ID: "rzp_demo_disabled"
+        run: npm run build
+
+      - name: Add .nojekyll so GitHub Pages serves _next/ assets
+        run: touch out/.nojekyll
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: out
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

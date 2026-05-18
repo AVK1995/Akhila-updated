@@ -1,6 +1,10 @@
 import type { MetadataRoute } from "next";
 import { publicEnv } from "@/lib/env";
 
+// Required by `output: "export"` (GitHub Pages demo). No-op for server builds —
+// this route is already inherently static (no fetch, no dynamic params).
+export const dynamic = "force-static";
+
 export default function sitemap(): MetadataRoute.Sitemap {
   const base = publicEnv.siteUrl.replace(/\/$/, "");
   const now = new Date();
