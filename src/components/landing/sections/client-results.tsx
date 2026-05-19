@@ -157,24 +157,38 @@ export function ClientResultsSection() {
         </Reveal>
 
         {/*
-          MOBILE: sticky-stack scroll effect. Each card sticks at top-4 so
-          later cards scroll up and visually slide on top of earlier ones
-          (card 2 covers 1, card 3 covers 1+2, card 4 covers 1+2+3). Same
-          top offset on every card + later source order + ascending z-index
-          gives the layering naturally.
+          MOBILE: card-deck sticky-stack. Each card sticks at a
+          progressively larger top offset, so when the next card slides on
+          top, it stops one header-strip below the previous one. Result:
+          a fanned deck where you see all the stuck card titles + the
+          fully-visible current card.
 
-          DESKTOP (sm+): 2-col grid, sticky disabled (`sm:static`). Items
-          stretch to row height so card bottoms line up evenly regardless
-          of how their tags / outcomes wrap.
+          Geometry (per card):
+            • Base offset    = 16 px (from viewport top)
+            • Per-card peek  = 96 px (fits a 2-line title + buffer:
+                                       28 padding + 16 eyebrow + 8 mt-2
+                                       + ~44 two-line h3 = 96)
+            • Card i top     = 16 + i * 96
+                Card 0 → 16 px,   Card 1 → 112 px
+                Card 2 → 208 px,  Card 3 → 304 px
+
+          Z-index rises with source order so later cards visually paint
+          above earlier ones. h-full chain is scoped to sm+ so mobile
+          sticky wrappers size to their content (a wrapper with h-full in
+          block flow would either collapse or fight sticky).
+
+          DESKTOP (sm+): 2-col grid, sticky disabled (`sm:static`,
+          inline `top` is ignored on static). Items stretch to row height
+          via the h-full chain so card bottoms line up evenly.
         */}
         <div className="mt-12 space-y-5 sm:mt-14 sm:grid sm:grid-cols-2 sm:items-stretch sm:gap-6 sm:space-y-0 lg:gap-7">
           {results.map((r, i) => (
             <div
               key={r.title}
-              className="sticky top-4 h-full sm:static"
-              style={{ zIndex: i + 1 }}
+              className="sticky sm:static sm:h-full"
+              style={{ top: `${16 + i * 96}px`, zIndex: i + 1 }}
             >
-              <Reveal delay={i * 0.05} className="h-full">
+              <Reveal delay={i * 0.05} className="sm:h-full">
                 <CaseCard r={r} />
               </Reveal>
             </div>
