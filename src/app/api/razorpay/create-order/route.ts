@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getRazorpay } from "@/lib/razorpay";
 import { getServerEnv } from "@/lib/env";
+import { sendPurchaseWebhook } from "@/lib/pabbly";
+import { cancelAbandoned } from "@/lib/abandonedCart";
 
 export const runtime = "nodejs";
 
@@ -11,12 +13,24 @@ const schema = z.object({
   lastName: z.string().min(1),
   email: z.string().email(),
   phone: z.string().min(7),
+  /** Optional fields used only to decide / report the bypass path. */
+  phoneCountry: z.string().min(2).max(4).optional(),
+  city: z.string().optional(),
+  ageRange: z.string().optional(),
+  primaryConcern: z.string().optional(),
+  couponCode: z.string().optional(),
+  utm: z.record(z.string(), z.string()).optional(),
 });
 
 /**
- * Creates a Razorpay order for the assessment fee. The amount is read
- * server-side from env (NEXT_PUBLIC_ASSESSMENT_FEE_INR) so the client cannot
- * tamper with it.
+ * Creates a Razorpay order for the assessment fee, OR — if the request
+ * carries a coupon code matching the server-only BYPASS_COUPON_CODE env var —
+ * skips Razorpay entirely, fires the Pabbly purchase webhook with a synthetic
+ * `BYPASS-…` id pair, and returns `{ bypass: true, … }` so the client can
+ * route straight to /book-a-call.
+ *
+ * The amount is read server-side from env so the client cannot tamper with it.
+ * The bypass coupon is compared case-insensitively after trimming whitespace.
  */
 export async function POST(req: Request) {
   let json: unknown;
@@ -34,6 +48,56 @@ export async function POST(req: Request) {
   }
 
   const env = getServerEnv();
+
+  // ───────────────────────── BYPASS PATH ─────────────────────────
+  // If a bypass coupon is configured AND the user typed it (case-insensitive,
+  // trimmed), we short-circuit Razorpay entirely. The downstream flow is
+  // identical to a verified payment — Pabbly webhook fires, abandoned-cart
+  // timer is cancelled — except the id pair is synthetic.
+  const configuredBypass = env.BYPASS_COUPON_CODE.trim().toLowerCase();
+  const submittedCoupon = (parsed.data.couponCode ?? "").trim().toLowerCase();
+  const isBypass =
+    configuredBypass.length > 0 && submittedCoupon === configuredBypass;
+
+  if (isBypass) {
+    const ts = Date.now();
+    const orderId = `BYPASS-order-${ts}-${parsed.data.leadId.slice(-8)}`;
+    const paymentId = `BYPASS-pay-${ts}-${parsed.data.leadId.slice(-8)}`;
+
+    // Best-effort: cancel abandoned-cart timer + fire purchase webhook.
+    cancelAbandoned(parsed.data.leadId);
+    const webhook = await sendPurchaseWebhook({
+      leadId: parsed.data.leadId,
+      firstName: parsed.data.firstName,
+      lastName: parsed.data.lastName,
+      fullName: `${parsed.data.firstName} ${parsed.data.lastName}`.trim(),
+      email: parsed.data.email,
+      phone: parsed.data.phone,
+      phoneCountry: parsed.data.phoneCountry ?? "",
+      city: parsed.data.city,
+      ageRange: parsed.data.ageRange,
+      primaryConcern: parsed.data.primaryConcern,
+      couponCode: parsed.data.couponCode,
+      utm: parsed.data.utm,
+      paymentId,
+      orderId,
+      amountInr: 0,
+      paidAt: new Date().toISOString(),
+      source: "bypass_coupon",
+    });
+
+    return NextResponse.json({
+      bypass: true,
+      orderId,
+      paymentId,
+      amount: 0,
+      currency: "INR",
+      keyId: env.RAZORPAY_KEY_ID,
+      webhook: webhook.ok ? "delivered" : "failed",
+    });
+  }
+
+  // ──────────────────────── NORMAL PATH ──────────────────────────
   if (!env.RAZORPAY_KEY_ID || !env.RAZORPAY_KEY_SECRET) {
     return NextResponse.json(
       { error: "razorpay_not_configured" },

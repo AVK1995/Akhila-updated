@@ -677,6 +677,16 @@ export default function CheckoutPage() {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [rzpReady, setRzpReady] = useState(false);
+  /**
+   * Coupon-applied UX state. We don't validate codes against a server
+   * discount table (none exists yet); the Apply button just confirms
+   * visually that the typed code is registered into the form. If the
+   * code matches the server-side BYPASS_COUPON_CODE, the actual bypass
+   * still happens at Pay time in /api/razorpay/create-order — no
+   * client-side reveal of the test code. If the user edits the input
+   * after applying, the applied state resets so they re-confirm.
+   */
+  const [appliedCoupon, setAppliedCoupon] = useState<string>("");
   const leadIdRef = useRef<string | null>(null);
   const initFiredRef = useRef(false);
 
@@ -816,6 +826,15 @@ export default function CheckoutPage() {
           lastName: lead.lastName,
           email: lead.email,
           phone: lead.phone,
+          // Forwarded so the server-side bypass branch can fire the Pabbly
+          // purchase webhook with the full lead picture instead of just
+          // the minimum identity fields.
+          phoneCountry: lead.phoneCountry,
+          city: lead.city,
+          ageRange: lead.ageRange,
+          primaryConcern: lead.primaryConcern,
+          couponCode: lead.couponCode,
+          utm,
         }),
       });
       if (!orderRes.ok) {
@@ -827,14 +846,35 @@ export default function CheckoutPage() {
         amount: number;
         currency: string;
         keyId: string;
+        bypass?: boolean;
+        paymentId?: string;
       };
+
+      // ───────── Bypass branch — coupon matched on the server ─────────
+      // Server already fired the Pabbly purchase webhook and cancelled the
+      // abandoned-cart timer. We mirror the Razorpay success handler: save
+      // the lead with paid=true + synthetic ids, then route to /book-a-call.
+      if (order.bypass && order.paymentId) {
+        saveLead({
+          ...lead,
+          paid: true,
+          paymentId: order.paymentId,
+          orderId: order.orderId,
+        });
+        const params = new URLSearchParams();
+        for (const [k, v] of Object.entries(utm)) params.set(k, v);
+        params.set("pid", order.paymentId);
+        params.set("bypass", "1");
+        router.push(`/book-a-call?${params.toString()}`);
+        return;
+      }
 
       const rzp = new window.Razorpay({
         key: order.keyId || razorpayKeyId,
         amount: order.amount,
         currency: order.currency,
         name: "PCOS Metabolic Assessment",
-        description: "Dr. Aditya & Akhila · 45-minute clinical assessment",
+        description: "Akhila · 30-minute clinical assessment call",
         order_id: order.orderId,
         prefill: {
           name: `${lead.firstName} ${lead.lastName}`.trim(),
@@ -890,11 +930,11 @@ export default function CheckoutPage() {
   }
 
   const benefits = [
-    "45-minute metabolic & hormonal assessment",
-    "Full symptom & lifestyle review with Akhila",
-    "Dr. Aditya reviews your clinical picture personally",
-    "Input from the full clinical support team",
-    "Clear path forward for your specific case",
+    "30-minute clinical assessment call with Akhila",
+    "Full review of your PCOS history, symptoms & lifestyle",
+    "Clear understanding of what is driving your specific pattern",
+    "Honest assessment of whether the programme is the right fit",
+    "If you enrol, this becomes the foundation of your programme",
   ];
 
   return (
@@ -917,8 +957,8 @@ export default function CheckoutPage() {
                 Book your PCOS metabolic assessment
               </h1>
               <p className="mt-3 text-[14px] leading-relaxed text-ink-500 sm:text-[15px]">
-                Fill in your details to secure your 45-minute clinical assessment
-                with Dr. Aditya, Akhila and the clinical team.
+                Fill in your details to secure your 30-minute clinical
+                assessment call with Akhila.
               </p>
 
               <div className="mt-6 space-y-3.5 sm:mt-7">
@@ -1100,8 +1140,8 @@ export default function CheckoutPage() {
                     </p>
                   </div>
                   <p className="mt-3 text-[13px] leading-relaxed text-ink-500 sm:text-sm">
-                    45 minutes with Dr. Aditya and the clinical team. Personalised
-                    fit assessment. Refundable.
+                    30 minutes with Akhila. A structured clinical conversation
+                    to understand your specific situation. Refundable.
                   </p>
 
                   <ul className="mt-5 space-y-2.5">
@@ -1115,28 +1155,73 @@ export default function CheckoutPage() {
                     ))}
                   </ul>
 
-                  {/* Coupon code — muted pill. Captured into the lead so the
-                      backend / downstream automations can act on it later;
-                      no client-side discount logic. */}
-                  <div className="mt-6 flex items-stretch gap-2 rounded-xl border border-ink-100 bg-cream-50/70 px-3 py-2">
-                    <input
-                      id="couponCode"
-                      type="text"
-                      autoComplete="off"
-                      placeholder="Have a coupon code?"
-                      value={values.couponCode ?? ""}
-                      onChange={(e) => setField("couponCode", e.target.value)}
-                      aria-label="Coupon code"
-                      className="flex-1 bg-transparent text-[13px] text-ink-700 placeholder:text-ink-400 focus:outline-none sm:text-[14px]"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => {/* placeholder — discounts not wired yet */}}
-                      className="shrink-0 text-[11px] font-semibold uppercase tracking-[0.14em] text-wine-700/80 transition-colors hover:text-wine-800 sm:text-[12px]"
-                    >
-                      Apply
-                    </button>
-                  </div>
+                  {/* Coupon code — captured into the lead. The bypass branch
+                      (server-side BYPASS_COUPON_CODE) kicks in at Pay time,
+                      not here, so this Apply button only confirms visually
+                      that the typed code is registered. */}
+                  {(() => {
+                    const couponValue = (values.couponCode ?? "").trim();
+                    const isApplied = appliedCoupon.length > 0 && couponValue === appliedCoupon;
+                    return (
+                      <>
+                        <div
+                          className={cn(
+                            "mt-6 flex items-stretch gap-2 rounded-xl border bg-cream-50/70 px-3 py-2 transition-colors duration-200",
+                            isApplied
+                              ? "border-gold-300/70 bg-gold-50/50"
+                              : "border-ink-100"
+                          )}
+                        >
+                          <input
+                            id="couponCode"
+                            type="text"
+                            autoComplete="off"
+                            placeholder="Have a coupon code?"
+                            value={values.couponCode ?? ""}
+                            onChange={(e) => {
+                              setField("couponCode", e.target.value);
+                              if (appliedCoupon && e.target.value.trim() !== appliedCoupon) {
+                                setAppliedCoupon("");
+                              }
+                            }}
+                            aria-label="Coupon code"
+                            className="flex-1 bg-transparent text-[13px] text-ink-700 placeholder:text-ink-400 focus:outline-none sm:text-[14px]"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (couponValue.length === 0) return;
+                              setAppliedCoupon(couponValue);
+                            }}
+                            disabled={couponValue.length === 0 || isApplied}
+                            className={cn(
+                              "inline-flex shrink-0 items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] transition-colors sm:text-[12px]",
+                              isApplied
+                                ? "text-gold-700"
+                                : couponValue.length === 0
+                                  ? "cursor-not-allowed text-ink-300"
+                                  : "text-wine-700/80 hover:text-wine-800"
+                            )}
+                          >
+                            {isApplied ? (
+                              <>
+                                <CheckIcon className="h-3 w-3" strokeWidth={2.5} />
+                                Applied
+                              </>
+                            ) : (
+                              "Apply"
+                            )}
+                          </button>
+                        </div>
+                        {isApplied && (
+                          <p className="mt-2 flex items-center gap-1.5 text-[11.5px] leading-snug text-gold-700 sm:text-[12px]">
+                            <CheckIcon className="h-3 w-3" strokeWidth={2.5} />
+                            Code <span className="font-medium uppercase">{appliedCoupon}</span> registered. It will be applied at payment.
+                          </p>
+                        )}
+                      </>
+                    );
+                  })()}
 
                   <div className="mt-6 flex items-baseline justify-between border-t border-ink-100 pt-5">
                     <span className="text-sm text-ink-500">Total today</span>

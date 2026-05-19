@@ -19,7 +19,7 @@ import { z } from "zod";
 const RAW_FEE =
   process.env.NEXT_PUBLIC_ASSESSMENT_FEE_INR ??
   process.env.ASSESSMENT_FEE_INR ??
-  "497";
+  "97";
 const ASSESSMENT_FEE_INR_NUM = Number(RAW_FEE);
 
 const serverSchema = z.object({
@@ -30,6 +30,15 @@ const serverSchema = z.object({
   PABBLY_PURCHASE_WEBHOOK_URL: z.string().url().optional().or(z.literal("")),
   PABBLY_ABANDONED_WEBHOOK_URL: z.string().url().optional().or(z.literal("")),
   ABANDONED_CART_DELAY_MINUTES: z.coerce.number().int().positive().default(240),
+  /**
+   * Optional server-side coupon that lets internal testers bypass Razorpay
+   * entirely. Compared case-insensitively after trimming whitespace. When
+   * matched, the create-order endpoint fires the Pabbly purchase webhook with
+   * a synthetic `BYPASS-…` payment id and returns `{ bypass: true }` so the
+   * client skips the Razorpay modal and routes straight to /book-a-call.
+   * Leave empty to disable bypass.
+   */
+  BYPASS_COUPON_CODE: z.string().optional().default(""),
 });
 
 export type ServerEnv = z.infer<typeof serverSchema>;
@@ -52,6 +61,7 @@ export function getServerEnv(): ServerEnv {
       PABBLY_PURCHASE_WEBHOOK_URL: process.env.PABBLY_PURCHASE_WEBHOOK_URL ?? "",
       PABBLY_ABANDONED_WEBHOOK_URL: process.env.PABBLY_ABANDONED_WEBHOOK_URL ?? "",
       ABANDONED_CART_DELAY_MINUTES: Number(process.env.ABANDONED_CART_DELAY_MINUTES ?? 240),
+      BYPASS_COUPON_CODE: process.env.BYPASS_COUPON_CODE ?? "",
     };
     return _serverEnv;
   }
@@ -65,6 +75,6 @@ export const publicEnv = {
   razorpayKeyId: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID ?? "",
   calendlyUrl: process.env.NEXT_PUBLIC_CALENDLY_URL ?? "",
   assessmentFeeInr: ASSESSMENT_FEE_INR_NUM,
-  /** Pre-formatted display string, e.g. "₹497". Use this in JSX. */
+  /** Pre-formatted display string, e.g. "₹97". Use this in JSX. */
   assessmentFeeDisplay: `₹${ASSESSMENT_FEE_INR_NUM}`,
 } as const;

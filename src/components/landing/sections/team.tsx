@@ -9,6 +9,7 @@ function PersonCard({
   heading,
   credential,
   bio,
+  quote,
   stats,
   imageSrc,
   imageHint,
@@ -18,18 +19,19 @@ function PersonCard({
   heading: string;
   credential: string;
   bio: string;
+  quote?: string;
   stats: string[];
   imageSrc?: string;
   imageHint?: string;
   reversed?: boolean;
 }) {
   return (
-    <div className={`grid items-center gap-8 sm:gap-10 lg:grid-cols-2 lg:gap-14 ${reversed ? "lg:[&>*:first-child]:order-2" : ""}`}>
-      <Reveal>
-        <div className="relative">
+    <div className={`grid items-center gap-8 sm:gap-10 lg:grid-cols-2 lg:items-stretch lg:gap-14 ${reversed ? "lg:[&>*:first-child]:order-2" : ""}`}>
+      <Reveal className="lg:h-full">
+        <div className="relative lg:h-full">
           <div className="absolute -inset-3 -z-10 rounded-3xl bg-gradient-to-br from-wine-50/60 to-gold-50/60 blur-2xl" />
           {imageSrc ? (
-            <div className="group/portrait relative aspect-[4/3] w-full transform-gpu overflow-hidden rounded-3xl bg-cream-100 shadow-premium-lg ring-1 ring-inset ring-white/40 transition-all duration-700 ease-smooth [backface-visibility:hidden] hover:shadow-premium-xl hover:ring-gold-200/70">
+            <div className="group/portrait relative aspect-[4/3] w-full transform-gpu overflow-hidden rounded-3xl bg-cream-100 shadow-premium-lg ring-1 ring-inset ring-white/40 transition-all duration-700 ease-smooth [backface-visibility:hidden] hover:shadow-premium-xl hover:ring-gold-200/70 lg:aspect-auto lg:h-full lg:min-h-[460px]">
               {/* Portrait */}
               <Image
                 src={imageSrc}
@@ -82,7 +84,7 @@ function PersonCard({
               rounded="3xl"
               label={`Portrait · ${name}`}
               hint={imageHint}
-              className="shadow-premium-lg"
+              className="shadow-premium-lg lg:!aspect-auto lg:h-full lg:min-h-[460px]"
             />
           )}
         </div>
@@ -93,6 +95,26 @@ function PersonCard({
           <h3 className="mt-3 font-display text-2xl font-medium leading-[1.12] text-ink-800 sm:text-[28px]">{heading}</h3>
           <p className="mt-4 text-[13px] font-medium uppercase tracking-[0.06em] text-wine-700 sm:text-sm">{credential}</p>
           <p className="body-prose mt-5">{bio}</p>
+          {quote && (
+            <figure className="relative mt-6 overflow-hidden rounded-2xl border border-gold-200/70 bg-gradient-to-br from-gold-50/80 via-cream-50 to-wine-50/40 px-5 py-5 shadow-premium-sm sm:px-6 sm:py-6">
+              <span
+                aria-hidden="true"
+                className="absolute inset-y-3 left-0 w-[3px] rounded-full bg-gradient-to-b from-gold-300 via-gold-500 to-wine-700"
+              />
+              <span
+                aria-hidden="true"
+                className="absolute -top-1 left-4 select-none font-display text-[44px] leading-none text-gold-400/70 sm:text-[52px]"
+              >
+                &ldquo;
+              </span>
+              <blockquote className="relative pt-4 font-display text-[15.5px] font-medium italic leading-snug text-ink-700 sm:text-[17px]">
+                {quote}
+              </blockquote>
+              <figcaption className="mt-3 text-[10.5px] font-semibold uppercase tracking-[0.18em] text-wine-700 sm:text-[11.5px]">
+                — {name}
+              </figcaption>
+            </figure>
+          )}
           <div className="mt-6 flex flex-wrap gap-x-3 gap-y-2">
             {stats.map((stat) => (
               <span key={stat} className="inline-flex items-center rounded-full border border-ink-100 bg-white px-3 py-1.5 text-[11px] font-medium text-ink-600 shadow-premium-sm sm:text-[12px]">
@@ -108,9 +130,9 @@ function PersonCard({
 
 export function TeamSection() {
   const supportTeam = [
-    { name: "Metabolic Specialist", role: "Lab Review and Markers", body: "Reviews your fasting insulin, HOMA-IR, inflammatory markers, and hormonal panels before any protocol is finalised." },
-    { name: "IV Protocol Physician", role: "Infusion Formulation", body: "Designs your IV formulation based on your inflammatory load, insulin resistance severity, and gut status." },
-    { name: "Clinical Support", role: "Weekly Check-ins & Monitoring", body: "Conducts your weekly check-ins, tracks your markers, and flags changes to Dr. Aditya and Akhila for real-time adjustments." },
+    { name: "Metabolic Specialist", role: "Lab Review and Markers", body: "Reviews your fasting insulin, HOMA-IR, inflammatory markers, and hormonal panels behind the scenes before any protocol is finalised. Not a separate consultation you book." },
+    { name: "IV Protocol Physician", role: "Infusion Formulation", body: "Designs your IV formulation based on your inflammatory load, insulin resistance severity, and gut status. Works behind the scenes; no separate appointment required." },
+    { name: "Clinical Support", role: "Weekly Check-ins & Progress Monitoring", body: "Conducts your weekly check-ins, tracks your markers, and flags changes to Dr. Aditya and Akhila for real-time programme adjustments. Built into the programme, not an add-on call." },
   ];
   return (
     <section id="team" className="relative scroll-mt-20 py-14 sm:py-20 lg:py-24">
@@ -130,7 +152,8 @@ export function TeamSection() {
             name="Dr. Aditya"
             heading="The physician behind the method."
             credential="Senior Family Physician · 15 Years · 30,000+ Patients"
-            bio="Dr. Aditya is a family physician, not a gynaecologist. In 15 years and over 30,000 consultations, he has never done a five-minute appointment. He looks at your sleep, your stress, your metabolic markers, and your full history together, not one part at a time. When PCOS is involved, the pattern is almost always metabolic. And almost always missed by the time a woman reaches us."
+            bio="Dr. Aditya is a family physician, not a gynaecologist. In 15 years and over 30,000 consultations, he has never done a five-minute appointment. He looks at your sleep, your stress, your metabolic markers, and your full history together, not one part at a time."
+            quote="When PCOS is involved, the pattern is almost always metabolic. And almost always missed by the time a woman reaches us."
             stats={["15 Yrs Experience", "30,000+ Patients", "30 Min Minimum", "0 Five-Minute Appointments"]}
             imageSrc="/images/team/Dr%20Aditya.jpeg"
           />
@@ -138,7 +161,8 @@ export function TeamSection() {
             name="Akhila"
             heading="The nutritionist behind the results."
             credential="Clinical Nutritionist · Metabolic Nutrition · Gut-Hormone Axis"
-            bio="Akhila handles the nutrition architecture of this programme. Every plan is built after your assessment, not before it. Her focus is blood sugar stabilisation, the gut-skin axis, and the gut-stress axis. These are the three nutritional levers that directly drive hormonal rhythm in PCOS. The goal is food that works with your body and actually holds over time."
+            bio="Akhila handles the nutrition architecture of this programme. Every plan is built after your assessment, not before it. Her focus is blood sugar stabilisation, the gut-skin axis, and the gut-stress axis. These are the three nutritional levers that directly drive hormonal rhythm in PCOS."
+            quote="The goal is food that works with your body, that you actually want to eat, and that holds across three months and beyond."
             stats={["Gut-Skin Axis Protocol", "4-Week Update Cycle", "2× / Month Direct Sessions", "90 Days"]}
             imageSrc="/images/team/Akhila.jpeg"
             reversed
@@ -155,9 +179,12 @@ export function TeamSection() {
                 The team working behind the scenes.
               </h3>
               <p className="body-prose mt-4">
-                Dr. Aditya and Akhila are supported by a dedicated clinical team
-                who review your assessments, validate your protocols, and ensure
-                your progress is monitored every week.
+                Dr. Aditya and Akhila are supported by a dedicated clinical
+                team who work behind the scenes, reviewing assessments,
+                validating protocols, and ensuring your progress is monitored
+                every week. You do not book separate appointments with them.
+                They are part of how the programme is run, not additions to
+                your calendar.
               </p>
             </div>
           </Reveal>

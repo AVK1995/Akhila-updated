@@ -34,17 +34,22 @@ const config: Config = {
           300: "#EDE3CE",
           400: "#E0D2B2",
         },
+        // Wine palette derives from `--brand-h` + `--brand-s` in
+        // globals.css. Change those two CSS vars to recolor the entire
+        // site. Each shade reads `H S L%` from CSS and wraps it in hsl()
+        // with `<alpha-value>` so Tailwind opacity modifiers
+        // (e.g. `bg-wine-700/40`) keep working unchanged.
         wine: {
-          50: "#FBF3F5",
-          100: "#F5E1E6",
-          200: "#E7BCC5",
-          300: "#D592A0",
-          400: "#B85F73",
-          500: "#933D52",
-          600: "#732A3D",
-          700: "#5A1E30",
-          800: "#421624",
-          900: "#2D0E18",
+          50: "hsl(var(--wine-50) / <alpha-value>)",
+          100: "hsl(var(--wine-100) / <alpha-value>)",
+          200: "hsl(var(--wine-200) / <alpha-value>)",
+          300: "hsl(var(--wine-300) / <alpha-value>)",
+          400: "hsl(var(--wine-400) / <alpha-value>)",
+          500: "hsl(var(--wine-500) / <alpha-value>)",
+          600: "hsl(var(--wine-600) / <alpha-value>)",
+          700: "hsl(var(--wine-700) / <alpha-value>)",
+          800: "hsl(var(--wine-800) / <alpha-value>)",
+          900: "hsl(var(--wine-900) / <alpha-value>)",
         },
         gold: {
           50: "#FBF7EC",

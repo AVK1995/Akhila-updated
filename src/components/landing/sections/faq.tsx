@@ -7,8 +7,8 @@ const fee = publicEnv.assessmentFeeDisplay;
 
 const faqs = [
   {
-    q: "What exactly happens on the 45-minute call?",
-    a: "Dr. Aditya reviews your full clinical picture: sleep, stress, gut, hormones, and history together. Akhila walks you through the nutrition architecture your case would follow. You leave with a clear read on whether this programme fits you specifically, not a generic pitch.",
+    q: "What exactly happens on the 30-minute assessment call?",
+    a: "Akhila walks through your PCOS history, current symptoms, sleep, stress, gut, and what you have already tried. You leave with a clear read on what is driving your specific pattern and an honest assessment of whether the programme is the right fit for you. Dr. Aditya joins only after you enrol; the first call is with Akhila.",
   },
   {
     q: "Do I need recent bloodwork before the call?",
@@ -24,7 +24,7 @@ const faqs = [
   },
   {
     q: "What if I do not feel I got clarity from the call?",
-    a: `We refund the ${fee} in full. No friction, no chasing, no cooling-off period. Provided you attend the full call and answer Dr. Aditya's questions honestly, the refund is processed within 7 working days.`,
+    a: `We refund the ${fee} in full. No friction, no chasing, no cooling-off period. Provided you attend the full call and answer Akhila's questions honestly, the refund is processed within 7 working days.`,
   },
   {
     q: "How soon can I start the programme after my assessment?",

@@ -7,7 +7,7 @@ import { publicEnv } from "@/lib/env";
 export function GuaranteeSection() {
   const conditions = [
     {
-      title: "You attend the full 45-minute call.",
+      title: "You attend the full 30-minute call.",
       body: "Show up on time and stay for the whole conversation. We do not refund no-shows.",
     },
     {
@@ -15,7 +15,7 @@ export function GuaranteeSection() {
       body: "Past medications, supplements, diet attempts, cycle pattern, lifestyle. The clearer the picture, the deeper we can go.",
     },
     {
-      title: "You answer Dr. Aditya's questions honestly.",
+      title: "You answer Akhila's questions honestly.",
       body: "We work from your actual history (sleep, stress, work, gut), not a sanitised version. Honest input is what makes clinical clarity possible.",
     },
   ];
@@ -64,7 +64,7 @@ export function GuaranteeSection() {
                 <p className="mt-5 max-w-2xl text-[14.5px] leading-relaxed text-cream-100/80 sm:text-base">
                   If you finish the{" "}
                   <span className="font-medium text-gold-200">
-                    45-minute clinical assessment
+                    30-minute clinical assessment
                   </span>{" "}
                   and feel{" "}
                   <span className="font-medium text-gold-200">

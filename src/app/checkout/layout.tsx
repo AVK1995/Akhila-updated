@@ -8,7 +8,7 @@ import { publicEnv } from "@/lib/env";
  */
 export const metadata: Metadata = {
   title: "Secure Checkout · Book Your Assessment",
-  description: `Complete your booking for the 45-minute PCOS metabolic assessment with Dr. Aditya & Akhila. ${publicEnv.assessmentFeeDisplay}, fully refundable.`,
+  description: `Complete your booking for the 30-minute PCOS clinical assessment call with Akhila. ${publicEnv.assessmentFeeDisplay}, fully refundable.`,
   robots: { index: false, follow: false },
 };
 

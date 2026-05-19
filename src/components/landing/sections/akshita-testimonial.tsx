@@ -53,7 +53,7 @@ export function AkshitaTestimonialSection() {
             </h2>
             <div className="section-divider mt-6" />
             <p className="body-lede mt-6">
-              Akshita, 32, diagnosed with PCOS in 2018 but told it was a
+              Akshaya, 32, diagnosed with PCOS in 2018 but told it was a
               misdiagnosis because her cycles were regular. Then the weight
               stopped moving, the fertility window narrowed, and she found us
               in 2025. Hear her tell it in her own words.
@@ -77,7 +77,7 @@ export function AkshitaTestimonialSection() {
                   videoId="1192533748"
                   hash="abc123def"
                   aspect="9/16"
-                  title="Akshita's PCOS journey with Dr. Aditya & Akhila"
+                  title="Akshaya's PCOS journey with Dr. Aditya & Akhila"
                   playSize="md"
                   posterSrc="https://i.vimeocdn.com/video/2157834620-afa34ac910e913b246067789c2d03feb8bac3eb6d65fc8ae618ca76aba684463-d_640"
                 />
@@ -88,7 +88,7 @@ export function AkshitaTestimonialSection() {
                 </span>
                 <div className="min-w-0 text-[12px] leading-tight text-ink-600 sm:text-[13px]">
                   <p className="font-display text-[14px] font-medium text-ink-800 sm:text-[15px]">
-                    Akshita · Age 32
+                    Akshaya · Age 32
                   </p>
                   <p className="text-[11.5px] text-ink-500 sm:text-[12px]">
                     Mom of a baby girl · Verified outcome

@@ -9,23 +9,22 @@ export function InvestmentSection() {
     "Years of gynaecologist visits and prescriptions that keep relapsing",
     "Dermatologist bills for acne that returns while hormones stay unaddressed",
     "Supplements and diet programmes that worked for three weeks then stopped",
-    "A single IV infusion at a metro wellness clinic costs ₹10,000 to ₹15,000. This programme includes a full personalised IV protocol across 90 days",
-    "For women planning to conceive: a narrowing window and increasingly expensive interventions that come with every month of delay",
+    "A single IV infusion at a metro wellness clinic costs ₹10,000 to ₹15,000. The full programme includes a personalised IV protocol across 90 days",
+    "For women planning to conceive: a narrowing window and increasingly expensive interventions with every month of delay",
   ];
   const features = [
-    "45-minute metabolic and hormonal assessment",
-    "Full symptom and lifestyle review with Akhila",
-    "Dr. Aditya reviews your clinical picture personally",
-    "Input from the full clinical support team",
-    "Clear path forward for your specific case",
-    "Honest fit assessment, no pressure",
+    "30-minute clinical assessment call with Akhila",
+    "Full review of your PCOS history, symptoms, and lifestyle",
+    "Clear understanding of what is driving your specific pattern",
+    "Honest assessment of whether the programme is the right fit for you",
+    "If you enrol, your assessment becomes the foundation of your entire programme",
   ];
   return (
     <section id="investment" className="relative scroll-mt-20 py-14 sm:py-20 lg:py-24">
       <div className="container-tight">
         <div className="grid gap-12 lg:grid-cols-[1.1fr_1fr] lg:items-start lg:gap-16">
           <Reveal>
-            <div>
+            <div className="text-center lg:text-left">
               <span className="section-label">Investment</span>
               <h2 className="display-headline text-display-lg sm:text-display-xl">
                 A small investment.{" "}
@@ -34,7 +33,7 @@ export function InvestmentSection() {
               <p className="mt-6 text-[15px] italic leading-relaxed text-ink-500 sm:text-base">
                 Before you look at the number, calculate what you have already spent.
               </p>
-              <ul className="mt-8 space-y-4">
+              <ul className="mt-8 inline-block space-y-4 text-left lg:block">
                 {bullets.map((b, i) => (
                   <li key={i} className="flex items-start gap-3 text-[14px] leading-relaxed text-ink-600 sm:text-[15px]">
                     <span className="mt-1.5 inline-flex h-1.5 w-1.5 shrink-0 rounded-full bg-wine-600" />
@@ -42,7 +41,7 @@ export function InvestmentSection() {
                   </li>
                 ))}
               </ul>
-              <p className="mt-8 rounded-2xl border border-gold-200 bg-gold-50/60 px-5 py-4 text-[14px] italic leading-relaxed text-ink-700 sm:text-[15px]">
+              <p className="mt-8 rounded-2xl border border-gold-200 bg-gold-50/60 px-5 py-4 text-center text-[14px] italic leading-relaxed text-ink-700 sm:text-[15px] lg:text-left">
                 We are not the budget option. We are the option that addresses
                 the problem at the level where it actually lives.
               </p>
@@ -69,12 +68,12 @@ export function InvestmentSection() {
                   <span className="font-display text-4xl font-medium tracking-tight text-ink-800 sm:text-5xl">
                     {publicEnv.assessmentFeeDisplay}
                   </span>
-                  <span className="text-sm text-ink-400">one-time assessment fee</span>
+                  <span className="text-sm text-ink-400">Clinical Assessment Call Fee · Refundable</span>
                 </div>
                 <p className="mt-2 text-sm leading-relaxed text-ink-500">
-                  Your assessment is not a solo call. Dr. Aditya, Akhila, and
-                  the clinical team all contribute before a programme is ever
-                  recommended.
+                  This is not a generic consultation. It is a structured
+                  clinical conversation to understand your specific situation
+                  before anything is recommended.
                 </p>
 
                 <ul className="mt-7 space-y-3">
@@ -92,9 +91,16 @@ export function InvestmentSection() {
                   <CtaLink
                     href="/checkout"
                     variant="primary-lg"
-                    label={`Book My Assessment · ${publicEnv.assessmentFeeDisplay}`}
-                    ariaLabel="Book your PCOS assessment call now"
-                    className="w-full"
+                    label={
+                      <>
+                        Book <span className="hidden lg:inline">My </span>
+                        Assessment<span className="hidden lg:inline"> Call</span>
+                        {" · "}
+                        {publicEnv.assessmentFeeDisplay}
+                      </>
+                    }
+                    ariaLabel="Book your clinical assessment call now"
+                    className="w-full [&>span]:whitespace-nowrap [&>span]:leading-tight [&>span]:text-[15px] sm:[&>span]:text-base"
                     trailing={
                       <ArrowRightIcon
                         className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5"
@@ -109,7 +115,8 @@ export function InvestmentSection() {
                 </div>
 
                 <p className="mt-6 border-t border-ink-100 pt-5 text-center text-[13px] leading-relaxed text-ink-500 sm:text-sm">
-                  Fully refunded if you gain no clarity. No questions asked.
+                  Fully refunded if you gain no clarity from the call. No
+                  questions asked.
                 </p>
               </div>
             </div>

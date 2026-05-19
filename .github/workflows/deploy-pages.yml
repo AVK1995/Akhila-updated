@@ -51,7 +51,7 @@ jobs:
         env:
           STATIC_EXPORT: "true"
           # Demo env vars — public values only, no secrets.
-          NEXT_PUBLIC_ASSESSMENT_FEE_INR: "497"
+          NEXT_PUBLIC_ASSESSMENT_FEE_INR: "97"
           NEXT_PUBLIC_SITE_URL: "https://avk1995.github.io/Akhila-Funnel"
           NEXT_PUBLIC_SITE_NAME: "Dr. Aditya & Akhila's PCOS Metabolic Programme"
           # Placeholder — the Pay button on /checkout will render but no

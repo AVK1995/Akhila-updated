@@ -66,7 +66,7 @@ export default function ThankYouPage() {
     {
       icon: ClockIcon,
       title: "What to expect on the call",
-      body: "Dr. Aditya will walk through your symptom history, your sleep and stress, and the markers we need to look at. Akhila will follow with the nutrition picture.",
+      body: "Akhila will walk through your PCOS history, current symptoms, sleep, stress and what you have already tried, then give you a clear read on whether the programme is the right fit. Dr. Aditya joins your protocol once you enrol.",
     },
     {
       icon: ShieldIcon,

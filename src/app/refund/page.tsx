@@ -35,7 +35,7 @@ export default function RefundPage() {
     {
       heading: `1. The ${fee} Assessment Call`,
       body: [
-        "The assessment fee is fully refundable if you complete the 45-minute call and feel no clarity was gained on your specific case. We are confident enough in the value of the call to make this offer unconditional.",
+        "The assessment fee is fully refundable if you complete the 30-minute call with Akhila and feel no clarity was gained on your specific case. We are confident enough in the value of the call to make this offer unconditional.",
         "To request a refund: email hello@akhila.example.com within 7 days of completing the call, using the same email you booked with. We will process the refund within 7–10 working days back to your original payment method.",
       ],
     },

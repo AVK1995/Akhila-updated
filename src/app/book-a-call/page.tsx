@@ -10,7 +10,7 @@
  *   - Marquee
  *   - Hero header (You're in / pick a time that works)
  *   - Calendly embed (centered, prominent)
- *   - 3-card highlight row (45min · Come prepared · Honest fit)
+ *   - 3-card highlight row (30min · Come prepared · Honest fit)
  *   - Akshita testimonial (imported from landing)
  *   - FAQ (imported from landing)
  *   - Footer
@@ -90,9 +90,9 @@ function BookACallTop() {
             </Reveal>
             <Reveal delay={0.12}>
               <p className="mx-auto mt-3.5 max-w-xl text-[14.5px] leading-relaxed text-ink-500 sm:mt-5 sm:text-[15.5px]">
-                This is your 45-minute clinical assessment with Dr. Aditya,
-                Akhila and the clinical team. Block a slot in the next 7 days
-                for the fastest start.
+                This is your 30-minute clinical assessment call with Akhila.
+                Block a slot in the next 7 days for the fastest start. Dr.
+                Aditya joins your protocol once you enrol.
               </p>
             </Reveal>
           </div>
@@ -180,8 +180,8 @@ function HighlightRow() {
   const items = [
     {
       icon: CalendarIcon,
-      title: "45 minutes, one-on-one",
-      body: "Not a sales call. A clinical conversation about your specific case.",
+      title: "30 minutes, one-on-one",
+      body: "Not a sales call. A clinical conversation with Akhila about your specific case.",
     },
     {
       icon: ClockIcon,

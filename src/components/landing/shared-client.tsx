@@ -61,7 +61,7 @@ export function CtaLink({
   ...rest
 }: {
   href: string;
-  label: string;
+  label: React.ReactNode;
   variant?: CtaVariant;
   className?: string;
   ariaLabel?: string;

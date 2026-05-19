@@ -148,7 +148,7 @@ export function StickyCTA() {
                 Ready to address the <span className="italic text-gold-200">root?</span>
               </p>
               <p className="mt-0.5 text-[10.5px] font-medium uppercase tracking-[0.16em] text-cream-100/65 sm:text-[11px]">
-                45-min clinical assessment · Refundable · No pressure
+                30-min clinical assessment · Refundable · No pressure
               </p>
             </div>
           </div>
@@ -156,10 +156,15 @@ export function StickyCTA() {
           <Link
             href="/checkout"
             onClick={onClick}
-            aria-label={`Book your PCOS assessment for ${publicEnv.assessmentFeeDisplay}`}
+            aria-label={`Book your clinical assessment call for ${publicEnv.assessmentFeeDisplay}`}
             className="sticky-cta group flex-1 justify-center sm:flex-initial"
           >
-            <span>Book My Assessment · {publicEnv.assessmentFeeDisplay}</span>
+            <span className="whitespace-nowrap leading-tight">
+              Book <span className="hidden sm:inline">My Clinical </span>
+              Assessment<span className="hidden sm:inline"> Call</span>
+              {" · "}
+              {publicEnv.assessmentFeeDisplay}
+            </span>
             <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-cream-50/15 transition-transform duration-300 group-hover:translate-x-0.5 sm:h-7 sm:w-7">
               <ArrowRightIcon className="h-3.5 w-3.5" strokeWidth={2} />
             </span>

@@ -3,23 +3,70 @@
 @tailwind utilities;
 
 /* ============================================================
-   DESIGN TOKENS
-   ============================================================ */
+ * ★ BRAND THEME KNOBS — the only things you usually need to edit.
+ * ============================================================
+ *
+ * Change any of the three below, then restart `npm run dev`
+ * (or rebuild prod). The new look propagates to every page.
+ *
+ *   1. BRAND COLOUR  ── --brand-h / --brand-s (this file, below)
+ *      Hue + saturation of the wine palette. All 10 wine shades
+ *      (wine-50 → wine-900) derive from these via fixed lightness.
+ *      Hue is 0-360°. A few examples:
+ *           • Default (wine red): h=342, s=50%
+ *           • Royal blue:         h=222, s=55%
+ *           • Forest green:       h=145, s=42%
+ *           • Plum / aubergine:   h=300, s=40%
+ *           • Terracotta / clay:  h=18,  s=55%
+ *
+ *   2. DISPLAY FONT  ── headlines, eyebrows, callouts
+ *      Edit src/app/layout.tsx → swap `Fraunces` with another
+ *      Google Font name. The CSS variable --font-display is
+ *      auto-injected by next/font and consumed by Tailwind
+ *      (tailwind.config.ts → fontFamily.display).
+ *
+ *   3. BODY FONT     ── paragraphs, form labels, UI text
+ *      Same place — edit src/app/layout.tsx and swap `Inter`.
+ *
+ * Heads-up on the brand colour: the current wine palette is
+ * hand-tuned. The HSL-derived palette below matches it closely
+ * for the dark shades (700/800/900) and soft shades (50/100/200)
+ * that dominate the UI, but mid-tones (300-600) may shift very
+ * slightly. The site still feels coherent — you'd only notice
+ * the drift in a few accent surfaces.
+ * ============================================================ */
+
 @layer base {
   :root {
-    /* color tokens (also exposed as Tailwind palette) */
+    /* ★ 1. BRAND COLOUR KNOB ─────────────────────────────── */
+    --brand-h: 342;       /* hue, 0-360°  */
+    --brand-s: 50%;       /* saturation   */
+
+    /* Wine palette — derived from the two knobs above.
+     * Each shade is `H S L%` (space-separated, alpha-friendly).
+     * To override a specific shade only, write its own H S L% here. */
+    --wine-50:  var(--brand-h) var(--brand-s) 96%;
+    --wine-100: var(--brand-h) var(--brand-s) 92%;
+    --wine-200: var(--brand-h) var(--brand-s) 82%;
+    --wine-300: var(--brand-h) var(--brand-s) 70%;
+    --wine-400: var(--brand-h) var(--brand-s) 55%;
+    --wine-500: var(--brand-h) var(--brand-s) 41%;
+    --wine-600: var(--brand-h) var(--brand-s) 31%;
+    --wine-700: var(--brand-h) var(--brand-s) 24%;
+    --wine-800: var(--brand-h) var(--brand-s) 17%;
+    --wine-900: var(--brand-h) var(--brand-s) 12%;
+
+    /* Legacy aliases — kept so a few selection/focus rules below
+     * keep working without churn. They now track the brand knob. */
     --color-bg: 253 251 247;          /* cream-50 */
     --color-bg-soft: 250 246 238;     /* cream-100 */
     --color-bg-deep: 245 239 226;     /* cream-200 */
     --color-fg: 26 20 18;             /* ink-800 */
     --color-fg-muted: 93 77 69;       /* ink-500 */
     --color-fg-subtle: 168 149 137;   /* ink-300 */
-    --color-brand: 90 30 48;          /* wine-700 */
-    --color-brand-deep: 66 22 36;     /* wine-800 */
-    --color-brand-soft: 251 243 245;  /* wine-50 */
-    --color-accent: 193 150 50;       /* gold-500 */
-    --color-accent-soft: 245 237 208; /* gold-100 */
-    --color-line: 231 224 220;        /* ink-100 */
+    --color-accent: 193 150 50;       /* gold-500 (unchanged) */
+    --color-accent-soft: 245 237 208; /* gold-100 (unchanged) */
+    --color-line: 231 224 220;        /* ink-100 (unchanged) */
   }
 
   html {
@@ -45,9 +92,9 @@
     font-feature-settings: "ss01", "cv11";
   }
 
-  /* Custom selection — wine on cream */
+  /* Custom selection — wine on cream. Tracks --brand-h / --brand-s. */
   ::selection {
-    background: rgb(var(--color-brand));
+    background: hsl(var(--wine-700));
     color: rgb(var(--color-bg));
   }
 

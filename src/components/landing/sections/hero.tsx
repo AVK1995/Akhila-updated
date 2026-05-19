@@ -36,10 +36,10 @@ export function HeroSection() {
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-          className="glass-pill inline-flex items-center gap-2.5 rounded-full px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-wine-700 shadow-premium-sm sm:px-5 sm:py-2 sm:text-[12px]"
+          className="glass-pill inline-flex max-w-full items-center gap-2 whitespace-nowrap rounded-full px-3 py-1.5 text-[9.5px] font-semibold uppercase tracking-[0.08em] text-wine-700 shadow-premium-sm sm:gap-2.5 sm:px-5 sm:py-2 sm:text-[12px] sm:tracking-[0.16em]"
         >
           <span className="live-dot" />
-          The PCOS Metabolic Assessment · {publicEnv.assessmentFeeDisplay}
+          The PCOS Metabolic Assessment · Only {publicEnv.assessmentFeeDisplay}
         </motion.div>
 
         {/* 2. Headline */}
@@ -49,9 +49,9 @@ export function HeroSection() {
           transition={{ duration: 0.8, delay: 0.08, ease: [0.16, 1, 0.3, 1] }}
           className="display-headline mx-auto max-w-3xl text-center text-[clamp(2rem,5.5vw+0.5rem,2.5rem)] leading-[1.1] tracking-tight sm:mt-5 sm:leading-[1.05]"
         >
-          For the woman who has{" "}
-          <span className="italic text-wine-700">tried everything</span>.{" "}
-          <span className="text-gradient-wine">Except the right diagnosis.</span>
+          Fix your PCOS at the{" "}
+          <span className="italic text-wine-700">root</span>{" "}
+          <span className="text-gradient-wine">before it gets significantly harder to reverse.</span>
         </motion.h1>
 
         {/* 3. Sub paragraph */}
@@ -61,10 +61,11 @@ export function HeroSection() {
           transition={{ duration: 0.8, delay: 0.18, ease: [0.16, 1, 0.3, 1] }}
           className="mx-auto max-w-[36rem] text-pretty text-center text-[15.5px] leading-[1.6] text-ink-500 sm:mt-5 sm:text-[15px] sm:leading-relaxed"
         >
-          Most doctors hand you a prescription. Dr. Aditya runs your{" "}
-          <span className="font-medium text-ink-700">fasting insulin, HOMA-IR, cortisol and gut markers first</span>,
-          finds the exact metabolic breakdown, then builds everything around
-          it. Restore your cycles in 90 days.
+          Watch the video to see how Dr. Aditya, a family physician with{" "}
+          <span className="font-medium text-ink-700">15 years and over 30,000 patients</span>,
+          helps women break the pattern of temporary results, returning
+          symptoms and constant frustration by correcting the metabolic root of
+          PCOS.
         </motion.p>
 
         {/* 4. Video caption — glass pill that mirrors the eyebrow pill above,
@@ -121,8 +122,16 @@ export function HeroSection() {
           <CtaLink
             href="/checkout"
             variant="primary-lg"
-            label={`Book My Assessment · ${publicEnv.assessmentFeeDisplay}`}
-            ariaLabel={`Book your PCOS assessment for ${publicEnv.assessmentFeeDisplay}`}
+            label={
+              <>
+                Book <span className="hidden sm:inline">Your Clinical </span>
+                Assessment<span className="hidden sm:inline"> Call</span>
+                {" · "}
+                {publicEnv.assessmentFeeDisplay}
+              </>
+            }
+            ariaLabel={`Book your clinical assessment call for ${publicEnv.assessmentFeeDisplay}`}
+            className="max-w-full [&>span]:whitespace-nowrap [&>span]:leading-tight [&>span]:text-[15px] sm:[&>span]:text-base"
             trailing={
               <ArrowRightIcon
                 className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5"
@@ -130,9 +139,11 @@ export function HeroSection() {
               />
             }
           />
-          <p className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.16em] text-ink-400 sm:text-[12px]">
+          <p className="flex items-center gap-2 whitespace-nowrap text-[10px] font-medium uppercase tracking-[0.1em] text-ink-400 sm:text-[12px] sm:tracking-[0.16em]">
             <ShieldIcon className="h-3 w-3 text-gold-600" />
-            Refundable · 45-min call with Dr. Aditya &amp; Akhila
+            Refundable · 30-min
+            <span className="sm:hidden">&nbsp;call</span>
+            <span className="hidden sm:inline">&nbsp;clinical assessment with Akhila</span>
           </p>
         </motion.div>
       </div>
