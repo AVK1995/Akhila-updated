@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { motion, useReducedMotion } from "motion/react";
-import { useCallback, useState, type ComponentProps } from "react";
+import { useCallback, useState, type ComponentProps, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { withUtm } from "@/lib/utm";
 import { VideoThumbnail } from "./shared-static";
@@ -61,7 +61,7 @@ export function CtaLink({
   ...rest
 }: {
   href: string;
-  label: React.ReactNode;
+  label: ReactNode;
   variant?: CtaVariant;
   className?: string;
   ariaLabel?: string;
@@ -94,7 +94,7 @@ export function CtaLink({
   return (
     <Link
       href={href}
-      aria-label={ariaLabel ?? label}
+      aria-label={ariaLabel ?? (typeof label === "string" ? label : undefined)}
       onClick={onClick}
       className={cn(classes[variant], className)}
       {...rest}
