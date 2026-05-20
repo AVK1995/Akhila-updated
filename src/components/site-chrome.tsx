@@ -140,7 +140,7 @@ export function StickyCTA() {
               <span className="absolute inline-flex h-full w-full animate-pulse-ring-strong rounded-full bg-gold-300/95" />
               <span
                 className="relative inline-flex h-2.5 w-2.5 rounded-full bg-gradient-to-br from-gold-300 to-gold-500"
-                style={{ boxShadow: "0 0 12px rgba(212, 178, 71, 0.85), 0 0 0 1.5px rgba(251, 247, 236, 0.2)" }}
+                style={{ boxShadow: "0 0 12px rgba(214, 156, 77, 0.85), 0 0 0 1.5px rgba(255, 249, 245, 0.2)" }}
               />
             </span>
             <div className="flex flex-col leading-tight">

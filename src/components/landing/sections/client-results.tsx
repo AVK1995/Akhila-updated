@@ -137,7 +137,7 @@ export function ClientResultsSection() {
     },
   ];
   return (
-    <section id="results" className="relative scroll-mt-20 bg-cream-100 py-14 sm:py-20 lg:py-24">
+    <section id="results" className="section-peach relative scroll-mt-20 py-14 sm:py-20 lg:py-24">
       <div className="container-tight">
         <Reveal>
           <div className="mx-auto max-w-2xl text-center">

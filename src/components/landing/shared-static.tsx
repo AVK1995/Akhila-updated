@@ -271,7 +271,7 @@ export function FloatingOrbs() {
 export function OrganicBlob({
   className,
   from = "hsl(var(--wine-600) / 0.18)",
-  to = "rgba(193, 150, 50, 0.12)",
+  to = "rgba(189, 127, 53, 0.12)",
 }: {
   className?: string;
   from?: string;

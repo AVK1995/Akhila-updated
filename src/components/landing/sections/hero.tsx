@@ -10,14 +10,14 @@ export function HeroSection() {
   return (
     <section
       id="hero"
-      className="relative isolate flex min-h-[calc(100svh-44px)] flex-col overflow-hidden pb-6 pt-5 sm:justify-center sm:pt-10 lg:pt-12"
+      className="hero-mesh relative isolate flex min-h-[calc(100svh-44px)] flex-col overflow-hidden pb-6 pt-5 sm:justify-center sm:pt-10 lg:pt-12"
     >
       {/* ── BACKGROUND ATMOSPHERE ───────────── */}
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-30 bg-cream-grain" />
-      <div aria-hidden="true" className="pointer-events-none absolute -top-32 left-1/2 -z-20 h-[420px] w-[820px] -translate-x-1/2 rounded-full bg-wine-100/60 opacity-70 blur-[120px]" />
-      <div aria-hidden="true" className="pointer-events-none absolute -bottom-40 -right-20 -z-20 h-[380px] w-[520px] rounded-full bg-gold-200/40 opacity-70 blur-[120px]" />
-      <OrganicBlob className="-left-40 top-10 -z-10 h-[420px] w-[420px] sm:-left-20 sm:h-[520px] sm:w-[520px]" from="hsl(var(--wine-600) / 0.16)" to="rgba(193, 150, 50, 0.08)" />
-      <OrganicBlob className="-right-40 bottom-10 -z-10 h-[440px] w-[440px] sm:-right-24 sm:h-[560px] sm:w-[560px]" from="rgba(193, 150, 50, 0.16)" to="hsl(var(--wine-600) / 0.08)" />
+      {/* hero-mesh provides the warm-peach mesh gradient + spotlight + noise
+          texture (see globals.css). The OrganicBlob + FloatingOrbs decorations
+          below layer on top for depth without fighting the mesh. */}
+      <OrganicBlob className="-left-40 top-10 -z-10 h-[420px] w-[420px] sm:-left-20 sm:h-[520px] sm:w-[520px]" from="hsl(var(--wine-600) / 0.16)" to="rgba(189, 127, 53, 0.08)" />
+      <OrganicBlob className="-right-40 bottom-10 -z-10 h-[440px] w-[440px] sm:-right-24 sm:h-[560px] sm:w-[560px]" from="rgba(189, 127, 53, 0.16)" to="hsl(var(--wine-600) / 0.08)" />
       <FloatingOrbs />
 
       {/*

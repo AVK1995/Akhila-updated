@@ -53,7 +53,7 @@ export default async function OGImage() {
             height: 540,
             borderRadius: 270,
             background:
-              "radial-gradient(circle, rgba(193, 150, 50, 0.18) 0%, transparent 70%)",
+              "radial-gradient(circle, rgba(189, 127, 53, 0.18) 0%, transparent 70%)",
           }}
         />
 
@@ -113,7 +113,7 @@ export default async function OGImage() {
               display: "flex",
               fontSize: 22,
               fontWeight: 600,
-              color: "#A07825",
+              color: "#9C6628",
               letterSpacing: 4,
               textTransform: "uppercase",
               marginBottom: 24,
@@ -180,7 +180,7 @@ export default async function OGImage() {
                   width: 6,
                   height: 6,
                   borderRadius: 3,
-                  background: "#C19632",
+                  background: "#BD7F35",
                 }}
               />
               {t}
