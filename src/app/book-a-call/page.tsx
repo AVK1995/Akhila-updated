@@ -180,18 +180,18 @@ function HighlightRow() {
   const items = [
     {
       icon: CalendarIcon,
-      title: "30 minutes, one-on-one",
-      body: "Not a sales call. A clinical conversation with Akhila about your specific case.",
+      title: "30 minutes, one-on-one with Akhila",
+      body: "Not a sales call. A clinical conversation with Akhila about your specific case. Dr. Aditya joins your protocol only after you enrol.",
     },
     {
       icon: ClockIcon,
       title: "Come prepared",
-      body: "If you have recent bloodwork, scan and email it to us before the call. Optional, not required.",
+      body: "If you have recent bloodwork, scan and email it to us before the call so Akhila can read it in context. Optional, not required.",
     },
     {
       icon: CheckIcon,
       title: "Honest fit assessment",
-      body: "If the programme is not right for you, we will tell you. No pressure, no upsell.",
+      body: "If the programme is not right for you, Akhila will tell you. No pressure, no upsell.",
     },
   ];
   return (

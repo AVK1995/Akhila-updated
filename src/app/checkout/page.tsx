@@ -1088,7 +1088,7 @@ export default function CheckoutPage() {
                       Refund Policy
                     </Link>
                     . I understand the assessment fee is fully refundable if I gain
-                    no clarity from the call.
+                    no clarity from the call with Akhila.
                   </span>
                 </label>
                 {errors.consent && (
@@ -1231,7 +1231,7 @@ export default function CheckoutPage() {
                   </div>
                   <p className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-gold-50 px-3 py-1 text-[11px] font-medium text-gold-700 sm:text-[12px]">
                     <ShieldIcon className="h-3 w-3" />
-                    Fully refundable if no clarity gained
+                    Fully refundable if no clarity from Akhila's call
                   </p>
                 </div>
 

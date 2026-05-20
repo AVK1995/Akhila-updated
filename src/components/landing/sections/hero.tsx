@@ -141,9 +141,8 @@ export function HeroSection() {
           />
           <p className="flex items-center gap-2 whitespace-nowrap text-[10px] font-medium uppercase tracking-[0.1em] text-ink-400 sm:text-[12px] sm:tracking-[0.16em]">
             <ShieldIcon className="h-3 w-3 text-gold-600" />
-            Refundable · 30-min
-            <span className="sm:hidden">&nbsp;call</span>
-            <span className="hidden sm:inline">&nbsp;clinical assessment with Akhila</span>
+            <span className="sm:hidden">Call with Akhila · Refundable</span>
+            <span className="hidden sm:inline">Refundable · 30-min clinical assessment with Akhila</span>
           </p>
         </motion.div>
       </div>

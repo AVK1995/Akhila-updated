@@ -65,13 +65,13 @@ export default function ThankYouPage() {
     },
     {
       icon: ClockIcon,
-      title: "What to expect on the call",
-      body: "Akhila will walk through your PCOS history, current symptoms, sleep, stress and what you have already tried, then give you a clear read on whether the programme is the right fit. Dr. Aditya joins your protocol once you enrol.",
+      title: "What to expect on your call with Akhila",
+      body: "Akhila will walk through your PCOS history, current symptoms, sleep, stress and what you have already tried, then give you a clear read on whether the programme is the right fit. Dr. Aditya joins your protocol only once you enrol.",
     },
     {
       icon: ShieldIcon,
       title: "Refund policy",
-      body: "If you finish the call without clarity on your next step, your assessment fee is fully refunded. No questions asked.",
+      body: "If you finish the call with Akhila without clarity on your next step, your assessment fee is fully refunded. No questions asked.",
     },
   ];
   return (
@@ -84,11 +84,12 @@ export default function ThankYouPage() {
           </span>
           <h1 className="mt-7 font-display text-display-xl font-medium leading-[1.05] text-ink-800 sm:text-display-2xl">
             You&rsquo;re in.{" "}
-            <span className="block text-gradient-wine">See you on the call.</span>
+            <span className="block text-gradient-wine">See you on the call with Akhila.</span>
           </h1>
           <p className="mt-5 text-[14px] leading-relaxed text-ink-500 sm:text-[15px]">
-            Your slot is booked. The clinical team will review your details
-            before the call so we hit the ground running.
+            Your slot is booked. Akhila will review your details before the
+            call so you hit the ground running. Dr. Aditya joins your
+            protocol only once you enrol.
           </p>
 
           <ol className="mt-12 grid gap-5 text-left sm:gap-6">

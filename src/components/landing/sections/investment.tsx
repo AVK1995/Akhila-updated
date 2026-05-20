@@ -68,7 +68,7 @@ export function InvestmentSection() {
                   <span className="font-display text-4xl font-medium tracking-tight text-ink-800 sm:text-5xl">
                     {publicEnv.assessmentFeeDisplay}
                   </span>
-                  <span className="text-sm text-ink-400">Clinical Assessment Call Fee · Refundable</span>
+                  <span className="text-sm text-ink-400">Call with Akhila · Refundable</span>
                 </div>
                 <p className="mt-2 text-sm leading-relaxed text-ink-500">
                   This is not a generic consultation. It is a structured
@@ -115,8 +115,8 @@ export function InvestmentSection() {
                 </div>
 
                 <p className="mt-6 border-t border-ink-100 pt-5 text-center text-[13px] leading-relaxed text-ink-500 sm:text-sm">
-                  Fully refunded if you gain no clarity from the call. No
-                  questions asked.
+                  Fully refunded if you gain no clarity from the call with
+                  Akhila. No questions asked.
                 </p>
               </div>
             </div>

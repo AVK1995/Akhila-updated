@@ -148,7 +148,7 @@ export function StickyCTA() {
                 Ready to address the <span className="italic text-gold-200">root?</span>
               </p>
               <p className="mt-0.5 text-[10.5px] font-medium uppercase tracking-[0.16em] text-cream-100/65 sm:text-[11px]">
-                30-min clinical assessment · Refundable · No pressure
+                Clinical assessment with Akhila · Refundable · No pressure
               </p>
             </div>
           </div>

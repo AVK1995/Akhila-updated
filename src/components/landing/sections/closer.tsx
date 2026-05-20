@@ -139,7 +139,7 @@ export function CloserSection() {
               }
             />
             <p className="text-center text-[13px] leading-relaxed text-cream-100/70 sm:text-sm">
-              You will not leave that call confused. Click above and secure your slot.
+              You will not leave the call with Akhila confused. Click above and secure your slot.
             </p>
           </div>
         </Reveal>

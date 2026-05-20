@@ -11,8 +11,8 @@ const faqs = [
     a: "Akhila walks through your PCOS history, current symptoms, sleep, stress, gut, and what you have already tried. You leave with a clear read on what is driving your specific pattern and an honest assessment of whether the programme is the right fit for you. Dr. Aditya joins only after you enrol; the first call is with Akhila.",
   },
   {
-    q: "Do I need recent bloodwork before the call?",
-    a: "No. The call is a clinical conversation first. If we need tests, we order them after. If you do have recent reports (insulin, HOMA-IR, thyroid, AMH, anything relevant), email them to us before the call so we can read them in context.",
+    q: "Do I need recent bloodwork before the call with Akhila?",
+    a: "No. The call with Akhila is a clinical conversation first. If we need tests, we order them after. If you do have recent reports (insulin, HOMA-IR, thyroid, AMH, anything relevant), email them to us before the call so Akhila can read them in context.",
   },
   {
     q: "How is this different from a regular gynaecologist visit?",
