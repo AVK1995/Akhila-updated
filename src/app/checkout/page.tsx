@@ -34,6 +34,7 @@ import {
   type CheckoutLead,
 } from "@/lib/session";
 import { publicEnv } from "@/lib/env";
+import { setMetaAdvancedMatching } from "@/lib/analytics";
 import { Marquee, Footer } from "@/components/site-chrome";
 
 /* ─────────────────────────────────────────────────────────────────────────────
@@ -721,6 +722,55 @@ export default function CheckoutPage() {
 
   const utm = useMemo(() => utmToObject(getStoredUtm()), []);
 
+  /**
+   * META PIXEL — Manual Advanced Matching
+   * ---------------------------------------
+   * Once the user has provided enough identity (first, last, email, phone,
+   * city, country) and those values pass per-country phone validation, fire
+   * setMetaAdvancedMatching. It sha256-hashes the values client-side, writes
+   * them to the akhila_mam cookie (30-day TTL), and re-inits fbq so every
+   * PageView on /checkout, /book-a-call, /thank-you (and any return visit)
+   * ships with em / ph / fn / ln / ct / country / external_id attached.
+   *
+   * Debounced 500ms so each keystroke doesn't re-hash + re-write the cookie.
+   * Identity-only fields gate this — we do NOT wait for consent, age, or
+   * primary concern, since those are optional from Meta's matching POV.
+   */
+  useEffect(() => {
+    const firstName = (values.firstName ?? "").trim();
+    const lastName = (values.lastName ?? "").trim();
+    const email = (values.email ?? "").trim();
+    const city = (values.city ?? "").trim();
+    const phoneRaw = (values.phone ?? "").trim();
+    const phoneCountry = values.phoneCountry ?? DEFAULT_COUNTRY;
+    if (!firstName || !lastName || !email || !city || !phoneRaw) return;
+    const emailOk = z.string().email().safeParse(email).success;
+    if (!emailOk) return;
+    const country = getCountry(phoneCountry);
+    const phoneDigits = digitsOnly(phoneRaw);
+    if (phoneDigits.length < country.minLen || phoneDigits.length > country.maxLen) {
+      return;
+    }
+    const timer = setTimeout(() => {
+      void setMetaAdvancedMatching({
+        email,
+        phone: `${country.dial}${phoneDigits}`,
+        firstName,
+        lastName,
+        city,
+        country: country.iso,
+      });
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [
+    values.firstName,
+    values.lastName,
+    values.email,
+    values.city,
+    values.phone,
+    values.phoneCountry,
+  ]);
+
   function setField<K extends keyof FormValues>(key: K, value: FormValues[K]) {
     setValues((v) => ({ ...v, [key]: value }));
     setErrors((e) => ({ ...e, [key]: undefined }));
@@ -886,10 +936,34 @@ export default function CheckoutPage() {
         modal: { ondismiss: () => setSubmitting(false) },
         handler: async (response: RazorpayResponse) => {
           try {
+            // Refresh MAM with the latest form values right before the
+            // verify call. This guarantees the cookie holds the version
+            // the user actually paid with (e.g. if they edited city after
+            // the debounced effect last fired), so the PageView that
+            // ships on /book-a-call inherits the correct identity.
+            await setMetaAdvancedMatching({
+              email: lead.email,
+              phone: lead.phone,
+              firstName: lead.firstName,
+              lastName: lead.lastName,
+              city: lead.city,
+              country: lead.phoneCountry,
+            });
             const verifyRes = await fetch("/api/razorpay/verify", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ ...response, lead: { ...lead, utm } }),
+              body: JSON.stringify({
+                ...response,
+                lead: { ...lead, utm },
+                // event_source_url is required by Meta for restricted
+                // categories (health/PCOS). Send the URL the user actually
+                // converted on; server falls back to `${siteUrl}/checkout`
+                // if this is somehow missing.
+                eventSourceUrl:
+                  typeof window !== "undefined"
+                    ? window.location.href
+                    : undefined,
+              }),
             });
             const j = (await verifyRes.json()) as {
               ok?: boolean;

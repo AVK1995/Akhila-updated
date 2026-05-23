@@ -1,7 +1,9 @@
 import type { Metadata, Viewport } from "next";
 import { Fraunces, Inter } from "next/font/google";
+import { Suspense } from "react";
 import "./globals.css";
 import { publicEnv } from "@/lib/env";
+import { MetaPageView } from "@/components/MetaPageView";
 
 const fraunces = Fraunces({
   subsets: ["latin"],
@@ -136,6 +138,65 @@ const UTM_CAPTURE_SNIPPET = `
 })();
 `;
 
+/**
+ * META PIXEL — cookie-aware init + first PageView
+ * -----------------------------------------------
+ * Loads fbevents.js, then BEFORE firing the initial PageView:
+ *   1. Reads the persistent `akhila_mam` cookie (written by
+ *      setMetaAdvancedMatching in src/lib/analytics.ts after form-fill).
+ *   2. If the cookie holds hashed Advanced Matching values, re-inits the
+ *      pixel with them so every PageView in this document — including
+ *      cold visits from returning users up to 30 days later — ships with
+ *      em / ph / fn / ln / ct / country / external_id attached.
+ *   3. Fires PageView once for the initial document load. Subsequent
+ *      App-Router client-side navigations are handled by <MetaPageView/>.
+ *
+ * Inlined here (not as a separate <Script>) so the pixel installs and the
+ * cookie is read in <head>, BEFORE React hydrates and before any other
+ * client code runs. This is what makes returning-user EMQ jump from ~6
+ * (cold) to ~8 (cookie-restored identity).
+ *
+ * Empty pixel id → snippet does nothing (gated below in JSX). No
+ * NEXT_PUBLIC_META_PIXEL_ID means Meta tracking is disabled cleanly.
+ */
+const META_PIXEL_ID = publicEnv.metaPixelId;
+const META_PROD_HOSTNAME = publicEnv.prodHostname;
+/**
+ * Pixel snippet is wrapped in a hostname guard so it does NOTHING on
+ * Vercel preview deployments, localhost, or any other non-prod host.
+ * The guard is the same value used by src/lib/gating.ts on the server
+ * and isProductionDomain() in src/lib/analytics.ts on the client.
+ * To enable the pixel locally for debugging, point NEXT_PUBLIC_SITE_URL
+ * at http://localhost:3000 and restart dev — the hostname will then
+ * match and fbq will fire.
+ */
+const META_PIXEL_SNIPPET = META_PIXEL_ID
+  ? `
+(function(){
+  if (window.location.hostname.toLowerCase() !== '${META_PROD_HOSTNAME}') return;
+  !function(f,b,e,v,n,t,s)
+  {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+  n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+  if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+  n.queue=[];t=b.createElement(e);t.async=!0;
+  t.src=v;s=b.getElementsByTagName(e)[0];
+  s.parentNode.insertBefore(t,s)}(window, document,'script',
+  'https://connect.facebook.net/en_US/fbevents.js');
+  fbq('init', '${META_PIXEL_ID}');
+  try {
+    var m = document.cookie.match(/(?:^|;\\s*)akhila_mam=([^;]+)/);
+    if (m) {
+      var mam = JSON.parse(decodeURIComponent(m[1]));
+      if (mam && typeof mam === 'object' && Object.keys(mam).length) {
+        fbq('init', '${META_PIXEL_ID}', mam);
+      }
+    }
+  } catch (e) {}
+  fbq('track', 'PageView');
+})();
+`
+  : "";
+
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
@@ -182,8 +243,36 @@ export default function RootLayout({
         />
         {/* Global UTM capture — runs on every page load before React hydrates */}
         <script dangerouslySetInnerHTML={{ __html: UTM_CAPTURE_SNIPPET }} />
+        {/* Meta Pixel — installs fbq, re-applies cookie-persisted MAM, then
+            fires the first PageView. All gated on NEXT_PUBLIC_META_PIXEL_ID. */}
+        {META_PIXEL_ID && (
+          <script dangerouslySetInnerHTML={{ __html: META_PIXEL_SNIPPET }} />
+        )}
       </head>
-      <body className="min-h-screen bg-cream-50 antialiased">{children}</body>
+      <body className="min-h-screen bg-cream-50 antialiased">
+        {children}
+        {/* JS-disabled fallback for the Meta Pixel — server-side <img> hit so
+            even no-JS visitors register a PageView. No MAM, no event_id. */}
+        {META_PIXEL_ID && (
+          <noscript>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              height="1"
+              width="1"
+              style={{ display: "none" }}
+              alt=""
+              src={`https://www.facebook.com/tr?id=${META_PIXEL_ID}&ev=PageView&noscript=1`}
+            />
+          </noscript>
+        )}
+        {/* App-Router client-side PageView tracker. Suspense boundary required
+            because MetaPageView calls useSearchParams(). */}
+        {META_PIXEL_ID && (
+          <Suspense fallback={null}>
+            <MetaPageView />
+          </Suspense>
+        )}
+      </body>
     </html>
   );
 }

@@ -4,6 +4,7 @@ import { getRazorpay } from "@/lib/razorpay";
 import { getServerEnv } from "@/lib/env";
 import { sendPurchaseWebhook } from "@/lib/pabbly";
 import { cancelAbandoned } from "@/lib/abandonedCart";
+import { shouldFireConversionEvents } from "@/lib/gating";
 
 export const runtime = "nodejs";
 
@@ -66,25 +67,41 @@ export async function POST(req: Request) {
 
     // Best-effort: cancel abandoned-cart timer + fire purchase webhook.
     cancelAbandoned(parsed.data.leadId);
-    const webhook = await sendPurchaseWebhook({
-      leadId: parsed.data.leadId,
-      firstName: parsed.data.firstName,
-      lastName: parsed.data.lastName,
-      fullName: `${parsed.data.firstName} ${parsed.data.lastName}`.trim(),
-      email: parsed.data.email,
-      phone: parsed.data.phone,
-      phoneCountry: parsed.data.phoneCountry ?? "",
-      city: parsed.data.city,
-      ageRange: parsed.data.ageRange,
-      primaryConcern: parsed.data.primaryConcern,
-      couponCode: parsed.data.couponCode,
-      utm: parsed.data.utm,
-      paymentId,
-      orderId,
-      amountInr: 0,
-      paidAt: new Date().toISOString(),
-      source: "bypass_coupon",
-    });
+
+    // Conversion-event gate: bypass orders have amount = 0, so the
+    // `amount > 1` clause naturally blocks Pabbly firing here on both
+    // production and previews. This keeps Pabbly clean of test traffic.
+    // The user is still routed to /book-a-call exactly as before — only
+    // the side-channel notification is suppressed.
+    const fireConversions = shouldFireConversionEvents(
+      req.headers.get("host"),
+      0
+    );
+    let webhook: { ok: boolean; error?: string } = {
+      ok: false,
+      error: "skipped_by_gate",
+    };
+    if (fireConversions) {
+      webhook = await sendPurchaseWebhook({
+        leadId: parsed.data.leadId,
+        firstName: parsed.data.firstName,
+        lastName: parsed.data.lastName,
+        fullName: `${parsed.data.firstName} ${parsed.data.lastName}`.trim(),
+        email: parsed.data.email,
+        phone: parsed.data.phone,
+        phoneCountry: parsed.data.phoneCountry ?? "",
+        city: parsed.data.city,
+        ageRange: parsed.data.ageRange,
+        primaryConcern: parsed.data.primaryConcern,
+        couponCode: parsed.data.couponCode,
+        utm: parsed.data.utm,
+        paymentId,
+        orderId,
+        amountInr: 0,
+        paidAt: new Date().toISOString(),
+        source: "bypass_coupon",
+      });
+    }
 
     return NextResponse.json({
       bypass: true,
@@ -93,7 +110,11 @@ export async function POST(req: Request) {
       amount: 0,
       currency: "INR",
       keyId: env.RAZORPAY_KEY_ID,
-      webhook: webhook.ok ? "delivered" : "failed",
+      webhook: webhook.ok
+        ? "delivered"
+        : webhook.error === "skipped_by_gate"
+          ? "skipped"
+          : "failed",
     });
   }
 

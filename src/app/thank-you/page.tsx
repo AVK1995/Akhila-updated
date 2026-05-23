@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { cn } from "@/lib/utils";
 import { Marquee, Footer } from "@/components/site-chrome";
+import { MamReapply } from "@/components/MamReapply";
 
 /* =============================================================================
  * THANK YOU PAGE — Akhila PCOS Metabolic Programme
@@ -76,6 +77,7 @@ export default function ThankYouPage() {
   ];
   return (
     <>
+      <MamReapply />
       <Marquee />
       <main className="min-h-screen pt-8 pb-24 sm:pt-10 lg:pt-12">
         <div className="container-narrow text-center">

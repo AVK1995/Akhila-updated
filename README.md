@@ -56,7 +56,8 @@ src/lib/                    GLOBAL utilities (pure logic, no UI)
 
 ```bash
 cd akhila-funnel
-cp .env.example .env.local      # fill in real keys (see below)
+# .env.local is the SINGLE source of truth for env vars. No .env.example
+# template — open .env.local and fill in real values directly (see below).
 npm install
 npm run dev                     # Turbopack dev server · http://localhost:3000
 ```

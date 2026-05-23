@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { scheduleAbandoned } from "@/lib/abandonedCart";
 import type { LeadPayload } from "@/lib/pabbly";
+import { shouldFireFunnelTracking } from "@/lib/gating";
 
 export const runtime = "nodejs";
 
@@ -45,11 +46,29 @@ export async function POST(req: Request) {
     fullName: `${parsed.data.firstName} ${parsed.data.lastName}`.trim(),
     source: parsed.data.source ?? "checkout",
   };
+
+  // Conversion-event gate: only schedule the abandoned-cart Pabbly
+  // webhook when the request hits the production hostname. Vercel
+  // previews + localhost dev get a "scheduled: false" response and the
+  // timer is never armed, keeping Pabbly clean of test traffic. (There
+  // is no amount gate here — abandoned carts by definition have no
+  // completed payment.)
+  const fireTracking = shouldFireFunnelTracking(req.headers.get("host"));
+  if (!fireTracking) {
+    return NextResponse.json({
+      ok: true,
+      leadId: payload.leadId,
+      scheduled: false,
+      reason: "skipped_by_gate",
+    });
+  }
+
   const { scheduledFor, delayMinutes } = scheduleAbandoned(payload);
 
   return NextResponse.json({
     ok: true,
     leadId: payload.leadId,
+    scheduled: true,
     abandonedScheduledFor: scheduledFor,
     delayMinutes,
   });
