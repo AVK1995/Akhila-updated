@@ -4,7 +4,7 @@ import path from "node:path";
 /**
  * STATIC_EXPORT mode is enabled only by the GitHub Pages workflow
  * (.github/workflows/deploy-pages.yml). It rebuilds the site as fully static
- * HTML under /Akhila-Funnel/ for the client-preview deploy.
+ * HTML under /Akhila/ for the client-preview deploy.
  *
  * Local dev (`npm run dev`) and Vercel/Netlify production deploys leave
  * STATIC_EXPORT unset, so the conditional below is a no-op and the app runs
@@ -21,8 +21,8 @@ const nextConfig: NextConfig = {
   // ── Static-export-only config (GitHub Pages demo). Dormant otherwise. ──
   ...(isStaticExport && {
     output: "export",
-    basePath: "/Akhila-Funnel",
-    assetPrefix: "/Akhila-Funnel/",
+    basePath: "/Akhila",
+    assetPrefix: "/Akhila/",
     trailingSlash: true,
   }),
 

@@ -1,7 +1,7 @@
 name: Deploy demo to GitHub Pages
 
 # Builds a frontend-only static-export of the site and publishes it to
-# GitHub Pages at https://avk1995.github.io/Akhila-Funnel/ for client preview.
+# GitHub Pages at https://trainer-goes-online.github.io/Akhila/ for client preview.
 #
 # TEMPORARY — for visual demo only.
 #   - Razorpay payments DO NOT work here (API routes are stripped before build).
@@ -52,7 +52,7 @@ jobs:
           STATIC_EXPORT: "true"
           # Demo env vars — public values only, no secrets.
           NEXT_PUBLIC_ASSESSMENT_FEE_INR: "97"
-          NEXT_PUBLIC_SITE_URL: "https://avk1995.github.io/Akhila-Funnel"
+          NEXT_PUBLIC_SITE_URL: "https://trainer-goes-online.github.io/Akhila"
           NEXT_PUBLIC_SITE_NAME: "Dr. Aditya & Akhila's PCOS Metabolic Programme"
           # Placeholder — the Pay button on /checkout will render but no
           # transaction will execute (api/ was stripped above).
