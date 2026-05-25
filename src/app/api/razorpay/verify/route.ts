@@ -6,6 +6,8 @@ import { cancelAbandoned } from "@/lib/abandonedCart";
 import { getServerEnv, publicEnv } from "@/lib/env";
 import { sendMetaCapiEvent } from "@/lib/meta";
 import { shouldFireConversionEvents } from "@/lib/gating";
+import { claimEventId } from "@/lib/dedup";
+import { getPaymentDedupState, markFires } from "@/lib/payment-dedup";
 
 export const runtime = "nodejs";
 
@@ -83,6 +85,24 @@ export async function POST(req: Request) {
   // Cancel the abandoned-cart timer (best-effort)
   cancelAbandoned(lead.leadId);
 
+  // ── Layer 1 dedup: same-instance claim ──────────────────────────────
+  // Defends against browser retries / refresh in the same warm Lambda.
+  // Returns the response as `verified: true` either way — the caller
+  // already knows the signature was good; only side-effects are skipped.
+  const claimed = claimEventId(razorpay_payment_id);
+  if (!claimed) {
+    console.log(
+      `[verify-payment] event_id=${razorpay_payment_id} already claimed in-process → skip`
+    );
+    return NextResponse.json({
+      ok: true,
+      verified: true,
+      fired: false,
+      webhook: "skipped",
+      metaCapi: { delivered: false, error: "skipped_by_in_process_dedup" },
+    });
+  }
+
   // ── Conversion-event gate ───────────────────────────────────────────
   // All downstream firings (Pabbly purchase webhook + Meta CAPI) are
   // suppressed unless the request is served from the production hostname
@@ -98,115 +118,149 @@ export async function POST(req: Request) {
     env.ASSESSMENT_FEE_INR
   );
 
-  let webhook: { ok: boolean; error?: string } = {
-    ok: false,
-    error: "skipped_by_gate",
-  };
-  if (fireConversions) {
-    // Fire the purchase webhook (best-effort — we don't fail the request
-    // if Pabbly is down; we just log it).
-    const paidAt = new Date().toISOString();
-    const [paymentDate, paymentTime] = istDateAndTime(paidAt);
-    const utmMap = lead.utm ?? {};
-    webhook = await sendPurchaseWebhook({
-      leadId: lead.leadId,
-      firstName: lead.firstName,
-      lastName: lead.lastName,
-      fullName: `${lead.firstName} ${lead.lastName}`.trim(),
-      email: lead.email,
-      phone: lead.phone,
-      phoneCountry: lead.phoneCountry,
-      city: lead.city,
-      ageRange: lead.ageRange,
-      primaryConcern: lead.primaryConcern,
-      couponCode: lead.couponCode,
-      utm: lead.utm,
-      // Top-level attribution mirrors of values inside `utm`. Surfaced so
-      // Pabbly column mappings don't need to traverse the nested object —
-      // and so PATH B (webhook fallback) can populate them from Razorpay
-      // order notes where the original utm object isn't reconstructed.
-      fbclid: utmMap.fbclid,
-      gclid: utmMap.gclid,
-      landingUrl: utmMap.landing_url,
-      referrer: utmMap.referrer,
-      // Payment fields
-      paymentId: razorpay_payment_id,
-      orderId: razorpay_order_id,
-      amountInr: env.ASSESSMENT_FEE_INR,
-      currency: "INR",
-      paidAt,
-      paymentDate,
-      paymentTime,
-      source: "razorpay_verify",
+  if (!fireConversions) {
+    return NextResponse.json({
+      ok: true,
+      verified: true,
+      fired: false,
+      webhook: "skipped",
+      metaCapi: { delivered: false, error: "skipped_by_gate" },
     });
   }
 
-  // ── Meta Conversions API: Purchase + sales ──────────────────────────
-  // Single POST to graph.facebook.com — two events sharing event_id so
-  // analytics on both rows ties to the same Razorpay payment. Best-effort:
-  // a CAPI failure is logged but never blocks the verify response (the
-  // user still gets routed to /book-a-call regardless).
-  //
-  // event_id = razorpay_payment_id. If you later add a browser-side
-  // Purchase as an escalation, use the same value as `eventID` so Meta's
-  // dedup spec applies.
-  //
-  // Bypass-coupon orders do NOT reach this route — those go through
-  // /api/razorpay/create-order without firing CAPI by design (internal
-  // test path, polluting Meta with fake conversions would corrupt
-  // optimisation).
-  let capi:
-    | { ok: true; eventsReceived: number; fbtraceId?: string }
-    | { ok: false; error: string } = { ok: false, error: "skipped_by_gate" };
-  if (fireConversions) {
-    const fbc = req.headers
-      .get("cookie")
-      ?.split(/;\s*/)
-      .find((c) => c.startsWith("_fbc="))
-      ?.slice(5);
-    const fbp = req.headers
-      .get("cookie")
-      ?.split(/;\s*/)
-      .find((c) => c.startsWith("_fbp="))
-      ?.slice(5);
-    const clientIp =
-      req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
-      req.headers.get("x-real-ip") ??
-      undefined;
-    const clientUserAgent = req.headers.get("user-agent") ?? undefined;
-    const resolvedEventSourceUrl =
-      eventSourceUrl ?? `${publicEnv.siteUrl.replace(/\/+$/, "")}/checkout`;
+  // ── Layer 2 dedup: persistent markers on Razorpay payment notes ─────
+  // If PATH B (webhook) has already fired one of these in a previous
+  // request (e.g. user retries verify after a payment 5s ago), skip
+  // that fire here. Both routes use this same check so we converge on
+  // exactly one Pabbly row + one CAPI event_id per real payment.
+  const dedupState = await getPaymentDedupState(razorpay_payment_id);
+  const willFirePabbly = !dedupState.pabblyFired;
+  const willFireCapi = !dedupState.capiFired;
 
-    capi = await sendMetaCapiEvent({
-      paymentId: razorpay_payment_id,
-      orderId: razorpay_order_id,
-      email: lead.email,
-      phone: lead.phone,
-      firstName: lead.firstName,
-      lastName: lead.lastName,
-      city: lead.city ?? "",
-      countryCode: lead.phoneCountry,
-      eventSourceUrl: resolvedEventSourceUrl,
-      fbc: fbc ? decodeURIComponent(fbc) : undefined,
-      fbp: fbp ? decodeURIComponent(fbp) : undefined,
-      clientIp,
-      clientUserAgent,
-      valueRupees: env.ASSESSMENT_FEE_INR,
-      currency: "INR",
-    });
-  }
+  console.log(
+    `[verify-payment] event_id=${razorpay_payment_id} ` +
+      `value=${env.ASSESSMENT_FEE_INR} email=${lead.email} → ` +
+      `firing { pabbly:${willFirePabbly}, capi:${willFireCapi} }`
+  );
+
+  // Pre-build shared timestamps so PATH A and PATH B produce identical
+  // paidAt/paymentDate/paymentTime values for the same payment.
+  const paidAt = new Date().toISOString();
+  const [paymentDate, paymentTime] = istDateAndTime(paidAt);
+  const utmMap = lead.utm ?? {};
+
+  // Extract Meta cookies + request context for CAPI.
+  const fbcCookie = req.headers
+    .get("cookie")
+    ?.split(/;\s*/)
+    .find((c) => c.startsWith("_fbc="))
+    ?.slice(5);
+  const fbpCookie = req.headers
+    .get("cookie")
+    ?.split(/;\s*/)
+    .find((c) => c.startsWith("_fbp="))
+    ?.slice(5);
+  const clientIp =
+    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+    req.headers.get("x-real-ip") ??
+    undefined;
+  const clientUserAgent = req.headers.get("user-agent") ?? undefined;
+  const resolvedEventSourceUrl =
+    eventSourceUrl ?? `${publicEnv.siteUrl.replace(/\/+$/, "")}/checkout`;
+
+  // ── Parallel fire: Pabbly + Meta CAPI ───────────────────────────────
+  // Promise.allSettled so a failure in one doesn't block the other. We
+  // mark each fire's success independently below; only the ones that
+  // returned ok get a marker, so the fallback path can retry only the
+  // failed side.
+  const [pabblyResult, capiResult] = await Promise.allSettled([
+    willFirePabbly
+      ? sendPurchaseWebhook({
+          leadId: lead.leadId,
+          firstName: lead.firstName,
+          lastName: lead.lastName,
+          fullName: `${lead.firstName} ${lead.lastName}`.trim(),
+          email: lead.email,
+          phone: lead.phone,
+          phoneCountry: lead.phoneCountry,
+          city: lead.city,
+          ageRange: lead.ageRange,
+          primaryConcern: lead.primaryConcern,
+          couponCode: lead.couponCode,
+          utm: lead.utm,
+          fbclid: utmMap.fbclid,
+          gclid: utmMap.gclid,
+          landingUrl: utmMap.landing_url,
+          referrer: utmMap.referrer,
+          paymentId: razorpay_payment_id,
+          orderId: razorpay_order_id,
+          amountInr: env.ASSESSMENT_FEE_INR,
+          currency: "INR",
+          paidAt,
+          paymentDate,
+          paymentTime,
+          source: "razorpay_verify",
+        })
+      : Promise.resolve({ ok: true, error: undefined }),
+    willFireCapi
+      ? sendMetaCapiEvent({
+          paymentId: razorpay_payment_id,
+          orderId: razorpay_order_id,
+          email: lead.email,
+          phone: lead.phone,
+          firstName: lead.firstName,
+          lastName: lead.lastName,
+          city: lead.city ?? "",
+          countryCode: lead.phoneCountry,
+          eventSourceUrl: resolvedEventSourceUrl,
+          fbc: fbcCookie ? decodeURIComponent(fbcCookie) : undefined,
+          fbp: fbpCookie ? decodeURIComponent(fbpCookie) : undefined,
+          clientIp,
+          clientUserAgent,
+          valueRupees: env.ASSESSMENT_FEE_INR,
+          currency: "INR",
+        })
+      : Promise.resolve({ ok: true as const, eventsReceived: 0 }),
+  ]);
+
+  const pabblySucceeded =
+    willFirePabbly &&
+    pabblyResult.status === "fulfilled" &&
+    pabblyResult.value.ok === true;
+  const capiSucceeded =
+    willFireCapi &&
+    capiResult.status === "fulfilled" &&
+    capiResult.value.ok === true;
+
+  // ── Mark only the markers that succeeded ────────────────────────────
+  // If Pabbly succeeded but CAPI failed (or vice versa), only the
+  // succeeded marker is written — so the webhook fallback retries
+  // exactly the missing side, never the one that already landed.
+  await markFires(razorpay_payment_id, dedupState.existingNotes, {
+    pabblySucceeded,
+    capiSucceeded,
+  });
 
   return NextResponse.json({
     ok: true,
     verified: true,
-    fired: fireConversions,
-    webhook: webhook.ok
-      ? "delivered"
-      : webhook.error === "skipped_by_gate"
-        ? "skipped"
-        : "failed",
-    metaCapi: capi.ok
-      ? { delivered: true, eventsReceived: capi.eventsReceived }
-      : { delivered: false, error: capi.error },
+    fired: true,
+    webhook: willFirePabbly
+      ? pabblySucceeded
+        ? "delivered"
+        : "failed"
+      : "already_fired",
+    metaCapi: willFireCapi
+      ? capiSucceeded
+        ? {
+            delivered: true,
+            eventsReceived:
+              capiResult.status === "fulfilled" &&
+              "eventsReceived" in capiResult.value
+                ? capiResult.value.eventsReceived
+                : 0,
+          }
+        : { delivered: false, error: "fire_failed" }
+      : { delivered: false, error: "already_fired" },
   });
 }
