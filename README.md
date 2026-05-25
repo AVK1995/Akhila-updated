@@ -165,6 +165,29 @@ The abandoned webhook payload is identical minus `paymentId` / `orderId` / `paid
 | Abandoned-cart timer logic | `src/lib/abandonedCart.ts` |
 | Webhook payload shape | `src/lib/pabbly.ts` |
 
+## Recovery — backfill Pabbly for a date range
+
+If both PATH A (verify) and PATH B (webhook) fail for a payment (e.g.
+Pabbly is down for an extended period), recover with the backfill
+script:
+
+```bash
+# Dry-run first — prints what WOULD be sent
+node scripts/backfill-pabbly.mjs 2026-05-25 2026-05-26
+
+# Once dry-run looks correct, send for real
+node scripts/backfill-pabbly.mjs 2026-05-25 2026-05-26 --send
+
+# Skip specific payment IDs (already reconciled manually)
+node scripts/backfill-pabbly.mjs 2026-05-25 2026-05-26 --send --skip pay_X,pay_Y
+```
+
+The script applies the same funnel guardrail as the webhook (only
+processes payments where `notes.funnel === "akhila-pcos"`), skips
+payments already marked `pabblyFired`, and stamps the marker after
+successful sends so re-running is idempotent. Reads creds from
+`.env.local`. No `npm install` needed — uses only Node built-ins.
+
 ## Serverless deployment note
 
 The current abandoned-cart implementation uses an in-memory `Map` + `setTimeout`. This works on:
