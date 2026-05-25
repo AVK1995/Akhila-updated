@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getRazorpay } from "@/lib/razorpay";
-import { getServerEnv } from "@/lib/env";
+import { getServerEnv, publicEnv } from "@/lib/env";
 import { sendPurchaseWebhook } from "@/lib/pabbly";
 import { cancelAbandoned } from "@/lib/abandonedCart";
 import { shouldFireConversionEvents } from "@/lib/gating";
@@ -21,7 +21,28 @@ const schema = z.object({
   primaryConcern: z.string().optional(),
   couponCode: z.string().optional(),
   utm: z.record(z.string(), z.string()).optional(),
+  /**
+   * Meta browser cookies + attribution snapshot captured at form submit.
+   * fbp comes from the `_fbp` cookie set by fbevents.js; landingUrl + referrer
+   * are the first-touch values persisted by the inline UTM script. These get
+   * stamped into Razorpay order notes so the webhook fallback path (PATH B)
+   * can rebuild a CAPI payload with fbp + reconstructed fbc even though
+   * server-to-server webhook requests carry no browser cookies.
+   */
+  fbp: z.string().max(120).optional(),
+  landingUrl: z.string().max(240).optional(),
+  referrer: z.string().max(240).optional(),
 });
+
+/**
+ * Razorpay caps note values at 256 chars. Truncate defensively so any single
+ * oversized field (e.g. a campaign URL with many params) can't reject the
+ * whole order.
+ */
+function clip(value: string | undefined, max = 240): string {
+  if (!value) return "";
+  return value.length > max ? value.slice(0, max) : value;
+}
 
 /**
  * Creates a Razorpay order for the assessment fee, OR — if the request
@@ -128,18 +149,56 @@ export async function POST(req: Request) {
 
   try {
     const rzp = getRazorpay();
+
+    // 15-key notes (Razorpay limit). Order matters for readability only.
+    //
+    // Slot 1: funnel — Part 17 guardrail. The webhook checks this BEFORE any
+    //   fire to filter out captured payments from sibling businesses sharing
+    //   this Razorpay account (e.g. an unrelated WooCommerce store).
+    //
+    // Slots 2-7: identity rebuilt by PATH B into both Pabbly payload + CAPI
+    //   user_data when the browser dies before /api/razorpay/verify runs.
+    //
+    // Slots 8-12: UTM attribution. utm_term is the lowest-yield, so it's the
+    //   first to drop if we ever need another slot.
+    //
+    // Slot 13: fbclid — used in the webhook to RECONSTRUCT fbc as
+    //   `fb.1.{order.created_at*1000}.{fbclid}` per Meta's documented format.
+    //   We don't pack fbc directly because its cookie value can exceed 256 chars.
+    //
+    // Slot 14: landingUrl — both Pabbly attribution AND CAPI event_source_url
+    //   in webhook-fallback fires (required for restricted-category accounts).
+    //
+    // Slot 15: fbp — packed verbatim because the cookie value is short (~28
+    //   chars) and the webhook needs it unchanged for user_data.fbp.
+    //
+    // Dropped vs. previous notes layout: leadId (now in order.receipt),
+    //   fullName (derived from firstName+lastName), product (single-product
+    //   funnel), gclid (no Google Ads CAPI in this project; verify-payment
+    //   path still ships gclid in Pabbly payload from the browser, only
+    //   webhook-fallback rows lose it). See PURCHASE_TRACKING_ARCHITECTURE.md
+    //   Part 17 + Part 18 for the slot-budget rationale.
+    const utm = parsed.data.utm ?? {};
     const order = await rzp.orders.create({
       amount: env.ASSESSMENT_FEE_INR * 100, // paise
       currency: "INR",
       receipt: parsed.data.leadId.slice(0, 40),
       notes: {
-        leadId: parsed.data.leadId,
-        firstName: parsed.data.firstName,
-        lastName: parsed.data.lastName,
-        fullName: `${parsed.data.firstName} ${parsed.data.lastName}`.trim(),
-        email: parsed.data.email,
-        phone: parsed.data.phone,
-        product: "PCOS Metabolic Assessment",
+        funnel: publicEnv.funnelSlug,
+        firstName: clip(parsed.data.firstName, 60),
+        lastName: clip(parsed.data.lastName, 60),
+        email: clip(parsed.data.email),
+        phone: clip(parsed.data.phone, 30),
+        phoneCountry: clip(parsed.data.phoneCountry, 4),
+        city: clip(parsed.data.city, 80),
+        utmSource: clip(utm.utm_source),
+        utmMedium: clip(utm.utm_medium),
+        utmCampaign: clip(utm.utm_campaign),
+        utmContent: clip(utm.utm_content),
+        utmTerm: clip(utm.utm_term),
+        fbclid: clip(utm.fbclid),
+        landingUrl: clip(parsed.data.landingUrl ?? utm.landing_url),
+        fbp: clip(parsed.data.fbp, 120),
       },
     });
 

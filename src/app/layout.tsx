@@ -127,6 +127,18 @@ const UTM_CAPTURE_SNIPPET = `
       if (m) { try { existing = JSON.parse(decodeURIComponent(m[1])); } catch(e) {} }
     }
     var merged = Object.assign({}, existing, found);
+    // First-touch attribution snapshot: landing_url + referrer. Only written
+    // on the FIRST page in the session (never overwritten on subsequent
+    // navigations) so the values describe how the visitor arrived, not
+    // where they currently are. Truncated to 240 chars so the values fit
+    // within Razorpay's 256-char-per-note-value limit when forwarded later.
+    if (!existing.landing_url) {
+      merged.landing_url = window.location.href.slice(0, 240);
+    }
+    if (!('referrer' in existing)) {
+      var ref = document.referrer || '';
+      merged.referrer = ref.slice(0, 240);
+    }
     if (Object.keys(merged).length) {
       try { sessionStorage.setItem('akhila_utm_v1', JSON.stringify(merged)); } catch(e) {}
       var days = 30;

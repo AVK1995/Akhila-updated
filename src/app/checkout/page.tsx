@@ -867,6 +867,18 @@ export default function CheckoutPage() {
 
     setSubmitting(true);
     try {
+      // Read Meta's _fbp cookie (set by fbevents.js the first time the user
+      // hit a pixel-active page) so we can pack it into Razorpay order notes.
+      // The webhook fallback path has no browser cookies, so this is how the
+      // webhook recovers fbp for CAPI user_data. fbc isn't packed — the
+      // webhook reconstructs it from order.notes.fbclid + order.created_at.
+      const fbpCookie = (() => {
+        if (typeof document === "undefined") return "";
+        const m = document.cookie.match(/(?:^|;\s*)_fbp=([^;]+)/);
+        return m ? m[1] : "";
+      })();
+      const landingUrl = utm.landing_url ?? "";
+      const referrer = utm.referrer ?? "";
       const orderRes = await fetch("/api/razorpay/create-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -885,6 +897,11 @@ export default function CheckoutPage() {
           primaryConcern: lead.primaryConcern,
           couponCode: lead.couponCode,
           utm,
+          // Attribution + Meta cookies for the 15-field Razorpay order notes.
+          // See create-order route for the per-slot rationale.
+          fbp: fbpCookie,
+          landingUrl,
+          referrer,
         }),
       });
       if (!orderRes.ok) {
