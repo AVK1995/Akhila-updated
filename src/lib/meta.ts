@@ -141,13 +141,20 @@ export async function sendMetaCapiEvent(
     { ...baseEvent, event_name: CUSTOM_EVENT_NAME },
   ];
 
+  // Optional Test Events routing. When META_CAPI_TEST_EVENT_CODE is set, this
+  // payload arrives in Events Manager → Test Events and is EXCLUDED from
+  // production reporting. Empty in prod so events count for real attribution.
+  const testEventCode = env.META_CAPI_TEST_EVENT_CODE?.trim();
+  const body: Record<string, unknown> = { data: events };
+  if (testEventCode) body.test_event_code = testEventCode;
+
   const url = `https://graph.facebook.com/${CAPI_VERSION}/${pixelId}/events?access_token=${encodeURIComponent(token)}`;
 
   try {
     const res = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ data: events }),
+      body: JSON.stringify(body),
       cache: "no-store",
     });
     if (!res.ok) {

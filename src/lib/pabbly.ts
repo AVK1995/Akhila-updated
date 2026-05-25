@@ -63,22 +63,33 @@ export async function sendPurchaseWebhook(
   }
 }
 
+/**
+ * sendAbandonedWebhook — DISABLED.
+ *
+ * Body retained as a comment (not deleted) so re-enabling is a single revert:
+ * uncomment the body below + restore the PABBLY_ABANDONED_WEBHOOK_URL schema
+ * entry and fallback in src/lib/env.ts + uncomment the env var in .env.local.
+ * The function is kept as a no-op so existing callers in lib/abandonedCart.ts
+ * keep type-checking and harmlessly do nothing when the abandoned timer fires.
+ */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function sendAbandonedWebhook(
-  payload: LeadPayload
+  _payload: LeadPayload
 ): Promise<{ ok: boolean; error?: string }> {
-  const env = getServerEnv();
-  if (!env.PABBLY_ABANDONED_WEBHOOK_URL) {
-    console.warn(
-      "[pabbly] PABBLY_ABANDONED_WEBHOOK_URL not set — skipping abandoned webhook"
-    );
-    return { ok: false, error: "webhook_url_not_configured" };
-  }
-  try {
-    await fire(env.PABBLY_ABANDONED_WEBHOOK_URL, payload);
-    return { ok: true };
-  } catch (err) {
-    const error = err instanceof Error ? err.message : "unknown";
-    console.error("[pabbly] abandoned webhook error:", error);
-    return { ok: false, error };
-  }
+  return { ok: false, error: "abandoned_webhook_disabled" };
+  // const env = getServerEnv();
+  // if (!env.PABBLY_ABANDONED_WEBHOOK_URL) {
+  //   console.warn(
+  //     "[pabbly] PABBLY_ABANDONED_WEBHOOK_URL not set — skipping abandoned webhook"
+  //   );
+  //   return { ok: false, error: "webhook_url_not_configured" };
+  // }
+  // try {
+  //   await fire(env.PABBLY_ABANDONED_WEBHOOK_URL, payload);
+  //   return { ok: true };
+  // } catch (err) {
+  //   const error = err instanceof Error ? err.message : "unknown";
+  //   console.error("[pabbly] abandoned webhook error:", error);
+  //   return { ok: false, error };
+  // }
 }

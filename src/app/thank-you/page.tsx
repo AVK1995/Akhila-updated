@@ -122,8 +122,8 @@ export default function ThankYouPage() {
               If you have recent bloodwork (fasting insulin, HOMA-IR,
               testosterone, AMH, TSH, vitamin D, B12), please scan and email
               them to{" "}
-              <a href="mailto:hello@akhila.example.com" className="font-medium text-wine-700 underline-offset-4 hover:underline">
-                hello@akhila.example.com
+              <a href="mailto:draditya.cim@gmail.com" className="font-medium text-wine-700 underline-offset-4 hover:underline">
+                draditya.cim@gmail.com
               </a>{" "}
               before your call. Optional, but it lets us dig deeper from minute
               one.

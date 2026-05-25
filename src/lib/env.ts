@@ -28,7 +28,9 @@ const serverSchema = z.object({
   RAZORPAY_WEBHOOK_SECRET: z.string().optional().default(""),
   ASSESSMENT_FEE_INR: z.coerce.number().int().positive().default(ASSESSMENT_FEE_INR_NUM),
   PABBLY_PURCHASE_WEBHOOK_URL: z.string().url().optional().or(z.literal("")),
-  PABBLY_ABANDONED_WEBHOOK_URL: z.string().url().optional().or(z.literal("")),
+  // PABBLY_ABANDONED_WEBHOOK_URL disabled — see .env.local. Restore this
+  // schema entry (and the fallback below + lib/pabbly.ts read) to re-enable.
+  // PABBLY_ABANDONED_WEBHOOK_URL: z.string().url().optional().or(z.literal("")),
   ABANDONED_CART_DELAY_MINUTES: z.coerce.number().int().positive().default(240),
   /**
    * Optional server-side coupon that lets internal testers bypass Razorpay
@@ -46,6 +48,14 @@ const serverSchema = z.object({
    * set. Generate at Events Manager → Pixel → Settings → Conversions API.
    */
   META_CAPI_ACCESS_TOKEN: z.string().optional().default(""),
+  /**
+   * Optional Meta Test Events code (e.g. "TEST12345"). When set, every CAPI
+   * fire includes `test_event_code: "<value>"` and Meta routes those events
+   * to Events Manager → Test Events instead of production reporting. Use
+   * during pre-launch validation; leave empty in production so events count
+   * toward real attribution.
+   */
+  META_CAPI_TEST_EVENT_CODE: z.string().optional().default(""),
 });
 
 export type ServerEnv = z.infer<typeof serverSchema>;
@@ -66,10 +76,11 @@ export function getServerEnv(): ServerEnv {
       RAZORPAY_WEBHOOK_SECRET: process.env.RAZORPAY_WEBHOOK_SECRET ?? "",
       ASSESSMENT_FEE_INR: ASSESSMENT_FEE_INR_NUM,
       PABBLY_PURCHASE_WEBHOOK_URL: process.env.PABBLY_PURCHASE_WEBHOOK_URL ?? "",
-      PABBLY_ABANDONED_WEBHOOK_URL: process.env.PABBLY_ABANDONED_WEBHOOK_URL ?? "",
+      // PABBLY_ABANDONED_WEBHOOK_URL: process.env.PABBLY_ABANDONED_WEBHOOK_URL ?? "",
       ABANDONED_CART_DELAY_MINUTES: Number(process.env.ABANDONED_CART_DELAY_MINUTES ?? 240),
       BYPASS_COUPON_CODE: process.env.BYPASS_COUPON_CODE ?? "",
       META_CAPI_ACCESS_TOKEN: process.env.META_CAPI_ACCESS_TOKEN ?? "",
+      META_CAPI_TEST_EVENT_CODE: process.env.META_CAPI_TEST_EVENT_CODE ?? "",
     };
     return _serverEnv;
   }
@@ -117,4 +128,13 @@ export const publicEnv = {
    * during testing.
    */
   prodHostname: PROD_HOSTNAME,
+  /**
+   * Funnel identity marker. Stamped into Razorpay order notes at create-order
+   * time so the webhook (which fires for EVERY captured payment on a shared
+   * Razorpay account, including unrelated businesses) can short-circuit on
+   * `order.notes.funnel !== publicEnv.funnelSlug` before touching any of our
+   * downstream pipelines. Never env-driven — slug is project identity.
+   * See PURCHASE_TRACKING_ARCHITECTURE.md Part 17 for the full rationale.
+   */
+  funnelSlug: "akhila-pcos",
 } as const;
