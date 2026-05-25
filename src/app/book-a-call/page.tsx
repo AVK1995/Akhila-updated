@@ -35,12 +35,35 @@ import { FAQSection } from "@/components/landing/sections/faq";
  * HERO + CALENDLY — wraps useSearchParams (must live inside Suspense)
  * ─────────────────────────────────────────────────────────────────────────────
  */
+/**
+ * Verification gate (Part 11 companion to the keepalive handler in
+ * /checkout). The Razorpay handler now fires /api/razorpay/verify with
+ * keepalive + immediate redirect, so by the time this page mounts the
+ * verify request may still be in flight. We listen on two surfaces:
+ *
+ *   1. sessionStorage `akhila_verify_result` — populated by the verify
+ *      response's .then handler in /checkout/page.tsx. Read once on mount
+ *      in case the response landed BEFORE /book-a-call hydrated.
+ *
+ *   2. window event `akhila:verify-result` — dispatched by the same .then
+ *      handler. Caught here so a late-arriving verify response (~500ms-2s
+ *      after redirect) still blocks the Calendly embed.
+ *
+ * Optimistic default: show Calendly normally. If a verified=false signal
+ * arrives at any point, replace the embed with a non-dismissible yellow
+ * banner. Verified=true is a no-op (the default state already allows
+ * booking). HMAC verification basically never fails in production with
+ * correctly-configured keys, so the 99.9% path is unaffected.
+ */
+type VerifyResult = { verified: boolean; paymentId: string; at: number };
+
 function BookACallTop() {
   const router = useRouter();
   const params = useSearchParams();
   const [name, setName] = useState<string>("");
   const [email, setEmail] = useState<string>("");
   const [paid, setPaid] = useState<boolean>(false);
+  const [verifyFailedPid, setVerifyFailedPid] = useState<string | null>(null);
 
   useEffect(() => {
     const lead = getLead();
@@ -52,6 +75,35 @@ function BookACallTop() {
       setPaid(Boolean(params.get("pid")));
     }
   }, [params]);
+
+  useEffect(() => {
+    // Surface (1): read any verify result already written to sessionStorage
+    // by the time we hydrate.
+    try {
+      const raw = sessionStorage.getItem("akhila_verify_result");
+      if (raw) {
+        const parsed = JSON.parse(raw) as VerifyResult;
+        if (parsed && parsed.verified === false && parsed.paymentId) {
+          setVerifyFailedPid(parsed.paymentId);
+        }
+      }
+    } catch {
+      /* ignore */
+    }
+
+    // Surface (2): listen for the event in case the response lands after
+    // hydration (the common case — keepalive POST is in-flight).
+    function onResult(ev: Event) {
+      const detail = (ev as CustomEvent<VerifyResult>).detail;
+      if (detail && detail.verified === false && detail.paymentId) {
+        setVerifyFailedPid(detail.paymentId);
+      }
+    }
+    window.addEventListener("akhila:verify-result", onResult);
+    return () => {
+      window.removeEventListener("akhila:verify-result", onResult);
+    };
+  }, []);
 
   function goToThankYou() {
     const utm = getStoredUtm();
@@ -99,7 +151,7 @@ function BookACallTop() {
         </div>
       </section>
 
-      {/* ── CALENDLY EMBED ────────────────────────────────────────────── */}
+      {/* ── CALENDLY EMBED (or verification-failed banner) ───────────── */}
       <section className="relative scroll-mt-20 py-10 sm:py-14">
         <div className="container-tight">
           <Reveal delay={0.05}>
@@ -112,10 +164,48 @@ function BookACallTop() {
               <div
                 className={cn(
                   "overflow-hidden rounded-3xl border border-ink-100 bg-white shadow-premium-lg",
-                  !calendlyEmbedSrc && "p-8"
+                  (!calendlyEmbedSrc || verifyFailedPid) && "p-8"
                 )}
               >
-                {calendlyEmbedSrc ? (
+                {verifyFailedPid ? (
+                  /* Verification failed — block booking entirely. */
+                  <div
+                    role="alert"
+                    aria-live="assertive"
+                    className="rounded-2xl border-2 border-amber-300 bg-amber-50 p-6 sm:p-7"
+                  >
+                    <div className="flex items-start gap-3">
+                      <span
+                        aria-hidden="true"
+                        className="mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-amber-200 text-amber-800"
+                      >
+                        !
+                      </span>
+                      <div className="min-w-0">
+                        <p className="font-display text-base font-semibold text-amber-900 sm:text-lg">
+                          Heads up — your payment processed but our system
+                          flagged a verification issue.
+                        </p>
+                        <p className="mt-3 text-[14px] leading-relaxed text-amber-900 sm:text-[15px]">
+                          Your payment ID is{" "}
+                          <code className="rounded bg-amber-100 px-1.5 py-0.5 font-mono text-[13px] text-amber-900">
+                            {verifyFailedPid}
+                          </code>
+                          . Please email{" "}
+                          <a
+                            href={`mailto:finance@trainergoesonline.com?subject=Payment%20verification%20issue%20${encodeURIComponent(verifyFailedPid)}`}
+                            className="font-semibold text-amber-900 underline underline-offset-4 hover:no-underline"
+                          >
+                            finance@trainergoesonline.com
+                          </a>{" "}
+                          and our team will manually book your call with
+                          Akhila and reconcile the payment within one
+                          working day.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ) : calendlyEmbedSrc ? (
                   <div className="h-[720px] w-full sm:h-[760px] lg:h-[820px]">
                     <iframe
                       title="Schedule your assessment call"
