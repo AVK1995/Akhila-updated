@@ -205,6 +205,13 @@ const META_PIXEL_SNIPPET = META_PIXEL_ID
     }
   } catch (e) {}
   fbq('track', 'PageView');
+  // Token: tells MetaPageView "I just fired PageView for this pathname".
+  // Without this, the inline-script PageView on cold load + MetaPageView's
+  // first-mount useEffect would BOTH fire for the landing pathname → one
+  // page view counted twice in Events Manager.
+  try {
+    window.__akhila_last_pv = { pathname: location.pathname, at: Date.now() };
+  } catch (e) {}
 })();
 `
   : "";
