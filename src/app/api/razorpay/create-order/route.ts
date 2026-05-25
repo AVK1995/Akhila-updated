@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getRazorpay } from "@/lib/razorpay";
 import { getServerEnv, publicEnv } from "@/lib/env";
-import { sendPurchaseWebhook } from "@/lib/pabbly";
+import { sendPurchaseWebhook, istDateAndTime } from "@/lib/pabbly";
 import { cancelAbandoned } from "@/lib/abandonedCart";
 import { shouldFireConversionEvents } from "@/lib/gating";
 
@@ -103,6 +103,9 @@ export async function POST(req: Request) {
       error: "skipped_by_gate",
     };
     if (fireConversions) {
+      const paidAt = new Date().toISOString();
+      const [paymentDate, paymentTime] = istDateAndTime(paidAt);
+      const utmMap = parsed.data.utm ?? {};
       webhook = await sendPurchaseWebhook({
         leadId: parsed.data.leadId,
         firstName: parsed.data.firstName,
@@ -116,10 +119,17 @@ export async function POST(req: Request) {
         primaryConcern: parsed.data.primaryConcern,
         couponCode: parsed.data.couponCode,
         utm: parsed.data.utm,
+        fbclid: utmMap.fbclid,
+        gclid: utmMap.gclid,
+        landingUrl: utmMap.landing_url ?? parsed.data.landingUrl,
+        referrer: utmMap.referrer ?? parsed.data.referrer,
         paymentId,
         orderId,
         amountInr: 0,
-        paidAt: new Date().toISOString(),
+        currency: "INR",
+        paidAt,
+        paymentDate,
+        paymentTime,
         source: "bypass_coupon",
       });
     }

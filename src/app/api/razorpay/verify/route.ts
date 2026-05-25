@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { verifyPaymentSignature } from "@/lib/razorpay";
-import { sendPurchaseWebhook } from "@/lib/pabbly";
+import { sendPurchaseWebhook, istDateAndTime } from "@/lib/pabbly";
 import { cancelAbandoned } from "@/lib/abandonedCart";
 import { getServerEnv, publicEnv } from "@/lib/env";
 import { sendMetaCapiEvent } from "@/lib/meta";
@@ -105,6 +105,9 @@ export async function POST(req: Request) {
   if (fireConversions) {
     // Fire the purchase webhook (best-effort — we don't fail the request
     // if Pabbly is down; we just log it).
+    const paidAt = new Date().toISOString();
+    const [paymentDate, paymentTime] = istDateAndTime(paidAt);
+    const utmMap = lead.utm ?? {};
     webhook = await sendPurchaseWebhook({
       leadId: lead.leadId,
       firstName: lead.firstName,
@@ -118,10 +121,22 @@ export async function POST(req: Request) {
       primaryConcern: lead.primaryConcern,
       couponCode: lead.couponCode,
       utm: lead.utm,
+      // Top-level attribution mirrors of values inside `utm`. Surfaced so
+      // Pabbly column mappings don't need to traverse the nested object —
+      // and so PATH B (webhook fallback) can populate them from Razorpay
+      // order notes where the original utm object isn't reconstructed.
+      fbclid: utmMap.fbclid,
+      gclid: utmMap.gclid,
+      landingUrl: utmMap.landing_url,
+      referrer: utmMap.referrer,
+      // Payment fields
       paymentId: razorpay_payment_id,
       orderId: razorpay_order_id,
       amountInr: env.ASSESSMENT_FEE_INR,
-      paidAt: new Date().toISOString(),
+      currency: "INR",
+      paidAt,
+      paymentDate,
+      paymentTime,
       source: "razorpay_verify",
     });
   }

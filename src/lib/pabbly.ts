@@ -14,14 +14,53 @@ export type LeadPayload = {
   primaryConcern?: string;
   couponCode?: string;
   utm?: Record<string, string>;
-  // Set when payment succeeded
+  // ── Attribution fields surfaced as top-level for Pabbly column mapping ──
+  // Mirrors of values that ALSO live inside `utm` (keep `utm` for backward
+  // compat with existing workflows mapped against `utm.fbclid` etc.).
+  // Top-level copies make new workflow setup easier and survive even if
+  // the utm object is empty (e.g. webhook-fallback PATH B rebuilds these
+  // from Razorpay order notes where the utm object isn't reconstructed).
+  fbclid?: string;
+  gclid?: string;
+  landingUrl?: string;
+  referrer?: string;
+  // ── Payment fields (set when payment succeeded) ──
   paymentId?: string;
   orderId?: string;
   amountInr?: number;
-  paidAt?: string;
+  currency?: string;      // "INR" — explicit so Pabbly mappings don't have to assume
+  paidAt?: string;        // ISO-8601 UTC, e.g. "2026-05-26T18:10:26.123Z"
+  paymentDate?: string;   // IST YYYY-MM-DD, derived from paidAt
+  paymentTime?: string;   // IST HH:MM:SS (24h), derived from paidAt
   // Source page / context
   source?: string;
 };
+
+/**
+ * Format an ISO timestamp into IST YYYY-MM-DD + HH:MM:SS strings using
+ * Intl.DateTimeFormat (no extra deps). Returns ["", ""] for invalid input.
+ */
+export function istDateAndTime(iso: string | undefined): [string, string] {
+  if (!iso) return ["", ""];
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return ["", ""];
+  // en-CA gives YYYY-MM-DD; en-GB gives DD/MM/YYYY hh:mm:ss — we want en-CA
+  // for the date and a manual format for the time.
+  const date = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Kolkata",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(d);
+  const time = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Asia/Kolkata",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  }).format(d);
+  return [date, time];
+}
 
 /**
  * Sends a JSON payload to a Pabbly Connect webhook. We resolve the URL lazily
