@@ -35,6 +35,16 @@ function sha256(value: string): string {
   return crypto.createHash("sha256").update(value).digest("hex");
 }
 
+/**
+ * external_id for Meta matching = sha256(normalised email). Exported so the
+ * Pabbly purchase payload (verify-payment) and the browser MAM cookie all
+ * derive the SAME value for a given user — Meta requires external_id
+ * consistency across channels.
+ */
+export function externalIdFromEmail(email: string): string {
+  return sha256(email.trim().toLowerCase());
+}
+
 export type MetaCapiParams = {
   /** Razorpay payment id — used as the deterministic event_id for dedup. */
   paymentId: string;

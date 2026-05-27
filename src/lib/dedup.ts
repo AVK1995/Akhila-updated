@@ -1,17 +1,19 @@
 /**
- * In-process dedup (Layer 1)
- * ---------------------------
+ * In-process dedup
+ * -----------------
  * Cheap, 0-ms-overhead guard against same-Lambda-instance retries — e.g. a
  * mobile network blip causes the browser to re-fire /api/razorpay/verify
  * twice within the same warm function instance, or the user refreshes
- * /book-a-call which causes the keepalive fetch to be re-sent.
+ * /book-a-call which causes the keepalive fetch to be re-sent. Protects
+ * Pabbly from a duplicate row.
  *
- * IMPORTANT — this is INSTANCE-SCOPED. A second Lambda instance (cold
- * start, different region, route running in a separate function) has its
- * own empty Map and won't see anything this instance claimed. The cross-
- * route dedup story is owned by lib/payment-dedup.ts (persistent markers
- * on Razorpay payment notes). This layer just defends against the cheap,
- * common case where the same instance handles a duplicate within seconds.
+ * verify-payment is the single firing path (no webhook), and it's only ever
+ * called by our own funnel's browser, so this is the only dedup layer we
+ * need server-side. Meta independently dedupes CAPI by event_id (48h) as a
+ * backstop. INSTANCE-SCOPED: a duplicate landing on a different cold Lambda
+ * isn't caught here, but that requires the browser to send the keepalive
+ * POST twice to two instances — vanishingly rare with a single keepalive
+ * fetch, and Meta's event_id dedup still covers the CAPI side.
  *
  * HMR-safe via a globalThis singleton (the abandoned-cart module uses
  * the same pattern).

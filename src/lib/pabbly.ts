@@ -1,73 +1,88 @@
 import { getServerEnv } from "./env";
 
+/**
+ * LeadPayload — camelCase shape used ONLY by the (currently disabled)
+ * abandoned-cart path (sendAbandonedWebhook + lib/abandonedCart.ts +
+ * api/checkout-init). Kept intact so that dormant system keeps
+ * type-checking. The live purchase path uses PabblyPurchasePayload below.
+ */
 export type LeadPayload = {
   leadId: string;
   firstName: string;
   lastName: string;
-  fullName: string;       // derived: `${firstName} ${lastName}` — kept for downstream
-                          // automations / CRMs that still expect a single name field.
+  fullName: string;
   email: string;
-  phone: string;          // includes country code, e.g. "+919876543210"
-  phoneCountry: string;   // ISO-2 country, e.g. "IN"
+  phone: string;
+  phoneCountry: string;
   city?: string;
   ageRange?: string;
   primaryConcern?: string;
   couponCode?: string;
   utm?: Record<string, string>;
-  // ── Attribution fields surfaced as top-level for Pabbly column mapping ──
-  // Mirrors of values that ALSO live inside `utm` (keep `utm` for backward
-  // compat with existing workflows mapped against `utm.fbclid` etc.).
-  // Top-level copies make new workflow setup easier and survive even if
-  // the utm object is empty (e.g. webhook-fallback PATH B rebuilds these
-  // from Razorpay order notes where the utm object isn't reconstructed).
-  fbclid?: string;
-  gclid?: string;
-  landingUrl?: string;
-  referrer?: string;
-  // ── Payment fields (set when payment succeeded) ──
   paymentId?: string;
   orderId?: string;
   amountInr?: number;
-  currency?: string;      // "INR" — explicit so Pabbly mappings don't have to assume
-  paidAt?: string;        // ISO-8601 UTC, e.g. "2026-05-26T18:10:26.123Z"
-  paymentDate?: string;   // IST YYYY-MM-DD, derived from paidAt
-  paymentTime?: string;   // IST HH:MM:SS (24h), derived from paidAt
-  // Source page / context
+  paidAt?: string;
   source?: string;
 };
 
 /**
- * Format an ISO timestamp into IST YYYY-MM-DD + HH:MM:SS strings using
- * Intl.DateTimeFormat (no extra deps). Returns ["", ""] for invalid input.
+ * PabblyPurchasePayload — the 23-field snake_case schema that feeds the
+ * downstream Google-Sheet CRM (columns A–W). Field names match the sheet
+ * header EXACTLY so Pabbly's column mapping is 1:1. The CRM row carries
+ * every Meta matching identifier (fbc/fbp/client_ip_address/
+ * client_user_agent/external_id) so a downstream Apps Script can fire
+ * Schedule / ShowUp / HighTicket CAPI events later at full EMQ.
+ *
+ * Built entirely from data available in the verify-payment request
+ * (request body lead + cookies + headers) — verify-payment is the single
+ * firing path; there is no webhook fallback.
+ *
+ * The 4 trailing fields (full_name, order_id, currency, payment_timestamp)
+ * are sensible extras beyond the canonical 23; Pabbly maps them by name
+ * only if wanted and ignores them otherwise.
  */
-export function istDateAndTime(iso: string | undefined): [string, string] {
-  if (!iso) return ["", ""];
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return ["", ""];
-  // en-CA gives YYYY-MM-DD; en-GB gives DD/MM/YYYY hh:mm:ss — we want en-CA
-  // for the date and a manual format for the time.
-  const date = new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Asia/Kolkata",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(d);
-  const time = new Intl.DateTimeFormat("en-GB", {
-    timeZone: "Asia/Kolkata",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-    hour12: false,
-  }).format(d);
-  return [date, time];
-}
+export type PabblyPurchasePayload = {
+  // ── Lead identity (sheet cols A–H) ──
+  lead_id: string;
+  created_at: string;          // ISO-8601, lead/session creation time
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone: string;               // includes country code, e.g. "+919876543210"
+  city: string;
+  country_code: string;        // ISO-2, e.g. "IN"
+  // ── Meta matching (sheet cols I–N) — RAW, never hashed except external_id ──
+  fbc: string;                 // _fbc cookie, raw
+  fbp: string;                 // _fbp cookie, raw
+  client_ip_address: string;
+  client_user_agent: string;
+  external_id: string;         // sha256(lowercased email) — matches CAPI + MAM
+  event_source_url: string;
+  // ── Purchase data (sheet cols O–Q) ──
+  amount: string;              // rupees as string, e.g. "97"
+  is_test: string;             // "false" on delivered rows (gate suppresses tests)
+  purchase_event_id: string;   // = razorpay_payment_id (the CAPI event_id)
+  // ── Attribution (sheet cols R–W) ──
+  utm_source: string;
+  utm_medium: string;
+  utm_campaign: string;
+  utm_content: string;
+  utm_term: string;
+  fbclid: string;
+  // ── Extras beyond the canonical 23 (name-mapped if wanted) ──
+  full_name: string;
+  order_id: string;
+  currency: string;            // "INR"
+  payment_timestamp: string;   // ISO-8601 UTC
+};
 
 /**
  * Sends a JSON payload to a Pabbly Connect webhook. We resolve the URL lazily
  * so missing env vars don't crash unrelated routes. Returns the response body
  * if reachable, or throws when the webhook URL isn't configured.
  */
-async function fire(url: string, payload: LeadPayload): Promise<unknown> {
+async function fire(url: string, payload: object): Promise<unknown> {
   const res = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -83,7 +98,7 @@ async function fire(url: string, payload: LeadPayload): Promise<unknown> {
 }
 
 export async function sendPurchaseWebhook(
-  payload: LeadPayload
+  payload: PabblyPurchasePayload
 ): Promise<{ ok: boolean; error?: string }> {
   const env = getServerEnv();
   if (!env.PABBLY_PURCHASE_WEBHOOK_URL) {
