@@ -75,6 +75,13 @@ export type PabblyPurchasePayload = {
   order_id: string;
   currency: string;            // "INR"
   payment_timestamp: string;   // ISO-8601 UTC
+  // ── Form-collected extras — NOT part of the CRM A–W sheet. Sent so a
+  //    separate sheet/automation can map them. The CRM Apps Script ignores
+  //    them (it reads by fixed column index, not by key). ──
+  age_range: string;
+  primary_concern: string;
+  coupon_code: string;
+  consent: string;             // "true" / "false"
 };
 
 /**

@@ -32,6 +32,7 @@ const schema = z.object({
     ageRange: z.string().optional(),
     primaryConcern: z.string().optional(),
     couponCode: z.string().optional(),
+    consent: z.boolean().optional(),
     utm: z.record(z.string(), z.string()).optional(),
   }),
 });
@@ -161,10 +162,14 @@ export async function POST(req: Request) {
       `value=${env.ASSESSMENT_FEE_INR} email=${lead.email} → firing { pabbly:true, capi:true }`
   );
 
-  // ── 23-field snake_case Pabbly payload (+ 4 extras) ─────────────────
+  // ── 23-field snake_case Pabbly payload (+ 4 generic extras + 4 form extras) ──
+  // Cols 1-23 map 1:1 to the CRM sheet A–W. lead_id == purchase_event_id ==
+  // razorpay_payment_id so the downstream Apps Script builds
+  // `{payment_id}_schedule|showup|htsale` event ids. The 8 trailing fields
+  // are NOT in the CRM sheet; they're sent for a separate sheet/automation.
   const pabblyPayload: PabblyPurchasePayload = {
-    lead_id: lead.leadId,
-    created_at: lead.createdAt ?? nowIso,
+    lead_id: razorpay_payment_id,
+    created_at: nowIso, // payment time
     first_name: lead.firstName,
     last_name: lead.lastName,
     email: lead.email,
@@ -186,11 +191,16 @@ export async function POST(req: Request) {
     utm_content: utmMap.utm_content ?? "",
     utm_term: utmMap.utm_term ?? "",
     fbclid: utmMap.fbclid ?? "",
-    // extras
+    // generic extras
     full_name: `${lead.firstName} ${lead.lastName}`.trim(),
     order_id: razorpay_order_id,
     currency: "INR",
     payment_timestamp: nowIso,
+    // form extras (separate sheet, not the CRM A–W schema)
+    age_range: lead.ageRange ?? "",
+    primary_concern: lead.primaryConcern ?? "",
+    coupon_code: lead.couponCode ?? "",
+    consent: lead.consent ? "true" : "false",
   };
 
   // ── Parallel fire: Pabbly + Meta CAPI ───────────────────────────────
