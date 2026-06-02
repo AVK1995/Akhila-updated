@@ -1,8 +1,8 @@
 "use client";
 
 import { motion } from "motion/react";
-import { CtaLink } from "../shared-client";
-import { FloatingOrbs, VideoThumbnail } from "../shared-static";
+import { CtaLink, LazyVimeoVideo } from "../shared-client";
+import { FloatingOrbs } from "../shared-static";
 import { ArrowRightIcon, PlayIcon, ShieldIcon } from "../icons";
 import { publicEnv } from "@/lib/env";
 
@@ -104,9 +104,10 @@ export function HeroSection() {
                   "conic-gradient(from 0deg, rgba(193,150,50,0.45), rgba(115,42,61,0.45), rgba(193,150,50,0.45))",
               }}
             />
-            <VideoThumbnail
+            <LazyVimeoVideo
+              videoId="1196886151"
+              title="Why Your PCOS Keeps Coming Back"
               aspect="16/9"
-              hint="Drop your hero Vimeo ID into LazyVimeoVideo here (see comment above)"
               playSize="md"
             />
           </div>

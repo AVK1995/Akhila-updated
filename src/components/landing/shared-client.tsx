@@ -2,9 +2,17 @@
 
 import Link from "next/link";
 import { motion, useReducedMotion } from "motion/react";
-import { useCallback, useState, type ComponentProps, type ReactNode } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type ComponentProps,
+  type ReactNode,
+} from "react";
 import { cn } from "@/lib/utils";
 import { withUtm } from "@/lib/utm";
+import { trackVideoEvent } from "@/lib/analytics";
 import { VideoThumbnail } from "./shared-static";
 
 /**
@@ -123,6 +131,7 @@ export function LazyVimeoVideo({
   className,
   playSize = "md",
 }: {
+  /** Vimeo numeric id. Empty string → renders the placeholder frame. */
   videoId: string;
   hash?: string;
   aspect?: "16/9" | "9/16" | "4/3" | "3/4" | "1/1";
@@ -133,6 +142,7 @@ export function LazyVimeoVideo({
   playSize?: "sm" | "md" | "lg";
 }) {
   const [playing, setPlaying] = useState(false);
+  const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const aspectClass = {
     "16/9": "aspect-[16/9]",
     "9/16": "aspect-[9/16]",
@@ -143,9 +153,76 @@ export function LazyVimeoVideo({
 
   const resolvedPoster = posterSrc ?? vumbnailUrl(videoId);
 
+  // Attach the Vimeo Player SDK to the live iframe once it mounts so real
+  // playback — not just the click — is tracked: start, 25/50/75 % milestones,
+  // and completion. The SDK is dynamically imported so it ships zero bytes
+  // until a visitor actually plays the video.
+  useEffect(() => {
+    if (!playing) return;
+    const iframe = iframeRef.current;
+    if (!iframe) return;
+
+    let player: import("@vimeo/player").default | null = null;
+    let cancelled = false;
+    const base = { video_id: videoId, video_title: title };
+    let started = false;
+    const milestones = [25, 50, 75];
+    const fired = new Set<number>();
+
+    import("@vimeo/player").then(({ default: Player }) => {
+      if (cancelled) return;
+      player = new Player(iframe);
+
+      player.on("play", () => {
+        if (started) return;
+        started = true;
+        trackVideoEvent("VideoPlayStart", base);
+      });
+
+      player.on("timeupdate", (data: { percent: number }) => {
+        const pct = Math.floor(data.percent * 100);
+        for (const m of milestones) {
+          if (pct >= m && !fired.has(m)) {
+            fired.add(m);
+            trackVideoEvent("VideoProgress", { ...base, percent: m });
+          }
+        }
+      });
+
+      player.on("ended", () => {
+        trackVideoEvent("VideoComplete", { ...base, percent: 100 });
+      });
+    });
+
+    return () => {
+      cancelled = true;
+      // unload() detaches all listeners and tears down the SDK bridge.
+      player?.unload().catch(() => {});
+    };
+  }, [playing, videoId, title]);
+
+  // No video id wired yet → branded placeholder frame that mirrors the live
+  // player (play badge, no text). Drop the real Vimeo id into `videoId` later
+  // and the full thumbnail → unmuted click-to-play → analytics flow lights up
+  // with no other change.
+  if (!videoId) {
+    return (
+      <VideoThumbnail
+        aspect={aspect}
+        playSize={playSize}
+        className={className}
+      />
+    );
+  }
+
   if (playing) {
     const params = new URLSearchParams({
       autoplay: "1",
+      // Click is a user gesture, so the browser allows playback WITH sound.
+      // muted=0 makes the unmuted intent explicit; playsinline keeps it in
+      // the hero frame on iOS instead of jumping to native fullscreen.
+      muted: "0",
+      playsinline: "1",
       title: "0",
       byline: "0",
       portrait: "0",
@@ -161,10 +238,11 @@ export function LazyVimeoVideo({
         )}
       >
         <iframe
+          ref={iframeRef}
           src={`https://player.vimeo.com/video/${videoId}?${params.toString()}`}
           className="absolute inset-0 h-full w-full"
           frameBorder={0}
-          allow="autoplay; fullscreen; picture-in-picture; clipboard-write"
+          allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media"
           allowFullScreen
           title={title}
         />
@@ -175,7 +253,10 @@ export function LazyVimeoVideo({
   return (
     <button
       type="button"
-      onClick={() => setPlaying(true)}
+      onClick={() => {
+        trackVideoEvent("VideoPlayClick", { video_id: videoId, video_title: title });
+        setPlaying(true);
+      }}
       aria-label={`Play video: ${title}`}
       className={cn("block w-full cursor-pointer", className)}
     >
