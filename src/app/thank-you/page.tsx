@@ -2,6 +2,19 @@ import type { Metadata } from "next";
 import { cn } from "@/lib/utils";
 import { Marquee, Footer } from "@/components/site-chrome";
 import { MamReapply } from "@/components/MamReapply";
+import { LazyVimeoVideo } from "@/components/landing/shared-client";
+
+/**
+ * THANK-YOU WELCOME VIDEO
+ * -----------------------
+ * The final video isn't recorded yet. Leave this empty and the player renders
+ * a branded placeholder frame with the same play badge as the hero. When the
+ * Vimeo video is ready, paste its numeric id here (e.g. "1196886151") — the
+ * vumbnail thumbnail, unmuted click-to-play, and full analytics tracking
+ * (VideoPlayClick / PlayStart / Progress / Complete) light up automatically,
+ * exactly like the hero VSL.
+ */
+const TY_VSL_VIDEO_ID = "1197627628";
 
 /* =============================================================================
  * THANK YOU PAGE — Akhila PCOS Metabolic Programme
@@ -93,6 +106,30 @@ export default function ThankYouPage() {
             call so you hit the ground running. Dr. Aditya joins your
             protocol only once you enrol.
           </p>
+
+          {/* Welcome video — mobile-first 16/9 player. Swap TY_VSL_VIDEO_ID
+              (top of file) for the real Vimeo id when it's recorded. */}
+          <div className="mx-auto mt-10 w-full max-w-[34rem] sm:mt-12 sm:max-w-[38rem]">
+            <p className="mb-4 text-[12px] font-semibold uppercase tracking-[0.16em] text-wine-700 sm:text-[13px]">
+              Watch this before your call
+            </p>
+            <div className="group relative isolate">
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute -inset-[3px] -z-10 rounded-[30px] opacity-70 blur-md transition-opacity duration-700 group-hover:opacity-100"
+                style={{
+                  background:
+                    "conic-gradient(from 0deg, rgba(193,150,50,0.45), rgba(115,42,61,0.45), rgba(193,150,50,0.45))",
+                }}
+              />
+              <LazyVimeoVideo
+                videoId={TY_VSL_VIDEO_ID}
+                title="A message from Dr. Aditya & Akhila before your call"
+                aspect="16/9"
+                playSize="md"
+              />
+            </div>
+          </div>
 
           <ol className="mt-12 grid gap-5 text-left sm:gap-6">
             {steps.map((s, i) => (

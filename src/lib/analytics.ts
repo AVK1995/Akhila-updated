@@ -43,6 +43,7 @@ function isProductionDomain(): boolean {
 declare global {
   interface Window {
     fbq?: (...args: unknown[]) => void;
+    dataLayer?: Array<Record<string, unknown>>;
   }
 }
 
@@ -189,4 +190,51 @@ export function trackPageView(): void {
   if (!publicEnv.metaPixelId) return;
   if (!isProductionDomain()) return;
   window.fbq("track", "PageView");
+}
+
+/**
+ * VSL / video analytics events fired by <LazyVimeoVideo>.
+ *   - VideoPlayClick   user clicked the thumbnail (intent — counts every click)
+ *   - VideoPlayStart   the Vimeo player actually began playback
+ *   - VideoProgress    crossed a 25 / 50 / 75 % watch milestone (q in params)
+ *   - VideoComplete    watched to the end
+ */
+export type VideoEventName =
+  | "VideoPlayClick"
+  | "VideoPlayStart"
+  | "VideoProgress"
+  | "VideoComplete";
+
+/**
+ * Fire a video analytics event. Two sinks, intentionally decoupled:
+ *
+ *   1. window.dataLayer — pushed ALWAYS (even on localhost / preview). This is
+ *      the vendor-neutral GTM/GA layer; it is also what lets you verify the
+ *      wiring in dev by inspecting `window.dataLayer` in the console, since the
+ *      Meta Pixel is hard-gated to the production host.
+ *   2. Meta Pixel (fbq trackCustom) — fired only on the production domain with
+ *      a configured pixel id, mirroring trackPageView()/setMetaAdvancedMatching
+ *      so preview deployments and localhost keep Events Manager clean.
+ *
+ * `params` carries video_id, video_title, and (for progress) the milestone.
+ */
+export function trackVideoEvent(
+  event: VideoEventName,
+  params: Record<string, unknown> = {}
+): void {
+  if (typeof window === "undefined") return;
+
+  // 1. Vendor-neutral dataLayer — always on, observable in any environment.
+  try {
+    window.dataLayer = window.dataLayer ?? [];
+    window.dataLayer.push({ event: `video.${event}`, ...params });
+  } catch {
+    /* dataLayer push must never throw into playback */
+  }
+
+  // 2. Meta Pixel — production-host + configured-pixel gated.
+  if (!window.fbq) return;
+  if (!publicEnv.metaPixelId) return;
+  if (!isProductionDomain()) return;
+  window.fbq("trackCustom", event, params);
 }
