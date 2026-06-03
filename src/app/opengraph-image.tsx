@@ -3,7 +3,7 @@ import { publicEnv } from "@/lib/env";
 
 export const runtime = "edge";
 export const alt =
-  "Dr. Aditya & Akhila's PCOS Metabolic Programme. For the woman who has tried everything except the right diagnosis.";
+  "Dr. Aditya & Akhila's Metabolic Programme. For the woman who has tried everything except the root cause.";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -99,7 +99,7 @@ export default async function OGImage() {
                 marginTop: 2,
               }}
             >
-              The PCOS Metabolic Programme
+              The Metabolic Reset Programme
             </div>
           </div>
         </div>
@@ -142,7 +142,7 @@ export default async function OGImage() {
             >
               tried everything.
             </div>
-            <div style={{ display: "flex" }}>Except the right diagnosis.</div>
+            <div style={{ display: "flex" }}>Except the root cause.</div>
           </div>
         </div>
 
@@ -157,8 +157,8 @@ export default async function OGImage() {
           }}
         >
           {[
-            "Physician-Led",
-            "IV Infusion Included",
+            "Expert-Led",
+            "Nutrient Support Included",
             "Personalised Assessment",
             "Money-Back Guarantee",
           ].map((t) => (

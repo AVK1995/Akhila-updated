@@ -1,32 +1,33 @@
 /**
- * Meta Conversions API (server-side) — Akhila PCOS Funnel
- * --------------------------------------------------------
- * Fires the dual Purchase + sales events on every verified Razorpay payment.
- * One HTTP POST, two events in the `data` array, identical user_data and
- * custom_data, only `event_name` differs.
+ * Meta Conversions API (server-side) — Akhila Funnel
+ * ---------------------------------------------------
+ * Fires ONE custom `sales` event on every verified Razorpay payment.
  *
- *   Purchase  ← Meta standard event. Campaign optimization target.
- *               Mature global ML priors. iOS attribution (AEM is automatic
- *               since Oct 2024).
- *   sales     ← Custom event. Internal source-of-truth label that excludes
- *               inferred Purchases or other sources.
+ * HEALTH & WELLNESS HARDENING (see META_HW_HARDENING.md):
+ *   - We do NOT fire the standard `Purchase` event. Meta blocks standard
+ *     events BY NAME for health-categorized datasets, so we never depend on
+ *     it; campaigns optimise directly on the custom `sales` event. This
+ *     pre-builds the corrective bypass — if the dataset is ever classified,
+ *     `sales` keeps flowing and optimising with nothing to lose.
+ *   - `custom_data` is kept minimal + PHI-free: `value` + `currency` only.
+ *     No payment_id / order_id / UTM / content_name reaches Meta.
+ *   - `event_source_url` is reduced to origin (scheme+host) so no path or UTM
+ *     query leaks to Meta.
+ *   - `user_data` is unchanged (11 hashed/raw match signals) → EMQ stays 9.5+.
+ *     Hashed PII is the compliant matching mechanism, not a leak.
  *
- * Browser side fires only `PageView` (see src/lib/analytics.ts + the inline
- * script in src/app/layout.tsx). No browser-side Purchase, InitiateCheckout,
- * Lead, or AddToCart by design — campaign is optimised on the CAPI Purchase
- * (EMQ 9.5+ via this payload). Adding browser-side Purchase would create
- * dedup complexity and inflate the Events Manager dashboard count.
+ * Browser side fires only `PageView` + hashed MAM (see src/lib/analytics.ts +
+ * the inline script in src/app/layout.tsx). No browser-side conversion or
+ * video events reach Meta.
  *
  * Bypass-coupon orders do NOT fire CAPI (internal test path; polluting Meta
  * with fake conversions would corrupt the optimisation algorithm).
- *
- * Restricted-category compliant: includes `event_source_url` on every event,
- * required by Meta for health/PCOS-targeted accounts since Feb 2021.
  */
 
 import crypto from "node:crypto";
 import { getServerEnv } from "./env";
 import { publicEnv } from "./env";
+import { originOnly } from "./utils";
 
 const CAPI_VERSION = "v25.0";
 const CUSTOM_EVENT_NAME = "sales";
@@ -48,7 +49,10 @@ export function externalIdFromEmail(email: string): string {
 export type MetaCapiParams = {
   /** Razorpay payment id — used as the deterministic event_id for dedup. */
   paymentId: string;
-  /** Razorpay order id — surfaced in custom_data for analytics. */
+  /**
+   * Razorpay order id. Retained on the params for callers/back-compat but
+   * intentionally NOT sent to Meta (H&W posture keeps custom_data minimal).
+   */
   orderId: string;
   /** Raw, unhashed email. We normalise + hash internally. */
   email: string;
@@ -124,7 +128,8 @@ export async function sendMetaCapiEvent(
     event_time: Math.floor(Date.now() / 1000),
     event_id: params.paymentId,
     action_source: "website" as const,
-    event_source_url: params.eventSourceUrl,
+    // Origin-only — strips path + UTM query so no health-y context leaks.
+    event_source_url: originOnly(params.eventSourceUrl),
     user_data: {
       em: [hashedEmail],
       ...(hashedPhone && { ph: [hashedPhone] }),
@@ -138,18 +143,19 @@ export async function sendMetaCapiEvent(
       ...(params.clientUserAgent && { client_user_agent: params.clientUserAgent }),
       ...(params.clientIp && { client_ip_address: params.clientIp }),
     },
+    // Minimal + PHI-free. `payment_id`/`order_id` are intentionally NOT sent
+    // to Meta (event_id already = paymentId for dedup); they live in Pabbly/
+    // the CRM sheet instead. No content_name / product / UTM strings here.
     custom_data: {
       currency: params.currency,
       value: params.valueRupees,
-      payment_id: params.paymentId,
-      order_id: params.orderId,
     },
   };
 
-  const events = [
-    { ...baseEvent, event_name: "Purchase" },
-    { ...baseEvent, event_name: CUSTOM_EVENT_NAME },
-  ];
+  // H&W posture: fire the custom `sales` event ONLY. Standard `Purchase` is
+  // restricted by name for health-categorized datasets and is deliberately
+  // omitted — campaigns optimise directly on `sales`.
+  const events = [{ ...baseEvent, event_name: CUSTOM_EVENT_NAME }];
 
   // Optional Test Events routing. When META_CAPI_TEST_EVENT_CODE is set, this
   // payload arrives in Events Manager → Test Events and is EXCLUDED from

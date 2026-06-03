@@ -12,3 +12,18 @@ export function formatINR(amount: number): string {
     maximumFractionDigits: 0,
   }).format(amount);
 }
+
+/**
+ * Reduce a URL to its origin (scheme + host), dropping path, query and hash.
+ * Used to strip health-y path segments + the UTM query string from
+ * `event_source_url` before it reaches Meta (CAPI) or the CRM sheet, per the
+ * Health & Wellness hardening posture (see META_HW_HARDENING.md). Returns the
+ * input unchanged if it can't be parsed as a URL.
+ */
+export function originOnly(url: string): string {
+  try {
+    return new URL(url).origin;
+  } catch {
+    return url;
+  }
+}

@@ -8,10 +8,12 @@
  * with the resulting event_id + dedup flag. Failures are logged to the hidden
  * `_Errors` tab so the row remains retry-able.
  *
- * The tripwire `Purchase` + `sales` events for the ₹97 payment are fired
- * separately by the Next.js backend at payment-verify time. This script only
- * handles the three downstream events. The two systems share the same Meta
- * pixel ID + access token but never talk directly — the Sheet is the link.
+ * The tripwire `sales` event for the ₹97 payment is fired separately by the
+ * Next.js backend at payment-verify time (custom-only; the standard `Purchase`
+ * is intentionally NOT sent — Health & Wellness hardening posture). This script
+ * only handles the three downstream events (CallBooked / CallDone /
+ * HighTicketClosed). The two systems share the same Meta pixel ID + access
+ * token but never talk directly — the Sheet is the link.
  *
  * Architecture: this script talks to Meta directly (no backend proxy). All
  * secrets live in Apps Script PropertiesService. A new client is onboarded in
@@ -95,7 +97,7 @@ const EVENTS = {
     includeValue: false,
   },
   SALE_CLOSED: {
-    eventName: 'HighTicketPurchase',
+    eventName: 'HighTicketClosed',
     triggerCol: COL.SALE_CLOSED,
     timeCol: COL.SALES_TIME,
     eventIdCol: COL.HTSALE_CAPI_EVENT_ID,
@@ -179,10 +181,11 @@ function fireDownstreamEvent(sheet, row, cfg) {
   // user_data — the EMQ payload.
   const userData = buildUserData(rowData);
 
-  // custom_data — reporting metadata (not part of EMQ).
-  const customData = {
-    payment_id: leadId,
-  };
+  // custom_data — kept minimal + PHI-free under the H&W posture: only
+  // value/currency for the HT sale. payment_id, UTMs and fbclid are
+  // intentionally NOT forwarded to Meta (they stay in the CRM sheet for the
+  // team). The deterministic event_id carries dedup; EMQ comes from user_data.
+  const customData = {};
   if (cfg.includeValue) {
     const valueRaw = rowData[cfg.valueCol - 1];
     const value = Number(valueRaw);
@@ -194,19 +197,15 @@ function fireDownstreamEvent(sheet, row, cfg) {
     customData.currency = 'INR';
     customData.value = value;
   }
-  // Forward useful UTM context for Ads Manager filtering.
-  copyIfPresent(customData, 'utm_source',   stringAt(rowData, COL.UTM_SOURCE));
-  copyIfPresent(customData, 'utm_medium',   stringAt(rowData, COL.UTM_MEDIUM));
-  copyIfPresent(customData, 'utm_campaign', stringAt(rowData, COL.UTM_CAMPAIGN));
-  copyIfPresent(customData, 'utm_content',  stringAt(rowData, COL.UTM_CONTENT));
-  copyIfPresent(customData, 'utm_term',     stringAt(rowData, COL.UTM_TERM));
-  copyIfPresent(customData, 'fbclid',       stringAt(rowData, COL.FBCLID));
 
-  // event_source_url: prefer the row's stored URL, then PropertiesService default.
-  const eventSourceUrl =
+  // event_source_url: prefer the row's stored URL, then PropertiesService
+  // default. Reduced to origin (scheme+host) — strips path + UTM query so no
+  // health-y context reaches Meta, and protects rows Pabbly wrote with a full URL.
+  const eventSourceUrl = originOf_(
     stringAt(rowData, COL.EVENT_SOURCE_URL) ||
     PropertiesService.getScriptProperties().getProperty('EVENT_SOURCE_URL_DEFAULT') ||
-    '';
+    ''
+  );
 
   const eventBody = {
     event_name: cfg.eventName,
@@ -480,6 +479,18 @@ function stringAt(rowData, col1Indexed) {
 
 function copyIfPresent(obj, key, value) {
   if (value) obj[key] = value;
+}
+
+/**
+ * Reduce a URL to scheme://host, dropping path/query/hash. Apps Script has no
+ * URL class, so parse with a regex. Strips health-y path segments + UTM query
+ * before the URL reaches Meta. Returns '' for empty input, or the input
+ * unchanged if it isn't an http(s) URL.
+ */
+function originOf_(url) {
+  if (!url) return '';
+  var m = String(url).match(/^(https?:\/\/[^\/?#]+)/i);
+  return m ? m[1] : url;
 }
 
 function sha256Hex(value) {

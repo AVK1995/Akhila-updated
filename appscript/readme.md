@@ -8,12 +8,19 @@ sales-team dropdown is set to `TRUE`:
 |---|---|---|
 | `call_booked` (col X) | `CallBooked` | no |
 | `call_showed` (col AB) | `CallDone` | no |
-| `sale_closed` (col AF) | `HighTicketPurchase` | yes — `contracted_value` from col AG |
+| `sale_closed` (col AF) | `HighTicketClosed` | yes — `contracted_value` from col AG |
 
-The tripwire `Purchase` + `sales` events for the ₹97 payment are fired
-separately by the Next.js backend at payment-verify time. This script handles
+The tripwire `sales` event for the ₹97 payment is fired separately by the
+Next.js backend at payment-verify time — custom-only; the standard `Purchase`
+is intentionally NOT sent (Health & Wellness hardening). This script handles
 only the three downstream events. The two systems share the same Meta pixel ID
 + access token but never talk directly — the Sheet is the only link.
+
+**Payload hygiene (H&W):** downstream events send a minimal, PHI-free
+`custom_data` — only `value` + `currency` on the HT sale, nothing on the call
+events. `payment_id`, UTMs and `fbclid` are deliberately NOT forwarded to Meta
+(they stay in the sheet for the team). `event_source_url` is reduced to its
+origin (scheme + host) before sending. `user_data` is unchanged, so EMQ stays 9+.
 
 `event_id` per event is deterministic: `{lead_id}_schedule|showup|htsale`,
 where `lead_id` (col A) == the Razorpay `payment_id`. So a downstream event
@@ -92,7 +99,7 @@ date columns as Date objects; the timezone decides what they resolve to.
    |---|---|
    | `META_PIXEL_ID` | Akhila's pixel ID (same value as Vercel `NEXT_PUBLIC_META_PIXEL_ID`) |
    | `META_CAPI_ACCESS_TOKEN` | Akhila's CAPI token (same value as Vercel `META_CAPI_ACCESS_TOKEN`) — **secret** |
-   | `EVENT_SOURCE_URL_DEFAULT` | `https://www.pcosreset.in/book-a-call` |
+   | `EVENT_SOURCE_URL_DEFAULT` | `https://www.dradityabapuji.com` (origin-only; the script strips any path/query anyway) |
 
    Optional: `META_CAPI_TEST_EVENT_CODE` (set to your Test Events code while validating, **delete for production**), `MAIN_SHEET_NAME` (defaults to `CRM`), `META_GRAPH_API_VERSION` (defaults to `v25.0`).
 
@@ -113,7 +120,7 @@ date columns as Date objects; the timezone decides what they resolve to.
    client_user_agent, external_id`.
 3. **CallBooked**: set col X dropdown → `TRUE`. Within ~10s: col Z = `{lead_id}_schedule`, col AA = `TRUE`, and `CallBooked` appears in Test Events (Source: Server, EMQ 8-9+).
 4. **CallDone**: fill col AC (showup_time), set col AB → `TRUE`. Expect col AD/AE filled + `CallDone` in Test Events.
-5. **HighTicketPurchase**: fill col AG (`60000`) + col AH (sales_time), set col AF → `TRUE`. Expect col AI/AJ filled + `HighTicketPurchase` with `value: 60000, currency: INR`.
+5. **HighTicketClosed**: fill col AG (`60000`) + col AH (sales_time), set col AF → `TRUE`. Expect col AI/AJ filled + `HighTicketClosed` with `value: 60000, currency: INR`.
 6. **Delete `META_CAPI_TEST_EVENT_CODE`** when done so real events count for production.
 
 ---

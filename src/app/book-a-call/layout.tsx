@@ -8,7 +8,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Book Your Assessment Call",
   description:
-    "Pick a 30-minute slot for your PCOS clinical assessment call with Akhila.",
+    "Pick a 30-minute slot for your metabolic assessment call with Akhila.",
   robots: { index: false, follow: false },
 };
 

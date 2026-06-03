@@ -7,6 +7,7 @@ import { getServerEnv, publicEnv } from "@/lib/env";
 import { sendMetaCapiEvent, externalIdFromEmail } from "@/lib/meta";
 import { shouldFireConversionEvents } from "@/lib/gating";
 import { claimEventId } from "@/lib/dedup";
+import { originOnly } from "@/lib/utils";
 
 export const runtime = "nodejs";
 
@@ -155,6 +156,10 @@ export async function POST(req: Request) {
   const clientUserAgent = req.headers.get("user-agent") ?? "";
   const resolvedEventSourceUrl =
     eventSourceUrl ?? `${publicEnv.siteUrl.replace(/\/+$/, "")}/checkout`;
+  // H&W hygiene: reduce to origin (scheme+host) before it reaches Meta OR the
+  // CRM sheet, so no path / UTM query leaks. UTMs are still captured in their
+  // own Pabbly + sheet columns, so reporting loses nothing.
+  const eventSourceOrigin = originOnly(resolvedEventSourceUrl);
   const externalId = externalIdFromEmail(lead.email);
 
   console.log(
@@ -181,7 +186,7 @@ export async function POST(req: Request) {
     client_ip_address: clientIp,
     client_user_agent: clientUserAgent,
     external_id: externalId,
-    event_source_url: resolvedEventSourceUrl,
+    event_source_url: eventSourceOrigin,
     amount: String(env.ASSESSMENT_FEE_INR),
     is_test: "false", // gate guarantees only real (amount>1, prod-host) rows reach here
     purchase_event_id: razorpay_payment_id,
@@ -217,7 +222,7 @@ export async function POST(req: Request) {
       lastName: lead.lastName,
       city: lead.city ?? "",
       countryCode: lead.phoneCountry,
-      eventSourceUrl: resolvedEventSourceUrl,
+      eventSourceUrl: eventSourceOrigin,
       fbc: fbc || undefined,
       fbp: fbp || undefined,
       clientIp: clientIp || undefined,

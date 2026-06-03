@@ -30,7 +30,7 @@ const TY_VSL_VIDEO_ID = "1197627628";
 export const metadata: Metadata = {
   title: "You're All Set. See You On The Call",
   description:
-    "Thank you for booking your PCOS metabolic assessment with Dr. Aditya & Akhila.",
+    "Thank you for booking your metabolic assessment with Dr. Aditya & Akhila.",
   robots: { index: false, follow: false },
 };
 

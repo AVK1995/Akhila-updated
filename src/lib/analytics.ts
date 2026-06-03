@@ -206,15 +206,14 @@ export type VideoEventName =
   | "VideoComplete";
 
 /**
- * Fire a video analytics event. Two sinks, intentionally decoupled:
+ * Fire a video analytics event to the vendor-neutral `window.dataLayer` ONLY.
  *
- *   1. window.dataLayer — pushed ALWAYS (even on localhost / preview). This is
- *      the vendor-neutral GTM/GA layer; it is also what lets you verify the
- *      wiring in dev by inspecting `window.dataLayer` in the console, since the
- *      Meta Pixel is hard-gated to the production host.
- *   2. Meta Pixel (fbq trackCustom) — fired only on the production domain with
- *      a configured pixel id, mirroring trackPageView()/setMetaAdvancedMatching
- *      so preview deployments and localhost keep Events Manager clean.
+ * HEALTH & WELLNESS HARDENING (see META_HW_HARDENING.md): these events are
+ * intentionally NOT forwarded to the Meta Pixel. The browser side fires only
+ * `PageView` (+ hashed MAM); a browser custom event would otherwise carry the
+ * `video_title` (page context) to Meta. GA/GTM can still consume these from
+ * the dataLayer, and you can verify the wiring in any environment by
+ * inspecting `window.dataLayer` in the console.
  *
  * `params` carries video_id, video_title, and (for progress) the milestone.
  */
@@ -224,17 +223,10 @@ export function trackVideoEvent(
 ): void {
   if (typeof window === "undefined") return;
 
-  // 1. Vendor-neutral dataLayer — always on, observable in any environment.
   try {
     window.dataLayer = window.dataLayer ?? [];
     window.dataLayer.push({ event: `video.${event}`, ...params });
   } catch {
     /* dataLayer push must never throw into playback */
   }
-
-  // 2. Meta Pixel — production-host + configured-pixel gated.
-  if (!window.fbq) return;
-  if (!publicEnv.metaPixelId) return;
-  if (!isProductionDomain()) return;
-  window.fbq("trackCustom", event, params);
 }

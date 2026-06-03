@@ -105,7 +105,7 @@ const PROD_HOSTNAME = (() => {
 
 export const publicEnv = {
   siteUrl: SITE_URL_RAW,
-  siteName: process.env.NEXT_PUBLIC_SITE_NAME ?? "Dr. Aditya & Akhila's PCOS Metabolic Programme",
+  siteName: process.env.NEXT_PUBLIC_SITE_NAME ?? "Dr. Aditya & Akhila's Metabolic Programme",
   razorpayKeyId: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID ?? "",
   calendlyUrl: process.env.NEXT_PUBLIC_CALENDLY_URL ?? "",
   assessmentFeeInr: ASSESSMENT_FEE_INR_NUM,
