@@ -142,7 +142,7 @@ function BookACallTop() {
             </Reveal>
             <Reveal delay={0.12}>
               <p className="mx-auto mt-3.5 max-w-xl text-[14.5px] leading-relaxed text-ink-500 sm:mt-5 sm:text-[15.5px]">
-                This is your 30-minute clinical assessment call with Akhila.
+                This is your 30-minute assessment call with Akhila.
                 Block a slot in the next 7 days for the fastest start. Dr.
                 Aditya joins your protocol once you enrol.
               </p>
@@ -247,10 +247,10 @@ function BookACallTop() {
               <p className="mt-4 text-center text-[12px] text-ink-400 sm:text-[13px]">
                 Issues with the calendar? Email{" "}
                 <a
-                  href="mailto:hello@akhila.example.com"
+                  href="mailto:draditya.cim@gmail.com"
                   className="font-medium text-wine-700 underline-offset-4 hover:underline"
                 >
-                  hello@akhila.example.com
+                  draditya.cim@gmail.com
                 </a>{" "}
                 and we&apos;ll book you manually.
               </p>

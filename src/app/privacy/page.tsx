@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Marquee, StickyCTA, Footer } from "@/components/site-chrome";
 
 /* =============================================================================
- * PRIVACY POLICY — Akhila PCOS Metabolic Programme
+ * PRIVACY POLICY — Akhila Metabolic Wellness Programme
  * =============================================================================
  * All content for /privacy lives here. Edit any clause directly below.
  * Pure server component — no interactivity, no client state.
@@ -15,7 +15,7 @@ import { Marquee, StickyCTA, Footer } from "@/components/site-chrome";
 export const metadata: Metadata = {
   title: "Privacy Policy",
   description:
-    "How Dr. Aditya & Akhila collect, use and protect your personal and health information.",
+    "How Dr. Aditya & Akhila collect, use and protect your personal information.",
 };
 
 /* Navbar + Footer live in src/components/site-chrome.tsx — see import at top. */
@@ -28,14 +28,14 @@ export const metadata: Metadata = {
 export default function PrivacyPage() {
   const updatedOn = "May 15, 2026";
   const intro =
-    "Your health data is sensitive. This Policy explains what we collect, why, how we protect it, and what choices you have. We follow Indian data protection law (including the DPDP Act, 2023) and reasonable global best practices.";
+    "Your personal information matters to us. This Policy explains what we collect, why, how we protect it, and what choices you have. We follow Indian data protection law (including the DPDP Act, 2023) and reasonable global best practices.";
 
   const sections: { heading: string; body: string | string[] }[] = [
     {
       heading: "1. What we collect",
       body: [
         "Contact details: full name, email address, phone number, city.",
-        "Health context you share during booking or during the call: age range, primary concern, cycle history, lab markers, lifestyle and stress information.",
+        "Context you choose to share during booking or during the call: age range, your main goal, and lifestyle, routine and wellbeing information.",
         "Marketing context: UTM parameters from the ad you came through (e.g. utm_source, utm_campaign, fbclid), used only to attribute and improve our marketing.",
         "Payment metadata: order ID, payment ID and amount. Card numbers are processed by Razorpay and never stored by us.",
       ],
@@ -52,7 +52,7 @@ export default function PrivacyPage() {
     },
     {
       heading: "3. How we store it",
-      body: "We store your data on access-controlled systems. Health information is treated with sensitivity and limited to the clinical team working on your case. Payments are tokenised by Razorpay; we never have access to your full card details.",
+      body: "We store your data on access-controlled systems. Any sensitive details you share are treated with care and limited to the team working with you. Payments are tokenised by Razorpay; we never have access to your full card details.",
     },
     {
       heading: "4. Who we share it with",
@@ -60,7 +60,7 @@ export default function PrivacyPage() {
         "Razorpay, for payment processing.",
         "Pabbly Connect, for transactional and follow-up automations.",
         "Our calendar/scheduling provider (e.g. Calendly), to confirm and remind you of your call.",
-        "We never sell your data. We never share your health information with advertisers.",
+        "We never sell your data. We never share the personal details you provide with advertisers.",
       ],
     },
     {
@@ -69,11 +69,11 @@ export default function PrivacyPage() {
     },
     {
       heading: "6. Your rights",
-      body: "You have the right to access, correct or delete your personal data. To exercise any of these rights, email hello@akhila.example.com from the address you used to book. We'll respond within 14 working days.",
+      body: "You have the right to access, correct or delete your personal data. To exercise any of these rights, email draditya.cim@gmail.com from the address you used to book. We'll respond within 14 working days.",
     },
     {
       heading: "7. Retention",
-      body: "We retain your data for as long as we have an active clinical relationship and for a reasonable period after, to meet legal and clinical-recordkeeping obligations. You can request earlier deletion at any time, subject to those obligations.",
+      body: "We retain your data for as long as we have an active working relationship and for a reasonable period after, to meet legal and recordkeeping obligations. You can request earlier deletion at any time, subject to those obligations.",
     },
     {
       heading: "8. Children",
@@ -89,7 +89,7 @@ export default function PrivacyPage() {
     },
     {
       heading: "11. Contact",
-      body: "Privacy questions: hello@akhila.example.com.",
+      body: "Privacy questions: draditya.cim@gmail.com.",
     },
   ];
 

@@ -55,13 +55,13 @@ function ArrowRightIcon({ className, strokeWidth = 2 }: { className?: string; st
  */
 export function Marquee() {
   const items = [
-    "Physician-Led Programme",
-    "30,000+ Patients Treated",
+    "Expert-Led Programme",
+    "30,000+ Women Helped",
     `${publicEnv.assessmentFeeDisplay} · Refundable Assessment`,
-    "Therapeutic IV Infusion Included",
+    "Nutrient Support Included",
     "Money-Back Guarantee",
-    "90-Day Clinical Protocol",
-    "15 Years of Clinical Practice",
+    "90-Day Structured Programme",
+    "15 Years of Experience",
     "Dr. Aditya & Akhila",
   ];
   const loop = [...items, ...items];
@@ -148,7 +148,7 @@ export function StickyCTA() {
                 Ready to address the <span className="italic text-gold-200">root?</span>
               </p>
               <p className="mt-0.5 text-[10.5px] font-medium uppercase tracking-[0.16em] text-cream-100/65 sm:text-[11px]">
-                Clinical assessment with Akhila · Refundable · No pressure
+                Assessment with Akhila · Refundable · No pressure
               </p>
             </div>
           </div>
@@ -156,11 +156,11 @@ export function StickyCTA() {
           <Link
             href="/checkout"
             onClick={onClick}
-            aria-label={`Book your clinical assessment call for ${publicEnv.assessmentFeeDisplay}`}
+            aria-label={`Book your assessment call for ${publicEnv.assessmentFeeDisplay}`}
             className="sticky-cta group flex-1 justify-center sm:flex-initial"
           >
             <span className="whitespace-nowrap leading-tight">
-              Book <span className="hidden sm:inline">My Clinical </span>
+              Book <span className="hidden sm:inline">My </span>
               Assessment<span className="hidden sm:inline"> Call</span>
               {" · "}
               {publicEnv.assessmentFeeDisplay}
@@ -207,8 +207,10 @@ export function Footer({ hasSticky = false }: { hasSticky?: boolean }) {
             <Link href="/refund" className="text-ink-600 transition-colors hover:text-wine-700">Refund</Link>
           </nav>
           <p className="mt-3 px-2 text-center text-[10.5px] leading-relaxed text-ink-400">
-            Clinical guidance, not a substitute for emergency medical care.
-            Individual results vary.
+            For educational and informational purposes only; not medical advice.
+            Individual results vary and are not typical or guaranteed. This
+            website is not affiliated with or endorsed by Meta. FACEBOOK and
+            INSTAGRAM are trademarks of Meta Platforms, Inc.
           </p>
         </div>
 
@@ -225,9 +227,9 @@ export function Footer({ hasSticky = false }: { hasSticky?: boolean }) {
               </span>
             </div>
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-ink-500">
-              A physician-led PCOS metabolic programme. We address the root,
-              not the symptom. Fasting insulin, HOMA-IR, cortisol, gut markers
-              first. Protocol second.
+              A root-cause metabolic wellness programme for women who have tried
+              everything. We focus on the underlying pattern, not quick fixes —
+              your energy, your rhythm, and how you feel day to day.
             </p>
           </div>
           <div>
@@ -241,9 +243,14 @@ export function Footer({ hasSticky = false }: { hasSticky?: boolean }) {
           <div>
             <h3 className="font-display text-sm font-medium text-ink-700">Disclaimer</h3>
             <p className="mt-4 text-xs leading-relaxed text-ink-400">
-              This programme provides clinical guidance and is not a substitute
-              for emergency medical care. Individual results vary. Not
-              affiliated with any social media platform.
+              All content and coaching services provided by Dr. Aditya and
+              Akhila are for educational and informational purposes only and do
+              not guarantee specific results. This is not medical advice. Always
+              consult a qualified healthcare professional before making changes
+              to your diet, exercise or lifestyle. Individual results vary and
+              are not typical or guaranteed. This website is not affiliated with
+              or endorsed by Meta. FACEBOOK and INSTAGRAM are trademarks of Meta
+              Platforms, Inc.
             </p>
           </div>
         </div>
@@ -252,7 +259,7 @@ export function Footer({ hasSticky = false }: { hasSticky?: boolean }) {
             with the "Made with care in India" line restored at sm+. */}
         <div className="mt-5 flex flex-col items-center gap-1.5 border-t border-ink-100 pt-4 text-center sm:mt-10 sm:flex-row sm:items-center sm:justify-between sm:gap-3 sm:pt-6 sm:text-left">
           <p className="text-[10.5px] text-ink-400 sm:text-xs">
-            © {year} Dr. Aditya &amp; Akhila Clinical Team. All rights reserved.
+            © {year} Dr. Aditya &amp; Akhila. All rights reserved.
           </p>
           <p className="hidden text-xs text-ink-400 sm:block">Made with care in India.</p>
         </div>

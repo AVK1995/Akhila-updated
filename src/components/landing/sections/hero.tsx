@@ -125,13 +125,13 @@ export function HeroSection() {
             variant="primary-lg"
             label={
               <>
-                Book <span className="hidden sm:inline">Your Clinical </span>
+                Book <span className="hidden sm:inline">Your </span>
                 Assessment<span className="hidden sm:inline"> Call</span>
                 {" · "}
                 {publicEnv.assessmentFeeDisplay}
               </>
             }
-            ariaLabel={`Book your clinical assessment call for ${publicEnv.assessmentFeeDisplay}`}
+            ariaLabel={`Book your assessment call for ${publicEnv.assessmentFeeDisplay}`}
             className="max-w-full [&>span]:whitespace-nowrap [&>span]:leading-tight [&>span]:text-[15px] sm:[&>span]:text-base"
             trailing={
               <ArrowRightIcon
@@ -143,7 +143,7 @@ export function HeroSection() {
           <p className="flex items-center gap-2 whitespace-nowrap text-[10px] font-medium uppercase tracking-[0.1em] text-ink-400 sm:text-[12px] sm:tracking-[0.16em]">
             <ShieldIcon className="h-3 w-3 text-gold-600" />
             <span className="sm:hidden">Call with Akhila · Refundable</span>
-            <span className="hidden sm:inline">Refundable · 30-min clinical assessment with Akhila</span>
+            <span className="hidden sm:inline">Refundable · 30-min assessment with Akhila</span>
           </p>
         </motion.div>
       </div>

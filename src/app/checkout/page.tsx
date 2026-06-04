@@ -921,7 +921,7 @@ export default function CheckoutPage() {
         amount: order.amount,
         currency: order.currency,
         name: "PCOS Metabolic Assessment",
-        description: "Akhila · 30-minute clinical assessment call",
+        description: "Akhila · 30-minute assessment call",
         order_id: order.orderId,
         prefill: {
           name: `${lead.firstName} ${lead.lastName}`.trim(),
@@ -1035,7 +1035,7 @@ export default function CheckoutPage() {
   }
 
   const benefits = [
-    "30-minute clinical assessment call with Akhila",
+    "30-minute assessment call with Akhila",
     "Full review of your PCOS history, symptoms & lifestyle",
     "Clear understanding of what is driving your specific pattern",
     "Honest assessment of whether the programme is the right fit",
@@ -1062,8 +1062,8 @@ export default function CheckoutPage() {
                 Book your PCOS metabolic assessment
               </h1>
               <p className="mt-3 text-[14px] leading-relaxed text-ink-500 sm:text-[15px]">
-                Fill in your details to secure your 30-minute clinical
-                assessment call with Akhila.
+                Fill in your details to secure your 30-minute assessment
+                call with Akhila.
               </p>
 
               <div className="mt-6 space-y-3.5 sm:mt-7">

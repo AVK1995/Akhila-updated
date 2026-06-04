@@ -123,13 +123,13 @@ export function CloserSection() {
               variant="primary-inverse-lg"
               label={
                 <>
-                  Book <span className="hidden sm:inline">My Clinical </span>
+                  Book <span className="hidden sm:inline">My </span>
                   Assessment<span className="hidden sm:inline"> Call</span>
                   {" · "}
                   {publicEnv.assessmentFeeDisplay}
                 </>
               }
-              ariaLabel="Book your clinical assessment call now"
+              ariaLabel="Book your assessment call now"
               className="[&>span]:whitespace-nowrap [&>span]:leading-tight"
               trailing={
                 <ArrowRightIcon

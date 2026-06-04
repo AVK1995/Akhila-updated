@@ -13,7 +13,7 @@ export function InvestmentSection() {
     "For women planning to conceive: a narrowing window and increasingly expensive interventions with every month of delay",
   ];
   const features = [
-    "30-minute clinical assessment call with Akhila",
+    "30-minute assessment call with Akhila",
     "Full review of your PCOS history, symptoms, and lifestyle",
     "Clear understanding of what is driving your specific pattern",
     "Honest assessment of whether the programme is the right fit for you",
@@ -99,7 +99,7 @@ export function InvestmentSection() {
                         {publicEnv.assessmentFeeDisplay}
                       </>
                     }
-                    ariaLabel="Book your clinical assessment call now"
+                    ariaLabel="Book your assessment call now"
                     className="w-full [&>span]:whitespace-nowrap [&>span]:leading-tight [&>span]:text-[15px] sm:[&>span]:text-base"
                     trailing={
                       <ArrowRightIcon

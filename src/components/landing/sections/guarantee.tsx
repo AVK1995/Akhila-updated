@@ -64,7 +64,7 @@ export function GuaranteeSection() {
                 <p className="mt-5 max-w-2xl text-[14.5px] leading-relaxed text-cream-100/80 sm:text-base">
                   If you finish the{" "}
                   <span className="font-medium text-gold-200">
-                    30-minute clinical assessment call with Akhila
+                    30-minute assessment call with Akhila
                   </span>{" "}
                   and feel{" "}
                   <span className="font-medium text-gold-200">

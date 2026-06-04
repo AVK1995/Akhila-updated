@@ -3,7 +3,7 @@ import { Marquee, StickyCTA, Footer } from "@/components/site-chrome";
 import { publicEnv } from "@/lib/env";
 
 /* =============================================================================
- * TERMS OF USE — Akhila PCOS Metabolic Programme
+ * TERMS OF USE — Akhila Metabolic Wellness Programme
  * =============================================================================
  * All content for /terms lives here. Edit any clause directly below.
  * Pure server component — no interactivity, no client state.
@@ -16,7 +16,7 @@ import { publicEnv } from "@/lib/env";
 export const metadata: Metadata = {
   title: "Terms of Use",
   description:
-    "Terms of Use for Dr. Aditya & Akhila's PCOS Metabolic Programme website and services.",
+    "Terms of Use for Dr. Aditya & Akhila's metabolic wellness programme website and services.",
 };
 
 /* Navbar + Footer live in src/components/site-chrome.tsx — see import at top. */
@@ -30,18 +30,18 @@ export default function TermsPage() {
   const updatedOn = "May 15, 2026";
   const fee = publicEnv.assessmentFeeDisplay;
   const intro =
-    `These Terms govern your access to and use of this website and any services offered through it, including the ${fee} PCOS Metabolic Assessment Call. By using this site or booking a call, you agree to these Terms.`;
+    `These Terms govern your access to and use of this website and any services offered through it, including the ${fee} metabolic assessment call. By using this site or booking a call, you agree to these Terms.`;
 
   const sections: { heading: string; body: string | string[] }[] = [
     {
       heading: "1. Who we are",
-      body: 'This site is operated by the clinical practice of Dr. Aditya & Akhila ("we", "us", "our"). Dr. Aditya is a registered family physician practising in India. Akhila is a clinical nutritionist. References to "the Programme" mean the 90-day PCOS Metabolic Programme described on this site.',
+      body: 'This site is operated by Dr. Aditya & Akhila ("we", "us", "our"). References to "the Programme" mean the 90-day metabolic wellness programme described on this site. Our content and sessions are educational and coaching in nature.',
     },
     {
       heading: "2. Nature of the services",
       body: [
-        `The services offered through this site include a paid clinical assessment call (${fee}) and, where appropriate, enrolment into the Programme. The services constitute personalised medical, nutritional and lifestyle guidance.`,
-        "Nothing on this site constitutes a diagnosis on its own. A clinical relationship begins only after the assessment call and, where applicable, written confirmation of enrolment.",
+        `The services offered through this site include a paid assessment call (${fee}) and, where appropriate, enrolment into the Programme. The services are educational and coaching in nature — personalised nutrition, lifestyle and wellbeing guidance — provided for informational purposes only.`,
+        "Our content and sessions are not medical advice and are not a substitute for care from your own doctor. Nothing on this site is a diagnosis or treatment. Always consult a qualified healthcare professional before making changes to your diet, exercise or lifestyle.",
       ],
     },
     {
@@ -50,7 +50,7 @@ export default function TermsPage() {
     },
     {
       heading: "4. Eligibility and accuracy",
-      body: "You must be 18 years or older to book a call. You agree that the information you provide during booking and during the call is accurate and complete to the best of your knowledge. We rely on this information to design any clinical guidance.",
+      body: "You must be 18 years or older to book a call. You agree that the information you provide during booking and during the call is accurate and complete to the best of your knowledge. We rely on this information to tailor our coaching and wellness guidance.",
     },
     {
       heading: "5. Payments",
@@ -65,7 +65,7 @@ export default function TermsPage() {
     },
     {
       heading: "7. Intellectual property",
-      body: "All content on this site, including text, graphics, branding, protocols and audio/video, is owned by us or licensed to us. You may not reproduce, redistribute or commercially exploit any portion without prior written permission.",
+      body: "All content on this site, including text, graphics, branding, programme materials and audio/video, is owned by us or licensed to us. You may not reproduce, redistribute or commercially exploit any portion without prior written permission.",
     },
     {
       heading: "8. User responsibilities",
@@ -85,7 +85,7 @@ export default function TermsPage() {
     },
     {
       heading: "12. Contact",
-      body: "For any questions about these Terms, email hello@akhila.example.com.",
+      body: "For any questions about these Terms, email draditya.cim@gmail.com.",
     },
   ];
 

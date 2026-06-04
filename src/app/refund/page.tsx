@@ -3,7 +3,7 @@ import { Marquee, StickyCTA, Footer } from "@/components/site-chrome";
 import { publicEnv } from "@/lib/env";
 
 /* =============================================================================
- * REFUND POLICY — Akhila PCOS Metabolic Programme
+ * REFUND POLICY — Akhila Metabolic Wellness Programme
  * =============================================================================
  * All content for /refund lives here. Edit any clause directly below.
  * Pure server component — no interactivity, no client state.
@@ -15,7 +15,7 @@ import { publicEnv } from "@/lib/env";
 
 export const metadata: Metadata = {
   title: "Refund Policy",
-  description: `How refunds work for the ${publicEnv.assessmentFeeDisplay} PCOS Metabolic Assessment Call and the Programme.`,
+  description: `How refunds work for the ${publicEnv.assessmentFeeDisplay} metabolic assessment call and the Programme.`,
 };
 
 /* Navbar + Footer live in src/components/site-chrome.tsx — see import at top. */
@@ -36,7 +36,7 @@ export default function RefundPage() {
       heading: `1. The ${fee} Assessment Call`,
       body: [
         "The assessment fee is fully refundable if you complete the 30-minute call with Akhila and feel no clarity was gained on your specific case. We are confident enough in the value of the call to make this offer unconditional.",
-        "To request a refund: email hello@akhila.example.com within 7 days of completing the call, using the same email you booked with. We will process the refund within 7–10 working days back to your original payment method.",
+        "To request a refund: email draditya.cim@gmail.com within 7 days of completing the call, using the same email you booked with. We will process the refund within 7–10 working days back to your original payment method.",
       ],
     },
     {
@@ -47,7 +47,7 @@ export default function RefundPage() {
       heading: "3. The 90-Day Programme",
       body: [
         "Programme pricing is determined after your assessment call, based on your specific case. We do not collect Programme fees online without first having had the assessment conversation.",
-        "Programme refunds, where applicable, are governed by the written agreement signed at the time of enrolment. Because the Programme includes time-bound clinical inputs (IV infusions, lab review, weekly check-ins), pro-rated refunds depend on the stage at which a cancellation request is made.",
+        "Programme refunds, where applicable, are governed by the written agreement signed at the time of enrolment. Because the Programme includes time-bound, personalised inputs delivered on a schedule, pro-rated refunds depend on the stage at which a cancellation request is made.",
       ],
     },
     {
@@ -64,7 +64,7 @@ export default function RefundPage() {
     },
     {
       heading: "7. Contact",
-      body: "Refund requests: hello@akhila.example.com (use the same email as your booking).",
+      body: "Refund requests: draditya.cim@gmail.com (use the same email as your booking).",
     },
   ];
 
