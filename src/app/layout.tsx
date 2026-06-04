@@ -203,6 +203,48 @@ const META_PIXEL_SNIPPET = META_PIXEL_ID
 `
   : "";
 
+/**
+ * GOOGLE ANALYTICS 4 + MICROSOFT CLARITY
+ * ---------------------------------------
+ * Vendor-neutral analytics (NOT Meta). Hard-gated to the production hostname —
+ * the same guard as the Meta pixel — so localhost dev and Vercel previews send
+ * ZERO hits and never pollute GA4 reports or Clarity session recordings. The
+ * IDs are public (visible in page source), so they live as literals here;
+ * setting either to "" cleanly disables that tracker.
+ */
+const GA4_MEASUREMENT_ID: string = "G-08N5C538K1";
+const CLARITY_PROJECT_ID: string = "x1rh78gic1";
+
+const GA4_SNIPPET = GA4_MEASUREMENT_ID
+  ? `
+(function(){
+  if (window.location.hostname.toLowerCase() !== '${META_PROD_HOSTNAME}') return;
+  var s = document.createElement('script');
+  s.async = true;
+  s.src = 'https://www.googletagmanager.com/gtag/js?id=${GA4_MEASUREMENT_ID}';
+  document.head.appendChild(s);
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){ window.dataLayer.push(arguments); }
+  window.gtag = gtag;
+  gtag('js', new Date());
+  gtag('config', '${GA4_MEASUREMENT_ID}');
+})();
+`
+  : "";
+
+const CLARITY_SNIPPET = CLARITY_PROJECT_ID
+  ? `
+(function(){
+  if (window.location.hostname.toLowerCase() !== '${META_PROD_HOSTNAME}') return;
+  (function(c,l,a,r,i,t,y){
+    c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+    t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+    y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+  })(window, document, "clarity", "script", "${CLARITY_PROJECT_ID}");
+})();
+`
+  : "";
+
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
@@ -245,6 +287,14 @@ export default function RootLayout({
             fires the first PageView. All gated on NEXT_PUBLIC_META_PIXEL_ID. */}
         {META_PIXEL_ID && (
           <script dangerouslySetInnerHTML={{ __html: META_PIXEL_SNIPPET }} />
+        )}
+        {/* Google Analytics 4 — prod-host gated (vendor-neutral, not Meta) */}
+        {GA4_SNIPPET && (
+          <script dangerouslySetInnerHTML={{ __html: GA4_SNIPPET }} />
+        )}
+        {/* Microsoft Clarity — prod-host gated (vendor-neutral, not Meta) */}
+        {CLARITY_SNIPPET && (
+          <script dangerouslySetInnerHTML={{ __html: CLARITY_SNIPPET }} />
         )}
       </head>
       <body className="min-h-screen bg-cream-50 antialiased">
