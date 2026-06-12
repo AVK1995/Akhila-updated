@@ -1,12 +1,14 @@
 "use client";
 
+import { useRef } from "react";
 import { motion } from "motion/react";
-import { CtaLink, LazyVimeoVideo } from "../shared-client";
+import { CtaLink, LazyVimeoVideo, type LazyVimeoVideoHandle } from "../shared-client";
 import { FloatingOrbs } from "../shared-static";
 import { ArrowRightIcon, PlayIcon, ShieldIcon } from "../icons";
 import { publicEnv } from "@/lib/env";
 
 export function HeroSection() {
+  const videoRef = useRef<LazyVimeoVideoHandle>(null);
   return (
     <section
       id="hero"
@@ -68,14 +70,16 @@ export function HeroSection() {
           PCOS.
         </motion.p>
 
-        {/* 4. Video caption — glass pill that mirrors the eyebrow pill above,
-            with a filled play badge so it reads as a clear "play this" prompt
-            without duplicating the big play button inside the thumbnail. */}
-        <motion.div
+        {/* 4. Video caption — clickable glass pill. Clicking it opens the VSL
+            in FULLSCREEN with sound (the thumbnail itself plays inline). */}
+        <motion.button
+          type="button"
+          onClick={() => videoRef.current?.play({ fullscreen: true })}
+          aria-label="Play video in fullscreen: Why Your PCOS Keeps Coming Back"
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.22, ease: [0.16, 1, 0.3, 1] }}
-          className="glass-pill inline-flex items-center gap-2.5 rounded-full py-1.5 pl-1.5 pr-4 font-display text-[13px] font-medium text-ink-800 shadow-premium-sm sm:mt-6 sm:py-2 sm:pl-2 sm:pr-5 sm:text-[14px]"
+          className="glass-pill inline-flex cursor-pointer items-center gap-2.5 rounded-full py-1.5 pl-1.5 pr-4 font-display text-[13px] font-medium text-ink-800 shadow-premium-sm transition-transform duration-200 hover:-translate-y-0.5 active:scale-[0.98] sm:mt-6 sm:py-2 sm:pl-2 sm:pr-5 sm:text-[14px]"
         >
           <span
             aria-hidden="true"
@@ -85,7 +89,7 @@ export function HeroSection() {
           </span>
           Watch:{" "}
           <span className="text-wine-700">Why Your PCOS Keeps Coming Back</span>
-        </motion.div>
+        </motion.button>
 
         {/* 5. Hero video */}
         <motion.div
@@ -105,6 +109,7 @@ export function HeroSection() {
               }}
             />
             <LazyVimeoVideo
+              ref={videoRef}
               videoId="1196886151"
               title="Why Your PCOS Keeps Coming Back"
               aspect="16/9"

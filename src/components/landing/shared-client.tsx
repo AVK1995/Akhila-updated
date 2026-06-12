@@ -3,13 +3,16 @@
 import Link from "next/link";
 import { motion, useReducedMotion } from "motion/react";
 import {
+  forwardRef,
   useCallback,
   useEffect,
+  useImperativeHandle,
   useRef,
   useState,
   type ComponentProps,
   type ReactNode,
 } from "react";
+import { flushSync } from "react-dom";
 import { cn } from "@/lib/utils";
 import { withUtm } from "@/lib/utm";
 import { trackVideoEvent } from "@/lib/analytics";
@@ -118,19 +121,13 @@ function vumbnailUrl(videoId: string, size: "" | "_large" | "_medium" | "_small"
   return `${VUMBNAIL_BASE}/${videoId}${size}.jpg`;
 }
 
-/**
- * LazyVimeoVideo — premium thumbnail by default; swaps to real Vimeo iframe on click.
- */
-export function LazyVimeoVideo({
-  videoId,
-  hash,
-  aspect = "16/9",
-  title,
-  posterSrc,
-  posterAlt,
-  className,
-  playSize = "md",
-}: {
+/** Imperative handle so an outside element (e.g. a "Watch" caption) can start
+ *  playback. `fullscreen: true` opens it fullscreen WITH sound. */
+export type LazyVimeoVideoHandle = {
+  play: (opts?: { fullscreen?: boolean }) => void;
+};
+
+type LazyVimeoVideoProps = {
   /** Vimeo numeric id. Empty string → renders the placeholder frame. */
   videoId: string;
   hash?: string;
@@ -140,8 +137,31 @@ export function LazyVimeoVideo({
   posterAlt?: string;
   className?: string;
   playSize?: "sm" | "md" | "lg";
-}) {
+};
+
+/**
+ * LazyVimeoVideo — premium thumbnail by default; swaps to the real Vimeo iframe
+ * on click and plays inline WITH sound. An external trigger can call the
+ * exposed `play({ fullscreen: true })` handle to open it fullscreen instead.
+ */
+export const LazyVimeoVideo = forwardRef<LazyVimeoVideoHandle, LazyVimeoVideoProps>(
+  function LazyVimeoVideo(
+    {
+      videoId,
+      hash,
+      aspect = "16/9",
+      title,
+      posterSrc,
+      posterAlt,
+      className,
+      playSize = "md",
+    },
+    ref
+  ) {
   const [playing, setPlaying] = useState(false);
+  // Whether the current playback was started in fullscreen mode. Drives
+  // playsinline (iPhone native-fullscreen handoff = the only path to iOS audio).
+  const [fullscreen, setFullscreen] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const aspectClass = {
     "16/9": "aspect-[16/9]",
@@ -173,6 +193,15 @@ export function LazyVimeoVideo({
       if (cancelled) return;
       player = new Player(iframe);
 
+      // Guarantee sound: some browsers (notably iOS Safari) ignore muted=0 and
+      // start muted to satisfy autoplay. Force unmute + full volume once the
+      // player is ready. iPhone playback is already in native fullscreen here
+      // (playsinline=0), so audio is permitted.
+      player.ready().then(() => {
+        player?.setMuted(false).catch(() => {});
+        player?.setVolume(1).catch(() => {});
+      });
+
       player.on("play", () => {
         if (started) return;
         started = true;
@@ -201,6 +230,32 @@ export function LazyVimeoVideo({
     };
   }, [playing, videoId, title]);
 
+  // Start playback. `fs` = open fullscreen (used by the "Watch" caption click);
+  // the plain thumbnail click plays inline. flushSync mounts the iframe before
+  // the fullscreen request so that call stays inside the user-gesture window
+  // (desktop/Android requirement).
+  const startPlayback = useCallback(
+    (fs: boolean) => {
+      trackVideoEvent("VideoPlayClick", { video_id: videoId, video_title: title });
+      flushSync(() => {
+        setFullscreen(fs);
+        setPlaying(true);
+      });
+      if (fs) {
+        // Desktop/Android: take the iframe fullscreen. iPhone rejects this but
+        // is already going fullscreen natively via playsinline=0.
+        iframeRef.current?.requestFullscreen?.().catch(() => {});
+      }
+    },
+    [videoId, title]
+  );
+
+  useImperativeHandle(
+    ref,
+    () => ({ play: (opts) => startPlayback(opts?.fullscreen ?? false) }),
+    [startPlayback]
+  );
+
   // No video id wired yet → branded placeholder frame that mirrors the live
   // player (play badge, no text). Drop the real Vimeo id into `videoId` later
   // and the full thumbnail → unmuted click-to-play → analytics flow lights up
@@ -219,10 +274,11 @@ export function LazyVimeoVideo({
     const params = new URLSearchParams({
       autoplay: "1",
       // Click is a user gesture, so the browser allows playback WITH sound.
-      // muted=0 makes the unmuted intent explicit; playsinline keeps it in
-      // the hero frame on iOS instead of jumping to native fullscreen.
       muted: "0",
-      playsinline: "1",
+      // Fullscreen play uses playsinline=0 so iPhone hands off to its native
+      // fullscreen player (the only path to audio on iOS). Inline play keeps
+      // it in-frame (=1).
+      playsinline: fullscreen ? "0" : "1",
       title: "0",
       byline: "0",
       portrait: "0",
@@ -250,13 +306,12 @@ export function LazyVimeoVideo({
     );
   }
 
+  // Plain thumbnail click → play inline (in-frame) with sound. Fullscreen is
+  // reserved for the external "Watch" caption via the imperative handle.
   return (
     <button
       type="button"
-      onClick={() => {
-        trackVideoEvent("VideoPlayClick", { video_id: videoId, video_title: title });
-        setPlaying(true);
-      }}
+      onClick={() => startPlayback(false)}
       aria-label={`Play video: ${title}`}
       className={cn("block w-full cursor-pointer", className)}
     >
@@ -268,4 +323,4 @@ export function LazyVimeoVideo({
       />
     </button>
   );
-}
+});
