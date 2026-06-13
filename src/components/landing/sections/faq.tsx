@@ -2,10 +2,11 @@
 
 import { Reveal } from "../shared-client";
 import { publicEnv } from "@/lib/env";
+import { FREE_FUNNEL_MODE } from "@/lib/funnel";
 
 const fee = publicEnv.assessmentFeeDisplay;
 
-const faqs = [
+const faqs: { q: string; a: string; hideInFree?: boolean }[] = [
   {
     q: "What exactly happens on the 30-minute assessment call?",
     a: "Akhila walks through your PCOS history, current symptoms, sleep, stress, gut, and what you have already tried. You leave with a clear read on what is driving your specific pattern and an honest assessment of whether the programme is the right fit for you. Dr. Aditya joins only after you enrol; the first call is with Akhila.",
@@ -25,6 +26,7 @@ const faqs = [
   {
     q: "What if I do not feel I got clarity from the call?",
     a: `We refund the ${fee} in full. No friction, no chasing, no cooling-off period. Provided you attend the full call and answer Akhila's questions honestly, the refund is processed within 7 working days.`,
+    hideInFree: true,
   },
   {
     q: "How soon can I start the programme after my assessment?",
@@ -41,6 +43,8 @@ const faqs = [
 ];
 
 export function FAQSection() {
+  // Free mode hides the refund/payment-specific question(s).
+  const visibleFaqs = faqs.filter((f) => !(FREE_FUNNEL_MODE && f.hideInFree));
   return (
     <section id="faq" className="relative scroll-mt-20 py-14 sm:py-20 lg:py-24">
       <div className="container-tight">
@@ -59,7 +63,7 @@ export function FAQSection() {
         </Reveal>
 
         <div className="mx-auto mt-12 max-w-3xl space-y-3 sm:mt-14">
-          {faqs.map((f, i) => (
+          {visibleFaqs.map((f, i) => (
             <Reveal key={f.q} delay={i * 0.04}>
               <details className="group rounded-2xl border border-ink-100 bg-white shadow-premium-sm transition-all duration-500 ease-smooth open:border-gold-200/80 open:shadow-premium hover:border-gold-200/70">
                 <summary className="flex cursor-pointer list-none items-start justify-between gap-4 px-5 py-4 sm:px-6 sm:py-5">

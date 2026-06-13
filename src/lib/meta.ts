@@ -31,6 +31,13 @@ import { originOnly } from "./utils";
 
 const CAPI_VERSION = "v25.0";
 const CUSTOM_EVENT_NAME = "sales";
+/**
+ * Lead event name (FREE_FUNNEL_MODE). Fired as a CUSTOM event, NOT the Meta
+ * standard `Lead` — Meta blocks standard events by name for health-categorized
+ * datasets, so a custom event with the same readable name keeps flowing while
+ * staying immune to name-based blocking (same posture as `sales`).
+ */
+const LEAD_EVENT_NAME = "Lead";
 
 function sha256(value: string): string {
   return crypto.createHash("sha256").update(value).digest("hex");
@@ -190,6 +197,116 @@ export async function sendMetaCapiEvent(
   } catch (err) {
     const message = err instanceof Error ? err.message : "unknown";
     console.error("[meta-capi] fetch error:", message);
+    return { ok: false, error: message };
+  }
+}
+
+export type MetaLeadParams = {
+  /** leadId — deterministic event_id for dedup (browser has no Lead event). */
+  eventId: string;
+  email: string;
+  phone: string;
+  firstName: string;
+  lastName: string;
+  /** Free-form location (city). Letters-only lowercased + hashed as `ct`. */
+  city: string;
+  countryCode: string;
+  eventSourceUrl: string;
+  fbc: string | undefined;
+  fbp: string | undefined;
+  clientIp: string | undefined;
+  clientUserAgent: string | undefined;
+};
+
+/**
+ * Fire ONE custom `Lead` event on free-flow form submission. Same user_data
+ * matching shape + hashing as the purchase `sales` event (EMQ 9.5+), but with
+ * NO custom_data (no value/currency — there is no payment). event_id = leadId.
+ *
+ * No-ops (`{ ok: true, eventsReceived: 0 }`) when pixel id or access token is
+ * missing, so callers don't special-case the disabled state.
+ */
+export async function sendMetaLeadEvent(
+  params: MetaLeadParams
+): Promise<MetaCapiResult> {
+  const env = getServerEnv();
+  const pixelId = publicEnv.metaPixelId;
+  const token = env.META_CAPI_ACCESS_TOKEN;
+
+  if (!pixelId || !token) {
+    return { ok: true, eventsReceived: 0 };
+  }
+
+  const normalisedEmail = params.email.trim().toLowerCase();
+  const hashedEmail = sha256(normalisedEmail);
+  const externalId = sha256(normalisedEmail);
+
+  const digitsPhone = params.phone.replace(/\D/g, "");
+  const hashedPhone = digitsPhone ? sha256(digitsPhone) : undefined;
+
+  const fn = params.firstName.trim().toLowerCase();
+  const ln = params.lastName.trim().toLowerCase();
+  const ct = params.city.trim().toLowerCase().replace(/[^a-z]/g, "");
+  const country = params.countryCode.trim().toLowerCase();
+
+  const hashedFn = fn ? sha256(fn) : undefined;
+  const hashedLn = ln ? sha256(ln) : undefined;
+  const hashedCt = ct ? sha256(ct) : undefined;
+  const hashedCountry = country ? sha256(country) : undefined;
+
+  const events = [
+    {
+      event_name: LEAD_EVENT_NAME,
+      event_time: Math.floor(Date.now() / 1000),
+      event_id: params.eventId,
+      action_source: "website" as const,
+      event_source_url: originOnly(params.eventSourceUrl),
+      user_data: {
+        em: [hashedEmail],
+        ...(hashedPhone && { ph: [hashedPhone] }),
+        ...(hashedFn && { fn: [hashedFn] }),
+        ...(hashedLn && { ln: [hashedLn] }),
+        ...(hashedCt && { ct: [hashedCt] }),
+        ...(hashedCountry && { country: [hashedCountry] }),
+        external_id: [externalId],
+        ...(params.fbc && { fbc: params.fbc }),
+        ...(params.fbp && { fbp: params.fbp }),
+        ...(params.clientUserAgent && { client_user_agent: params.clientUserAgent }),
+        ...(params.clientIp && { client_ip_address: params.clientIp }),
+      },
+    },
+  ];
+
+  const testEventCode = env.META_CAPI_TEST_EVENT_CODE?.trim();
+  const body: Record<string, unknown> = { data: events };
+  if (testEventCode) body.test_event_code = testEventCode;
+
+  const url = `https://graph.facebook.com/${CAPI_VERSION}/${pixelId}/events?access_token=${encodeURIComponent(token)}`;
+
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+      cache: "no-store",
+    });
+    if (!res.ok) {
+      const text = await res.text().catch(() => "");
+      console.error("[meta-capi] lead HTTP", res.status, text);
+      return { ok: false, error: `http_${res.status}` };
+    }
+    const json = (await res.json().catch(() => ({}))) as {
+      events_received?: number;
+      fbtrace_id?: string;
+    };
+    return {
+      ok: true,
+      eventsReceived: json.events_received ?? 0,
+      fbtraceId: json.fbtrace_id,
+    };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "unknown";
+    console.error("[meta-capi] lead fetch error:", message);
     return { ok: false, error: message };
   }
 }

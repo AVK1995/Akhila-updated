@@ -4,6 +4,8 @@ import { Suspense } from "react";
 import "./globals.css";
 import { publicEnv } from "@/lib/env";
 import { MetaPageView } from "@/components/MetaPageView";
+import { LeadModalHost } from "@/components/lead-modal";
+import { FREE_FUNNEL_MODE } from "@/lib/funnel";
 
 const fraunces = Fraunces({
   subsets: ["latin"],
@@ -23,7 +25,9 @@ const siteUrl = publicEnv.siteUrl;
 const siteName = publicEnv.siteName;
 const fee = publicEnv.assessmentFeeDisplay;
 const description =
-  `Dr. Aditya maps your full metabolic picture first, finds what's actually holding your body back, then builds your 90-day plan around it. Get your energy and rhythm back. Expert-led, root-cause programme. Assessment from ${fee}.`;
+  `Dr. Aditya maps your full metabolic picture first, finds what's actually holding your body back, then builds your 90-day plan around it. Get your energy and rhythm back. Expert-led, root-cause programme. ${
+    FREE_FUNNEL_MODE ? "Free initial consultation." : `Assessment from ${fee}.`
+  }`;
 
 /**
  * Root metadata. Page files that are "use client" (landing/checkout/book-a-call)
@@ -269,8 +273,8 @@ export default function RootLayout({
               areaServed: "IN",
               offers: {
                 "@type": "Offer",
-                name: "Metabolic Assessment",
-                price: String(publicEnv.assessmentFeeInr),
+                name: FREE_FUNNEL_MODE ? "Free Consultation" : "Metabolic Assessment",
+                price: FREE_FUNNEL_MODE ? "0" : String(publicEnv.assessmentFeeInr),
                 priceCurrency: "INR",
                 availability: "https://schema.org/InStock",
               },
@@ -299,6 +303,9 @@ export default function RootLayout({
       </head>
       <body className="min-h-screen bg-cream-50 antialiased">
         {children}
+        {/* Global lead-capture modal (FREE_FUNNEL_MODE). Mounted once; any CTA
+            opens it via openLeadModal(). Rendered only in free mode. */}
+        {FREE_FUNNEL_MODE && <LeadModalHost />}
         {/* JS-disabled fallback for the Meta Pixel — server-side <img> hit so
             even no-JS visitors register a PageView. No MAM, no event_id. */}
         {META_PIXEL_ID && (

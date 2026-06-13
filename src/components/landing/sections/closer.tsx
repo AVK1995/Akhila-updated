@@ -5,6 +5,8 @@ import { animate, useInView, useReducedMotion } from "motion/react";
 import { Reveal, CtaLink } from "../shared-client";
 import { ArrowRightIcon } from "../icons";
 import { publicEnv } from "@/lib/env";
+import { FREE_FUNNEL_MODE } from "@/lib/funnel";
+import { UrgencyTimer } from "@/components/urgency-timer";
 
 /**
  * StatCounter: animates a numeric value when it scrolls into view.
@@ -66,8 +68,8 @@ export function CloserSection() {
   const stats = [
     { value: "30,000+", label: "Patients" },
     { value: "90 Days", label: "Programme" },
-    { value: "30 Min", label: "Assessment" },
-    { value: publicEnv.assessmentFeeDisplay, label: "To Start" },
+    { value: "30 Min", label: FREE_FUNNEL_MODE ? "Consultation" : "Assessment" },
+    { value: FREE_FUNNEL_MODE ? "Free" : publicEnv.assessmentFeeDisplay, label: "To Start" },
   ];
   return (
     <section id="closer" className="relative scroll-mt-20 overflow-hidden bg-wine-gradient py-20 text-cream-50 sm:py-28 lg:py-32">
@@ -122,15 +124,26 @@ export function CloserSection() {
               href="/checkout"
               variant="primary-inverse-lg"
               label={
-                <>
-                  Book <span className="hidden sm:inline">My </span>
-                  Assessment<span className="hidden sm:inline"> Call</span>
-                  {" · "}
-                  {publicEnv.assessmentFeeDisplay}
-                </>
+                FREE_FUNNEL_MODE ? (
+                  <>
+                    Book <span className="hidden sm:inline">My </span>Free
+                    Consultation
+                  </>
+                ) : (
+                  <>
+                    Book <span className="hidden sm:inline">My </span>
+                    Assessment<span className="hidden sm:inline"> Call</span>
+                    {" · "}
+                    {publicEnv.assessmentFeeDisplay}
+                  </>
+                )
               }
-              ariaLabel="Book your assessment call now"
-              className="[&>span]:whitespace-nowrap [&>span]:leading-tight"
+              ariaLabel={
+                FREE_FUNNEL_MODE
+                  ? "Book your free consultation now"
+                  : "Book your assessment call now"
+              }
+              className="cta-attention [&>span]:whitespace-nowrap [&>span]:leading-tight"
               trailing={
                 <ArrowRightIcon
                   className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5"
@@ -141,6 +154,7 @@ export function CloserSection() {
             <p className="text-center text-[13px] leading-relaxed text-cream-100/70 sm:text-sm">
               You will not leave the call with Akhila confused. Click above and secure your slot.
             </p>
+            {FREE_FUNNEL_MODE && <UrgencyTimer variant="dark" />}
           </div>
         </Reveal>
       </div>
