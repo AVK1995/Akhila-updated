@@ -3,6 +3,7 @@ import { cn } from "@/lib/utils";
 import { Marquee, Footer } from "@/components/site-chrome";
 import { MamReapply } from "@/components/MamReapply";
 import { LazyVimeoVideo } from "@/components/landing/shared-client";
+import { FREE_FUNNEL_MODE } from "@/lib/funnel";
 
 /**
  * THANK-YOU WELCOME VIDEO
@@ -82,11 +83,16 @@ export default function ThankYouPage() {
       title: "What to expect on your call with Akhila",
       body: "Akhila will walk through your PCOS history, current symptoms, sleep, stress and what you have already tried, then give you a clear read on whether the programme is the right fit. Dr. Aditya joins your protocol only once you enrol.",
     },
-    {
-      icon: ShieldIcon,
-      title: "Refund policy",
-      body: "If you finish the call with Akhila without clarity on your next step, your assessment fee is fully refunded. No questions asked.",
-    },
+    // Refund policy step is payment-specific — hidden in free mode.
+    ...(FREE_FUNNEL_MODE
+      ? []
+      : [
+          {
+            icon: ShieldIcon,
+            title: "Refund policy",
+            body: "If you finish the call with Akhila without clarity on your next step, your assessment fee is fully refunded. No questions asked.",
+          },
+        ]),
   ];
   return (
     <>

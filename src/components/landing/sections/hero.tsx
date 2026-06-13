@@ -6,6 +6,8 @@ import { CtaLink, LazyVimeoVideo, type LazyVimeoVideoHandle } from "../shared-cl
 import { FloatingOrbs } from "../shared-static";
 import { ArrowRightIcon, PlayIcon, ShieldIcon } from "../icons";
 import { publicEnv } from "@/lib/env";
+import { FREE_FUNNEL_MODE } from "@/lib/funnel";
+import { UrgencyTimer } from "@/components/urgency-timer";
 
 export function HeroSection() {
   const videoRef = useRef<LazyVimeoVideoHandle>(null);
@@ -41,7 +43,9 @@ export function HeroSection() {
           className="glass-pill inline-flex max-w-full items-center gap-2 whitespace-nowrap rounded-full px-3 py-1.5 text-[9.5px] font-semibold uppercase tracking-[0.08em] text-wine-700 shadow-premium-sm sm:gap-2.5 sm:px-5 sm:py-2 sm:text-[12px] sm:tracking-[0.16em]"
         >
           <span className="live-dot" />
-          The PCOS Metabolic Assessment · Only {publicEnv.assessmentFeeDisplay}
+          {FREE_FUNNEL_MODE
+            ? "The PCOS Metabolic Programme · Free Consultation"
+            : `The PCOS Metabolic Assessment · Only ${publicEnv.assessmentFeeDisplay}`}
         </motion.div>
 
         {/* 2. Headline */}
@@ -129,15 +133,26 @@ export function HeroSection() {
             href="/checkout"
             variant="primary-lg"
             label={
-              <>
-                Book <span className="hidden sm:inline">Your </span>
-                Assessment<span className="hidden sm:inline"> Call</span>
-                {" · "}
-                {publicEnv.assessmentFeeDisplay}
-              </>
+              FREE_FUNNEL_MODE ? (
+                <>
+                  Book <span className="hidden sm:inline">Your </span>Free
+                  Consultation
+                </>
+              ) : (
+                <>
+                  Book <span className="hidden sm:inline">Your </span>
+                  Assessment<span className="hidden sm:inline"> Call</span>
+                  {" · "}
+                  {publicEnv.assessmentFeeDisplay}
+                </>
+              )
             }
-            ariaLabel={`Book your assessment call for ${publicEnv.assessmentFeeDisplay}`}
-            className="max-w-full [&>span]:whitespace-nowrap [&>span]:leading-tight [&>span]:text-[15px] sm:[&>span]:text-base"
+            ariaLabel={
+              FREE_FUNNEL_MODE
+                ? "Book your free consultation"
+                : `Book your assessment call for ${publicEnv.assessmentFeeDisplay}`
+            }
+            className="cta-attention max-w-full [&>span]:whitespace-nowrap [&>span]:leading-tight [&>span]:text-[15px] sm:[&>span]:text-base"
             trailing={
               <ArrowRightIcon
                 className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5"
@@ -147,9 +162,19 @@ export function HeroSection() {
           />
           <p className="flex items-center gap-2 whitespace-nowrap text-[10px] font-medium uppercase tracking-[0.1em] text-ink-400 sm:text-[12px] sm:tracking-[0.16em]">
             <ShieldIcon className="h-3 w-3 text-gold-600" />
-            <span className="sm:hidden">Call with Akhila · Refundable</span>
-            <span className="hidden sm:inline">Refundable · 30-min assessment with Akhila</span>
+            {FREE_FUNNEL_MODE ? (
+              <>
+                <span className="sm:hidden">Free call with Akhila</span>
+                <span className="hidden sm:inline">Free · 30-min consultation with Akhila</span>
+              </>
+            ) : (
+              <>
+                <span className="sm:hidden">Call with Akhila · Refundable</span>
+                <span className="hidden sm:inline">Refundable · 30-min assessment with Akhila</span>
+              </>
+            )}
           </p>
+          {FREE_FUNNEL_MODE && <UrgencyTimer className="mt-0.5" />}
         </motion.div>
       </div>
     </section>

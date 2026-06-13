@@ -11,6 +11,7 @@
  * Edit copy/layout/animations inside the relevant section file.
  */
 
+import { FREE_FUNNEL_MODE } from "@/lib/funnel";
 import { Marquee, StickyCTA, Footer } from "@/components/site-chrome";
 import { HeroSection } from "@/components/landing/sections/hero";
 import { DeliverablesSection } from "@/components/landing/sections/deliverables";
@@ -34,8 +35,10 @@ export default function LandingPage() {
         <AkshitaTestimonialSection />
         <TeamSection />
         <EligibilitySection />
-        <InvestmentSection />
-        <GuaranteeSection />
+        {/* Investment (pricing) + Guarantee (money-back/refund) are payment-
+            specific — hidden in free mode, restored when FREE_FUNNEL_MODE=false. */}
+        {!FREE_FUNNEL_MODE && <InvestmentSection />}
+        {!FREE_FUNNEL_MODE && <GuaranteeSection />}
         <CloserSection />
         <FAQSection />
       </main>

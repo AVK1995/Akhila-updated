@@ -16,6 +16,7 @@ import { flushSync } from "react-dom";
 import { cn } from "@/lib/utils";
 import { withUtm } from "@/lib/utm";
 import { trackVideoEvent } from "@/lib/analytics";
+import { FREE_FUNNEL_MODE, openLeadModal } from "@/lib/funnel";
 import { VideoThumbnail } from "./shared-static";
 
 /**
@@ -81,7 +82,15 @@ export function CtaLink({
 } & Omit<ComponentProps<typeof Link>, "href" | "children">) {
   const onClick = useCallback(
     (e: React.MouseEvent<HTMLAnchorElement>) => {
-      if (!preserveUtm || typeof window === "undefined") return;
+      if (typeof window === "undefined") return;
+      // Free mode: every checkout CTA opens the lead-capture modal instead of
+      // routing to the paid /checkout page.
+      if (FREE_FUNNEL_MODE && href === "/checkout") {
+        e.preventDefault();
+        openLeadModal();
+        return;
+      }
+      if (!preserveUtm) return;
       const target = withUtm(href);
       if (target !== href) {
         e.preventDefault();
@@ -236,6 +245,14 @@ export const LazyVimeoVideo = forwardRef<LazyVimeoVideoHandle, LazyVimeoVideoPro
   // (desktop/Android requirement).
   const startPlayback = useCallback(
     (fs: boolean) => {
+      // Already playing → the "Watch" caption is purely a fullscreen trigger:
+      // fullscreen the SAME iframe without remounting (no restart, same Vimeo
+      // player, same analytics events). Touching state here would reload the
+      // iframe (playsinline param) and restart the video.
+      if (playing) {
+        if (fs) iframeRef.current?.requestFullscreen?.().catch(() => {});
+        return;
+      }
       trackVideoEvent("VideoPlayClick", { video_id: videoId, video_title: title });
       flushSync(() => {
         setFullscreen(fs);
@@ -247,7 +264,7 @@ export const LazyVimeoVideo = forwardRef<LazyVimeoVideoHandle, LazyVimeoVideoPro
         iframeRef.current?.requestFullscreen?.().catch(() => {});
       }
     },
-    [videoId, title]
+    [playing, videoId, title]
   );
 
   useImperativeHandle(

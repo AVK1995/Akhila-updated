@@ -25,6 +25,7 @@ import { useCallback, useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { withUtm } from "@/lib/utm";
 import { publicEnv } from "@/lib/env";
+import { FREE_FUNNEL_MODE, openLeadModal } from "@/lib/funnel";
 
 /* ─────────────────────────────────────────────────────────────────────────────
  * Local icon — only the right-arrow chevron used inside StickyCTA
@@ -54,16 +55,26 @@ function ArrowRightIcon({ className, strokeWidth = 2 }: { className?: string; st
  * ─────────────────────────────────────────────────────────────────────────────
  */
 export function Marquee() {
-  const items = [
-    "Expert-Led Programme",
-    "30,000+ Women Helped",
-    `${publicEnv.assessmentFeeDisplay} · Refundable Assessment`,
-    "Nutrient Support Included",
-    "Money-Back Guarantee",
-    "90-Day Structured Programme",
-    "15 Years of Experience",
-    "Dr. Aditya & Akhila",
-  ];
+  const items = FREE_FUNNEL_MODE
+    ? [
+        "Expert-Led Programme",
+        "30,000+ Women Helped",
+        "Free PCOS Consultation",
+        "Nutrient Support Included",
+        "90-Day Structured Programme",
+        "15 Years of Experience",
+        "Dr. Aditya & Akhila",
+      ]
+    : [
+        "Expert-Led Programme",
+        "30,000+ Women Helped",
+        `${publicEnv.assessmentFeeDisplay} · Refundable Assessment`,
+        "Nutrient Support Included",
+        "Money-Back Guarantee",
+        "90-Day Structured Programme",
+        "15 Years of Experience",
+        "Dr. Aditya & Akhila",
+      ];
   const loop = [...items, ...items];
   return (
     <div
@@ -109,6 +120,12 @@ export function StickyCTA() {
 
   const onClick = useCallback((e: React.MouseEvent<HTMLAnchorElement>) => {
     if (typeof window === "undefined") return;
+    // Free mode: open the lead-capture modal instead of routing to /checkout.
+    if (FREE_FUNNEL_MODE) {
+      e.preventDefault();
+      openLeadModal();
+      return;
+    }
     const target = withUtm("/checkout");
     if (target !== "/checkout") {
       e.preventDefault();
@@ -148,7 +165,9 @@ export function StickyCTA() {
                 Ready to address the <span className="italic text-gold-200">root?</span>
               </p>
               <p className="mt-0.5 text-[10.5px] font-medium uppercase tracking-[0.16em] text-cream-100/65 sm:text-[11px]">
-                Assessment with Akhila · Refundable · No pressure
+                {FREE_FUNNEL_MODE
+                  ? "Free consultation with Akhila · No pressure"
+                  : "Assessment with Akhila · Refundable · No pressure"}
               </p>
             </div>
           </div>
@@ -156,14 +175,26 @@ export function StickyCTA() {
           <Link
             href="/checkout"
             onClick={onClick}
-            aria-label={`Book your assessment call for ${publicEnv.assessmentFeeDisplay}`}
+            aria-label={
+              FREE_FUNNEL_MODE
+                ? "Book your free consultation"
+                : `Book your assessment call for ${publicEnv.assessmentFeeDisplay}`
+            }
             className="sticky-cta group flex-1 justify-center sm:flex-initial"
           >
             <span className="whitespace-nowrap leading-tight">
-              Book <span className="hidden sm:inline">My </span>
-              Assessment<span className="hidden sm:inline"> Call</span>
-              {" · "}
-              {publicEnv.assessmentFeeDisplay}
+              {FREE_FUNNEL_MODE ? (
+                <>
+                  Book <span className="hidden sm:inline">My </span>Free Call
+                </>
+              ) : (
+                <>
+                  Book <span className="hidden sm:inline">My </span>
+                  Assessment<span className="hidden sm:inline"> Call</span>
+                  {" · "}
+                  {publicEnv.assessmentFeeDisplay}
+                </>
+              )}
             </span>
             <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-cream-50/15 transition-transform duration-300 group-hover:translate-x-0.5 sm:h-7 sm:w-7">
               <ArrowRightIcon className="h-3.5 w-3.5" strokeWidth={2} />
@@ -203,8 +234,12 @@ export function Footer({ hasSticky = false }: { hasSticky?: boolean }) {
             <Link href="/terms" className="text-ink-600 transition-colors hover:text-wine-700">Terms</Link>
             <span aria-hidden="true" className="text-ink-300">·</span>
             <Link href="/privacy" className="text-ink-600 transition-colors hover:text-wine-700">Privacy</Link>
-            <span aria-hidden="true" className="text-ink-300">·</span>
-            <Link href="/refund" className="text-ink-600 transition-colors hover:text-wine-700">Refund</Link>
+            {!FREE_FUNNEL_MODE && (
+              <>
+                <span aria-hidden="true" className="text-ink-300">·</span>
+                <Link href="/refund" className="text-ink-600 transition-colors hover:text-wine-700">Refund</Link>
+              </>
+            )}
           </nav>
           <p className="mt-3 px-2 text-center text-[10.5px] leading-relaxed text-ink-400">
             For educational and informational purposes only; not medical advice.
@@ -237,7 +272,9 @@ export function Footer({ hasSticky = false }: { hasSticky?: boolean }) {
             <ul className="mt-4 space-y-2.5 text-sm">
               <li><Link href="/terms" className="text-ink-500 transition-colors hover:text-wine-700">Terms of Use</Link></li>
               <li><Link href="/privacy" className="text-ink-500 transition-colors hover:text-wine-700">Privacy Policy</Link></li>
-              <li><Link href="/refund" className="text-ink-500 transition-colors hover:text-wine-700">Refund Policy</Link></li>
+              {!FREE_FUNNEL_MODE && (
+                <li><Link href="/refund" className="text-ink-500 transition-colors hover:text-wine-700">Refund Policy</Link></li>
+              )}
             </ul>
           </div>
           <div>

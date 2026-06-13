@@ -85,6 +85,45 @@ export type PabblyPurchasePayload = {
 };
 
 /**
+ * PabblyLeadPayload — snake_case lead row fired by the FREE_FUNNEL_MODE flow
+ * (api/lead). Reuses the SAME Pabbly webhook URL as the purchase path
+ * (PABBLY_PURCHASE_WEBHOOK_URL) but carries the lead-form answers instead of
+ * payment fields. `event: "lead"` lets the Pabbly workflow branch on type if
+ * the purchase path is ever re-enabled. Meta-matching fields mirror the
+ * purchase payload so a downstream Apps Script can still fire CAPI at full EMQ.
+ */
+export type PabblyLeadPayload = {
+  event: string; // "lead"
+  lead_id: string;
+  created_at: string; // ISO-8601
+  first_name: string;
+  last_name: string;
+  full_name: string;
+  email: string;
+  phone: string; // E.164, e.g. "+919876543210"
+  location: string;
+  greatest_challenge: string;
+  willing_to_invest: string; // "Yes" / "No"
+  // ── Meta matching (raw, except external_id) ──
+  fbc: string;
+  fbp: string;
+  client_ip_address: string;
+  client_user_agent: string;
+  external_id: string; // sha256(lowercased email)
+  event_source_url: string;
+  // ── Attribution ──
+  utm_source: string;
+  utm_medium: string;
+  utm_campaign: string;
+  utm_content: string;
+  utm_term: string;
+  fbclid: string;
+  // ── Meta event ──
+  lead_event_id: string; // = lead_id, the CAPI event_id
+  is_test: string; // "false" on delivered rows
+};
+
+/**
  * Sends a JSON payload to a Pabbly Connect webhook. We resolve the URL lazily
  * so missing env vars don't crash unrelated routes. Returns the response body
  * if reachable, or throws when the webhook URL isn't configured.
@@ -120,6 +159,30 @@ export async function sendPurchaseWebhook(
   } catch (err) {
     const error = err instanceof Error ? err.message : "unknown";
     console.error("[pabbly] purchase webhook error:", error);
+    return { ok: false, error };
+  }
+}
+
+/**
+ * Fire the Pabbly LEAD webhook (FREE_FUNNEL_MODE). Reuses
+ * PABBLY_PURCHASE_WEBHOOK_URL so no new env var is required.
+ */
+export async function sendLeadWebhook(
+  payload: PabblyLeadPayload
+): Promise<{ ok: boolean; error?: string }> {
+  const env = getServerEnv();
+  if (!env.PABBLY_PURCHASE_WEBHOOK_URL) {
+    console.warn(
+      "[pabbly] PABBLY_PURCHASE_WEBHOOK_URL not set — skipping lead webhook"
+    );
+    return { ok: false, error: "webhook_url_not_configured" };
+  }
+  try {
+    await fire(env.PABBLY_PURCHASE_WEBHOOK_URL, payload);
+    return { ok: true };
+  } catch (err) {
+    const error = err instanceof Error ? err.message : "unknown";
+    console.error("[pabbly] lead webhook error:", error);
     return { ok: false, error };
   }
 }
