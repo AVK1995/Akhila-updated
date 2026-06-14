@@ -106,7 +106,7 @@ export async function POST(req: Request) {
   );
 
   const pabblyPayload: PabblyLeadPayload = {
-    event: "lead",
+    event: "consult",
     lead_id: lead.leadId,
     created_at: lead.createdAt ?? nowIso,
     first_name: lead.firstName,

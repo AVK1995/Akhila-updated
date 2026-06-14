@@ -11,7 +11,7 @@
  * auto-hiding scrollbar (visible only while scrolling).
  *
  * On submit it saves the lead, fires browser Meta MAM, POSTs /api/lead with
- * keepalive (server fires Pabbly LEAD webhook + Meta CAPI custom "Lead"), then
+ * keepalive (server fires Pabbly LEAD webhook + Meta CAPI custom "consult"), then
  * redirects to /book-a-call — the mobile-safe keepalive-then-redirect pattern.
  * =============================================================================
  */

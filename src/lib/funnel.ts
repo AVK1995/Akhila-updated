@@ -5,7 +5,7 @@
  *   - Every "Book Assessment" CTA opens the lead-capture popup instead of
  *     routing to the paid /checkout page.
  *   - The popup posts to /api/lead → fires the Pabbly LEAD webhook + a Meta
- *     CAPI custom "Lead" event (no payment), then redirects to /book-a-call.
+ *     CAPI custom "consult" event (no payment), then redirects to /book-a-call.
  *   - All ₹-price / payment / refund UI is HIDDEN (not deleted) and free-flow
  *     copy is shown in its place.
  *

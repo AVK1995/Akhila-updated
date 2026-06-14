@@ -88,12 +88,12 @@ export type PabblyPurchasePayload = {
  * PabblyLeadPayload — snake_case lead row fired by the FREE_FUNNEL_MODE flow
  * (api/lead). Reuses the SAME Pabbly webhook URL as the purchase path
  * (PABBLY_PURCHASE_WEBHOOK_URL) but carries the lead-form answers instead of
- * payment fields. `event: "lead"` lets the Pabbly workflow branch on type if
+ * payment fields. `event: "consult"` lets the Pabbly workflow branch on type if
  * the purchase path is ever re-enabled. Meta-matching fields mirror the
  * purchase payload so a downstream Apps Script can still fire CAPI at full EMQ.
  */
 export type PabblyLeadPayload = {
-  event: string; // "lead"
+  event: string; // "consult"
   lead_id: string;
   created_at: string; // ISO-8601
   first_name: string;

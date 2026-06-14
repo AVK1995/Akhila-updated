@@ -32,12 +32,15 @@ import { originOnly } from "./utils";
 const CAPI_VERSION = "v25.0";
 const CUSTOM_EVENT_NAME = "sales";
 /**
- * Lead event name (FREE_FUNNEL_MODE). Fired as a CUSTOM event, NOT the Meta
- * standard `Lead` — Meta blocks standard events by name for health-categorized
- * datasets, so a custom event with the same readable name keeps flowing while
- * staying immune to name-based blocking (same posture as `sales`).
+ * Free-funnel conversion event name. MUST be a CUSTOM name — never a Meta
+ * standard event. The standard `Lead` event is BLOCKED BY NAME on this
+ * H&W-classified dataset (confirmed in Events Manager: "Lead — Blocked by Meta;
+ * can't unblock because of the data-source category"). A neutral custom event
+ * flows and optimises freely, exactly like `sales`. Optimise the ad set
+ * directly on this event. Do NOT use `Lead`/`CompleteRegistration`/`Contact`/
+ * any other standard name here.
  */
-const LEAD_EVENT_NAME = "Lead";
+const LEAD_EVENT_NAME = "consult";
 
 function sha256(value: string): string {
   return crypto.createHash("sha256").update(value).digest("hex");
@@ -219,7 +222,7 @@ export type MetaLeadParams = {
 };
 
 /**
- * Fire ONE custom `Lead` event on free-flow form submission. Same user_data
+ * Fire ONE custom `consult` event on free-flow form submission. Same user_data
  * matching shape + hashing as the purchase `sales` event (EMQ 9.5+), but with
  * NO custom_data (no value/currency — there is no payment). event_id = leadId.
  *
