@@ -130,6 +130,7 @@ export default function ThankYouPage() {
               />
               <LazyVimeoVideo
                 videoId={TY_VSL_VIDEO_ID}
+                mp4Src="https://tgox-production-bucket.nyc3.cdn.digitaloceanspaces.com/client_funnel_videos/Akhila/aditya_thankyou_video.mp4%20(1080p).mp4"
                 title="A message from Dr. Aditya & Akhila before your call"
                 aspect="16/9"
                 playSize="md"

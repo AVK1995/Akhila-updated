@@ -115,6 +115,7 @@ export function HeroSection() {
             <LazyVimeoVideo
               ref={videoRef}
               videoId="1196886151"
+              mp4Src="https://tgox-production-bucket.nyc3.cdn.digitaloceanspaces.com/client_funnel_videos/Akhila/dr_aditya_&_akhila_vsl_v1%20(1080p).mp4"
               title="Why Your PCOS Keeps Coming Back"
               aspect="16/9"
               playSize="md"

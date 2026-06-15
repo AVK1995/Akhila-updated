@@ -17,7 +17,7 @@ import { cn } from "@/lib/utils";
 import { withUtm } from "@/lib/utm";
 import { trackVideoEvent } from "@/lib/analytics";
 import { FREE_FUNNEL_MODE, openLeadModal } from "@/lib/funnel";
-import { VideoThumbnail } from "./shared-static";
+import { PlayButton3D, VideoThumbnail } from "./shared-static";
 
 /**
  * Reveal: fade-up children on viewport enter. Respects prefers-reduced-motion.
@@ -137,9 +137,18 @@ export type LazyVimeoVideoHandle = {
 };
 
 type LazyVimeoVideoProps = {
-  /** Vimeo numeric id. Empty string → renders the placeholder frame. */
+  /** Vimeo numeric id. Empty string → renders the placeholder frame. Still
+   *  passed when `mp4Src` is set so analytics keep a stable key across the
+   *  Vimeo → CDN switch. */
   videoId: string;
   hash?: string;
+  /**
+   * Direct .mp4 URL (e.g. a DigitalOcean Spaces CDN endpoint). When set, the
+   * component plays this through a native <video> instead of the Vimeo iframe —
+   * used while Vimeo is unavailable. Same thumbnail → click-to-play → fullscreen
+   * UX, and it fires the SAME dataLayer video events as the Vimeo path.
+   */
+  mp4Src?: string;
   aspect?: "16/9" | "9/16" | "4/3" | "3/4" | "1/1";
   title: string;
   posterSrc?: string;
@@ -153,8 +162,8 @@ type LazyVimeoVideoProps = {
  * on click and plays inline WITH sound. An external trigger can call the
  * exposed `play({ fullscreen: true })` handle to open it fullscreen instead.
  */
-export const LazyVimeoVideo = forwardRef<LazyVimeoVideoHandle, LazyVimeoVideoProps>(
-  function LazyVimeoVideo(
+const LazyVimeoVideoVimeo = forwardRef<LazyVimeoVideoHandle, LazyVimeoVideoProps>(
+  function LazyVimeoVideoVimeo(
     {
       videoId,
       hash,
@@ -341,3 +350,207 @@ export const LazyVimeoVideo = forwardRef<LazyVimeoVideoHandle, LazyVimeoVideoPro
     </button>
   );
 });
+
+/** Take a native <video> fullscreen. iOS Safari only supports fullscreen on the
+ *  <video> element itself (webkitEnterFullscreen) — not the standard API. */
+function requestVideoFullscreen(el: HTMLVideoElement) {
+  const ios = el as HTMLVideoElement & { webkitEnterFullscreen?: () => void };
+  if (typeof el.requestFullscreen === "function") {
+    el.requestFullscreen().catch(() => {});
+  } else if (typeof ios.webkitEnterFullscreen === "function") {
+    ios.webkitEnterFullscreen();
+  }
+}
+
+/**
+ * LazyVimeoVideoMp4 — same premium thumbnail → unmuted click-to-play →
+ * fullscreen UX as the Vimeo player, but the source is a direct .mp4 (served
+ * from the DigitalOcean Spaces CDN) played through a native <video>. Used while
+ * Vimeo is down. Fires the SAME dataLayer video events as the Vimeo path
+ * (VideoPlayClick / PlayStart / Progress 25·50·75 / Complete) so analytics stay
+ * unbroken — keyed on the original `videoId` when present.
+ */
+const LazyVimeoVideoMp4 = forwardRef<LazyVimeoVideoHandle, LazyVimeoVideoProps>(
+  function LazyVimeoVideoMp4(
+    {
+      videoId,
+      mp4Src,
+      aspect = "16/9",
+      title,
+      posterSrc,
+      className,
+      playSize = "md",
+    },
+    ref
+  ) {
+    const [playing, setPlaying] = useState(false);
+    const [fullscreen, setFullscreen] = useState(false);
+    const videoRef = useRef<HTMLVideoElement | null>(null);
+    // Reuse the old Vimeo id as the analytics key when present (stable across
+    // the Vimeo → CDN switch); otherwise fall back to the title.
+    const analyticsId = videoId || title;
+    const startedRef = useRef(false);
+    const firedRef = useRef<Set<number>>(new Set());
+
+    const aspectClass = {
+      "16/9": "aspect-[16/9]",
+      "9/16": "aspect-[9/16]",
+      "4/3": "aspect-[4/3]",
+      "3/4": "aspect-[3/4]",
+      "1/1": "aspect-square",
+    }[aspect];
+
+    // Idle thumbnail = the real frame at ~1s. Seek there once metadata loads,
+    // before playback begins — no external thumbnail service / Vimeo poster
+    // needed, and the thumbnail always matches the actual video.
+    const onLoadedMetadata = useCallback(
+      (e: React.SyntheticEvent<HTMLVideoElement>) => {
+        if (startedRef.current) return;
+        const el = e.currentTarget;
+        const dur = Number.isFinite(el.duration) ? el.duration : 0;
+        const target = dur > 1 ? 1 : Math.max(0, dur - 0.05);
+        try {
+          el.currentTime = target;
+        } catch {
+          /* a pre-buffer seek can be rejected; falls back to frame 0 */
+        }
+      },
+      []
+    );
+
+    // Native <video> analytics — mirrors the Vimeo SDK wiring above.
+    const onPlay = useCallback(() => {
+      if (startedRef.current) return;
+      startedRef.current = true;
+      trackVideoEvent("VideoPlayStart", { video_id: analyticsId, video_title: title });
+    }, [analyticsId, title]);
+
+    const onTimeUpdate = useCallback(
+      (e: React.SyntheticEvent<HTMLVideoElement>) => {
+        // Ignore the timeupdate produced by the idle poster-frame seek — only
+        // count watch progress once real playback has begun.
+        if (!startedRef.current) return;
+        const el = e.currentTarget;
+        if (!el.duration || !Number.isFinite(el.duration)) return;
+        const pct = Math.floor((el.currentTime / el.duration) * 100);
+        for (const m of [25, 50, 75]) {
+          if (pct >= m && !firedRef.current.has(m)) {
+            firedRef.current.add(m);
+            trackVideoEvent("VideoProgress", {
+              video_id: analyticsId,
+              video_title: title,
+              percent: m,
+            });
+          }
+        }
+      },
+      [analyticsId, title]
+    );
+
+    const onEnded = useCallback(() => {
+      trackVideoEvent("VideoComplete", {
+        video_id: analyticsId,
+        video_title: title,
+        percent: 100,
+      });
+    }, [analyticsId, title]);
+
+    // Start playback. `fs` = open fullscreen (the "Watch" caption); the plain
+    // thumbnail click plays inline. The <video> is already mounted (it renders
+    // the poster frame), so flushSync just flips controls/muted inside the
+    // user-gesture window before we call play()/fullscreen.
+    const startPlayback = useCallback(
+      (fs: boolean) => {
+        if (playing) {
+          // Already playing → caption is purely a fullscreen trigger.
+          if (fs && videoRef.current) requestVideoFullscreen(videoRef.current);
+          return;
+        }
+        trackVideoEvent("VideoPlayClick", { video_id: analyticsId, video_title: title });
+        flushSync(() => {
+          setFullscreen(fs);
+          setPlaying(true);
+        });
+        const v = videoRef.current;
+        if (v) {
+          // Click is a user gesture → unmuted playback is permitted. Rewind
+          // from the ~1s poster frame so playback starts at the beginning.
+          v.muted = false;
+          v.volume = 1;
+          try {
+            v.currentTime = 0;
+          } catch {
+            /* ignore */
+          }
+          const p = v.play();
+          if (p && typeof p.catch === "function") p.catch(() => {});
+          if (fs) requestVideoFullscreen(v);
+        }
+      },
+      [playing, analyticsId, title]
+    );
+
+    useImperativeHandle(
+      ref,
+      () => ({ play: (opts) => startPlayback(opts?.fullscreen ?? false) }),
+      [startPlayback]
+    );
+
+    // One persistent <video>: muted + seeked to ~1s as the idle poster frame,
+    // then unmuted + played on click. object-contain mirrors Vimeo's
+    // letterboxing so a source whose aspect doesn't match the frame is never
+    // cropped. The play badge overlays the frame until playback starts.
+    return (
+      <div
+        className={cn(
+          "relative w-full transform-gpu overflow-hidden rounded-[28px] bg-ink-900 shadow-premium-xl ring-1 ring-inset ring-white/35 [backface-visibility:hidden]",
+          aspectClass,
+          className
+        )}
+      >
+        <video
+          ref={videoRef}
+          src={mp4Src}
+          poster={posterSrc}
+          className="absolute inset-0 h-full w-full bg-ink-900 object-contain"
+          preload="metadata"
+          muted={!playing}
+          controls={playing}
+          playsInline={!fullscreen}
+          onLoadedMetadata={onLoadedMetadata}
+          onPlay={onPlay}
+          onTimeUpdate={onTimeUpdate}
+          onEnded={onEnded}
+          title={title}
+        />
+        {!playing && (
+          <button
+            type="button"
+            onClick={() => startPlayback(false)}
+            aria-label={`Play video: ${title}`}
+            className="group/play absolute inset-0 z-10 flex cursor-pointer items-center justify-center"
+          >
+            <span
+              aria-hidden="true"
+              className="absolute inset-0 bg-gradient-to-b from-ink-900/15 via-transparent to-ink-900/35"
+            />
+            <PlayButton3D size={playSize} />
+          </button>
+        )}
+      </div>
+    );
+  }
+);
+
+/**
+ * LazyVimeoVideo — public entry. Delegates to the native-<video> player when an
+ * `mp4Src` is supplied (Vimeo currently down), otherwise to the Vimeo iframe
+ * player. The wrapper itself holds no hooks, so the branch is rules-of-hooks
+ * safe even though `mp4Src` decides which implementation mounts.
+ */
+export const LazyVimeoVideo = forwardRef<LazyVimeoVideoHandle, LazyVimeoVideoProps>(
+  function LazyVimeoVideo(props, ref) {
+    if (props.mp4Src) return <LazyVimeoVideoMp4 ref={ref} {...props} />;
+    return <LazyVimeoVideoVimeo ref={ref} {...props} />;
+  }
+);
