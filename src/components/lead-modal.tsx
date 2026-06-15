@@ -69,6 +69,22 @@ function splitName(name: string): { firstName: string; lastName: string } {
   return { firstName: parts[0] ?? "", lastName: parts.slice(1).join(" ") };
 }
 
+/**
+ * True once the visitor has submitted the lead form this session. Used to
+ * suppress EVERY re-open of the modal (scroll auto-open AND CTA clicks) —
+ * including on /book-a-call after the redirect — because the lead is already
+ * captured. Scoped to the tab/session so a brand-new visit can still convert.
+ */
+const LEAD_DONE_KEY = "akhila_lead_submitted";
+function leadSubmitted(): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    return sessionStorage.getItem(LEAD_DONE_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
 function CloseIcon({ className }: { className?: string }) {
   return (
     <svg className={cn("h-4 w-4", className)} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -119,6 +135,7 @@ export function LeadModalHost() {
   // Open on the global event; close on Escape; lock body scroll while open.
   useEffect(() => {
     function onOpen() {
+      if (leadSubmitted()) return; // already captured — never re-open
       setErrors({});
       setIsMobile(window.matchMedia("(max-width: 639px)").matches);
       setOpen(true);
@@ -132,9 +149,14 @@ export function LeadModalHost() {
   // re-triggers it.
   useEffect(() => {
     if (typeof window === "undefined") return;
-    if (window.location.pathname !== "/") return;
     function onScroll() {
       if (autoOpenedRef.current) return;
+      // Re-checked on EVERY scroll (not just at mount): this host lives in the
+      // persistent root layout, so the listener survives client-side navigation.
+      // Only auto-open on the landing page, and never once the lead is captured
+      // (otherwise it re-appears on /book-a-call after the redirect).
+      if (window.location.pathname !== "/") return;
+      if (leadSubmitted()) return;
       const scrollable =
         document.documentElement.scrollHeight - window.innerHeight;
       if (scrollable <= 0) return;
@@ -227,6 +249,14 @@ export function LeadModalHost() {
       greatestChallenge: data.challenge,
       willingToInvest: data.willingToInvest,
     });
+
+    // Mark captured for this session so the modal never re-opens (scroll OR CTA),
+    // including on /book-a-call after the redirect below.
+    try {
+      sessionStorage.setItem(LEAD_DONE_KEY, "1");
+    } catch {
+      /* ignore */
+    }
 
     void setMetaAdvancedMatching({
       email: data.email,

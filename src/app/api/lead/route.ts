@@ -30,7 +30,7 @@ const schema = z.object({
  *
  * Validates a lead-capture submission, then fires:
  *   - the Pabbly LEAD webhook (snake_case lead row, reuses the purchase URL)
- *   - a Meta CAPI custom `Lead` event (event_id = leadId)
+ *   - a Meta CAPI custom `consult` event (event_id = leadId)
  *
  * No payment, no signature. Called by the browser via a keepalive fetch right
  * before it redirects to /book-a-call. Gated on the production hostname only
@@ -57,6 +57,7 @@ export async function POST(req: Request) {
 
   // ── In-process dedup — guards a duplicate keepalive POST on a warm Lambda ──
   if (!claimEventId(lead.leadId)) {
+    console.warn(`[lead] SKIPPED by in-process dedup — lead_id=${lead.leadId}`);
     return NextResponse.json({
       ok: true,
       fired: false,
@@ -67,6 +68,11 @@ export async function POST(req: Request) {
 
   // ── Funnel-tracking gate — production hostname only (no amount) ──
   if (!shouldFireFunnelTracking(req.headers.get("host"))) {
+    console.warn(
+      `[lead] SKIPPED by gate — request host="${req.headers.get("host")}" ` +
+        `!= prodHostname="${publicEnv.prodHostname}". Nothing fired (no Pabbly, no CAPI). ` +
+        `Fix: NEXT_PUBLIC_SITE_URL must match the served host + redeploy, and visit that exact host.`
+    );
     return NextResponse.json({
       ok: true,
       fired: false,
