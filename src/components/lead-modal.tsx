@@ -111,7 +111,7 @@ function TickIcon({ className }: { className?: string }) {
 const TRUST = [
   "30-minute 1:1 call with Akhila",
   "Root-cause metabolic approach",
-  "30,000+ women already helped",
+  "30,000+ patients treated",
   "100% free — no card, no payment",
 ];
 

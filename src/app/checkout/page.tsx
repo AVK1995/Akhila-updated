@@ -1056,7 +1056,7 @@ export default function CheckoutPage() {
 
         <section className="pb-20 pt-8 sm:pt-10 lg:pt-12">
         <div className="container-tight">
-          <div className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:gap-10">
+          <div className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:gap-10 [&>*]:min-w-0">
             {/* LEFT: form */}
             <form onSubmit={handlePay} noValidate>
               <h1 className="font-display text-xl font-medium leading-tight text-ink-800 sm:text-[26px] lg:text-[28px]">
