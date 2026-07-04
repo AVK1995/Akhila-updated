@@ -69,7 +69,7 @@ export default function PrivacyPage() {
     },
     {
       heading: "6. Your rights",
-      body: "You have the right to access, correct or delete your personal data. To exercise any of these rights, email hello@akhila.example.com from the address you used to book. We'll respond within 14 working days.",
+      body: "You have the right to access, correct or delete your personal data. To exercise any of these rights, email draditya.cim@gmail.com from the address you used to book. We'll respond within 14 working days.",
     },
     {
       heading: "7. Retention",
@@ -89,7 +89,7 @@ export default function PrivacyPage() {
     },
     {
       heading: "11. Contact",
-      body: "Privacy questions: hello@akhila.example.com.",
+      body: "Privacy questions: draditya.cim@gmail.com.",
     },
   ];
 

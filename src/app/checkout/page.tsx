@@ -35,6 +35,7 @@ import {
 } from "@/lib/session";
 import { publicEnv } from "@/lib/env";
 import { Marquee, Footer } from "@/components/site-chrome";
+import { Pmos, withPmos } from "@/components/landing/shared-static";
 
 /* ─────────────────────────────────────────────────────────────────────────────
  * INLINE ICONS — only the ones this page uses
@@ -873,8 +874,8 @@ export default function CheckoutPage() {
         key: order.keyId || razorpayKeyId,
         amount: order.amount,
         currency: order.currency,
-        name: "PCOS Metabolic Assessment",
-        description: "Akhila · 30-minute clinical assessment call",
+        name: "PMOS Metabolic Assessment",
+        description: "Akhila · 30-minute consultation call",
         order_id: order.orderId,
         prefill: {
           name: `${lead.firstName} ${lead.lastName}`.trim(),
@@ -930,7 +931,7 @@ export default function CheckoutPage() {
   }
 
   const benefits = [
-    "30-minute clinical assessment call with Akhila",
+    "30-minute consultation call with Akhila",
     "Full review of your PCOS history, symptoms & lifestyle",
     "Clear understanding of what is driving your specific pattern",
     "Honest assessment of whether the programme is the right fit",
@@ -954,11 +955,11 @@ export default function CheckoutPage() {
             {/* LEFT: form */}
             <form onSubmit={handlePay} noValidate>
               <h1 className="font-display text-xl font-medium leading-tight text-ink-800 sm:text-[26px] lg:text-[28px]">
-                Book your PCOS metabolic assessment
+                Book your <Pmos /> metabolic assessment
               </h1>
               <p className="mt-3 text-[14px] leading-relaxed text-ink-500 sm:text-[15px]">
-                Fill in your details to secure your 30-minute clinical
-                assessment call with Akhila.
+                Fill in your details to secure your 30-minute consultation
+                call with Akhila.
               </p>
 
               <div className="mt-6 space-y-3.5 sm:mt-7">
@@ -1136,7 +1137,7 @@ export default function CheckoutPage() {
                       <StethoscopeIcon className="relative h-4 w-4" />
                     </span>
                     <p className="font-display text-base font-medium text-ink-800 sm:text-lg">
-                      PCOS Metabolic Assessment
+                      <Pmos /> Metabolic Assessment
                     </p>
                   </div>
                   <p className="mt-3 text-[13px] leading-relaxed text-ink-500 sm:text-sm">
@@ -1150,7 +1151,7 @@ export default function CheckoutPage() {
                         <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-wine-700/10 text-wine-700">
                           <CheckIcon className="h-2.5 w-2.5" strokeWidth={2.5} />
                         </span>
-                        <span>{b}</span>
+                        <span>{withPmos(b)}</span>
                       </li>
                     ))}
                   </ul>

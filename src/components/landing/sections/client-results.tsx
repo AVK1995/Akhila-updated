@@ -1,6 +1,7 @@
 "use client";
 
 import { Reveal } from "../shared-client";
+import { withPmos } from "../shared-static";
 
 type CaseResult = {
   caseNo: string;
@@ -36,7 +37,7 @@ function CaseCard({ r }: { r: CaseResult }) {
           Case Pattern · {r.caseNo}
         </p>
         <h3 className="mt-2 font-display text-[20px] font-medium leading-tight text-ink-800 sm:text-[22px]">
-          {r.title}
+          {withPmos(r.title)}
         </h3>
       </div>
 
@@ -83,7 +84,7 @@ function CaseCard({ r }: { r: CaseResult }) {
           Typical Profile
         </p>
         <p className="mt-1.5 text-[13.5px] leading-relaxed text-ink-600 sm:text-[14.5px]">
-          {r.profile}
+          {withPmos(r.profile)}
         </p>
         <div className="mt-4 flex flex-wrap gap-2">
           {r.tags.map((tag) => (

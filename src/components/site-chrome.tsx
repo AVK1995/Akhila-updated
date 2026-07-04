@@ -25,6 +25,7 @@ import { useCallback, useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { withUtm } from "@/lib/utm";
 import { publicEnv } from "@/lib/env";
+import { Pmos } from "./landing/shared-static";
 
 /* ─────────────────────────────────────────────────────────────────────────────
  * Local icon — only the right-arrow chevron used inside StickyCTA
@@ -55,14 +56,13 @@ function ArrowRightIcon({ className, strokeWidth = 2 }: { className?: string; st
  */
 export function Marquee() {
   const items = [
-    "Physician-Led Programme",
-    "30,000+ Patients Treated",
-    `${publicEnv.assessmentFeeDisplay} · Refundable Assessment`,
-    "Therapeutic IV Infusion Included",
-    "Money-Back Guarantee",
-    "90-Day Clinical Protocol",
-    "15 Years of Clinical Practice",
+    "Nutrition Support Included",
+    "90-Day Structured Programme",
+    "15 Years of Experience",
     "Dr. Aditya & Akhila",
+    "Expert-Led Programme",
+    `${publicEnv.assessmentFeeDisplay} · Refundable Assessment`,
+    "Money-Back Guarantee",
   ];
   const loop = [...items, ...items];
   return (
@@ -148,7 +148,7 @@ export function StickyCTA() {
                 Ready to address the <span className="italic text-gold-200">root?</span>
               </p>
               <p className="mt-0.5 text-[10.5px] font-medium uppercase tracking-[0.16em] text-cream-100/65 sm:text-[11px]">
-                Clinical assessment with Akhila · Refundable · No pressure
+                Consultation with Akhila · Refundable · No pressure
               </p>
             </div>
           </div>
@@ -156,12 +156,12 @@ export function StickyCTA() {
           <Link
             href="/checkout"
             onClick={onClick}
-            aria-label={`Book your clinical assessment call for ${publicEnv.assessmentFeeDisplay}`}
+            aria-label={`Book your consultation call for ${publicEnv.assessmentFeeDisplay}`}
             className="sticky-cta group flex-1 justify-center sm:flex-initial"
           >
             <span className="whitespace-nowrap leading-tight">
-              Book <span className="hidden sm:inline">My Clinical </span>
-              Assessment<span className="hidden sm:inline"> Call</span>
+              Book <span className="hidden sm:inline">Your </span>
+              Consultation<span className="hidden sm:inline"> Call</span>
               {" · "}
               {publicEnv.assessmentFeeDisplay}
             </span>
@@ -225,9 +225,9 @@ export function Footer({ hasSticky = false }: { hasSticky?: boolean }) {
               </span>
             </div>
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-ink-500">
-              A physician-led PCOS metabolic programme. We address the root,
-              not the symptom. Fasting insulin, HOMA-IR, cortisol, gut markers
-              first. Protocol second.
+              A physician-led <Pmos /> metabolic programme. We address the
+              root, not the symptom. Fasting insulin, HOMA-IR, cortisol, gut
+              markers first. Protocol second.
             </p>
           </div>
           <div>

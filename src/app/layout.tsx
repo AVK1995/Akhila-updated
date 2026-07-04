@@ -21,7 +21,7 @@ const siteUrl = publicEnv.siteUrl;
 const siteName = publicEnv.siteName;
 const fee = publicEnv.assessmentFeeDisplay;
 const description =
-  `Dr. Aditya runs your fasting insulin, HOMA-IR, cortisol, and gut markers first, finds the exact metabolic breakdown, then builds everything around it. Restore your cycles, lose stubborn weight, and clear your skin in 90 days. Physician-led PCOS programme with therapeutic IV infusion. Assessment from ${fee}.`;
+  `Dr. Aditya runs your fasting insulin, HOMA-IR, cortisol, and gut markers first, finds the exact metabolic breakdown, then builds everything around it. Restore your cycles, lose stubborn weight, and clear your skin in 90 days. Physician-led PMOS programme with therapeutic IV infusion. Assessment from ${fee}.`;
 
 /**
  * Root metadata. Page files that are "use client" (landing/checkout/book-a-call)
@@ -31,7 +31,7 @@ const description =
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "The PCOS Metabolic Assessment for the Woman Who Has Tried Everything",
+    default: "The PMOS Metabolic Assessment for the Woman Who Has Tried Everything",
     template: "%s · Dr. Aditya & Akhila",
   },
   description,
@@ -63,7 +63,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "The PCOS Metabolic Assessment by Dr. Aditya & Akhila",
+    title: "The PMOS Metabolic Assessment by Dr. Aditya & Akhila",
     description,
   },
   robots: {
@@ -151,7 +151,7 @@ export default function RootLayout({
             __html: JSON.stringify({
               "@context": "https://schema.org",
               "@type": "MedicalBusiness",
-              name: "Dr. Aditya & Akhila's PCOS Metabolic Programme",
+              name: "Dr. Aditya & Akhila's PMOS Metabolic Programme",
               url: siteUrl,
               description,
               medicalSpecialty: ["Endocrine", "FamilyPractice", "Nutrition"],
@@ -159,7 +159,7 @@ export default function RootLayout({
               areaServed: "IN",
               offers: {
                 "@type": "Offer",
-                name: "PCOS Metabolic Assessment",
+                name: "PMOS Metabolic Assessment",
                 price: String(publicEnv.assessmentFeeInr),
                 priceCurrency: "INR",
                 availability: "https://schema.org/InStock",

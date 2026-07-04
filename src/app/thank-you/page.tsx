@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { cn } from "@/lib/utils";
 import { Marquee, Footer } from "@/components/site-chrome";
+import { withPmos } from "@/components/landing/shared-static";
+import { ThankYouVideo } from "./thank-you-video";
 
 /* =============================================================================
  * THANK YOU PAGE — Akhila PCOS Metabolic Programme
@@ -16,7 +18,7 @@ import { Marquee, Footer } from "@/components/site-chrome";
 export const metadata: Metadata = {
   title: "You're All Set. See You On The Call",
   description:
-    "Thank you for booking your PCOS metabolic assessment with Dr. Aditya & Akhila.",
+    "Thank you for booking your PMOS metabolic assessment with Dr. Aditya & Akhila.",
   robots: { index: false, follow: false },
 };
 
@@ -92,6 +94,8 @@ export default function ThankYouPage() {
             protocol only once you enrol.
           </p>
 
+          <ThankYouVideo />
+
           <ol className="mt-12 grid gap-5 text-left sm:gap-6">
             {steps.map((s, i) => (
               <li key={s.title} className="card-premium group flex items-start gap-4 sm:gap-5">
@@ -105,7 +109,7 @@ export default function ThankYouPage() {
                     {s.title}
                   </h2>
                   <p className="mt-1.5 text-[14px] leading-relaxed text-ink-500 sm:text-[15px]">
-                    {s.body}
+                    {withPmos(s.body)}
                   </p>
                 </div>
               </li>
@@ -120,8 +124,8 @@ export default function ThankYouPage() {
               If you have recent bloodwork (fasting insulin, HOMA-IR,
               testosterone, AMH, TSH, vitamin D, B12), please scan and email
               them to{" "}
-              <a href="mailto:hello@akhila.example.com" className="font-medium text-wine-700 underline-offset-4 hover:underline">
-                hello@akhila.example.com
+              <a href="mailto:draditya.cim@gmail.com" className="font-medium text-wine-700 underline-offset-4 hover:underline">
+                draditya.cim@gmail.com
               </a>{" "}
               before your call. Optional, but it lets us dig deeper from minute
               one.

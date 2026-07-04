@@ -3,7 +3,7 @@ import { publicEnv } from "@/lib/env";
 
 export const runtime = "edge";
 export const alt =
-  "Dr. Aditya & Akhila's PCOS Metabolic Programme. For the woman who has tried everything except the right diagnosis.";
+  "Dr. Aditya & Akhila's PMOS Metabolic Programme. For the woman who has tried everything except the right diagnosis.";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -99,7 +99,7 @@ export default async function OGImage() {
                 marginTop: 2,
               }}
             >
-              The PCOS Metabolic Programme
+              The PMOS Metabolic Programme
             </div>
           </div>
         </div>

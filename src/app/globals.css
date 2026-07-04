@@ -648,3 +648,17 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* Fullscreen video: show the whole 16:9 frame (contain) instead of the
+   cover-crop used for the inline poster card, and paint letterbox bars black.
+   Without this, a landscape video in a portrait phone fullscreen is zoomed to
+   fill and the left/right edges get cropped. The `video:fullscreen` selector
+   (element + pseudo-class) outranks Tailwind's `.object-cover` utility. */
+video:fullscreen {
+  object-fit: contain;
+  background-color: #000;
+}
+video:-webkit-full-screen {
+  object-fit: contain;
+  background-color: #000;
+}

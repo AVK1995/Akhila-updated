@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { Reveal } from "../shared-client";
-import { ImagePlaceholder } from "../shared-static";
+import { ImagePlaceholder, withPmos } from "../shared-static";
 
 function PersonCard({
   name,
@@ -94,7 +94,7 @@ function PersonCard({
           <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gold-700 sm:text-xs">{name}</p>
           <h3 className="mt-3 font-display text-2xl font-medium leading-[1.12] text-ink-800 sm:text-[28px]">{heading}</h3>
           <p className="mt-4 text-[13px] font-medium uppercase tracking-[0.06em] text-wine-700 sm:text-sm">{credential}</p>
-          <p className="body-prose mt-5">{bio}</p>
+          <p className="body-prose mt-5">{withPmos(bio)}</p>
           {quote && (
             <figure className="relative mt-6 overflow-hidden rounded-2xl border border-gold-200/70 bg-gradient-to-br from-gold-50/80 via-cream-50 to-wine-50/40 px-5 py-5 shadow-premium-sm sm:px-6 sm:py-6">
               <span
@@ -108,10 +108,10 @@ function PersonCard({
                 &ldquo;
               </span>
               <blockquote className="relative pt-4 font-display text-[15.5px] font-medium italic leading-snug text-ink-700 sm:text-[17px]">
-                {quote}
+                {withPmos(quote)}
               </blockquote>
               <figcaption className="mt-3 text-[10.5px] font-semibold uppercase tracking-[0.18em] text-wine-700 sm:text-[11.5px]">
-                — {name}
+                {name}
               </figcaption>
             </figure>
           )}
@@ -151,10 +151,10 @@ export function TeamSection() {
           <PersonCard
             name="Dr. Aditya"
             heading="The physician behind the method."
-            credential="Senior Family Physician · 15 Years · 30,000+ Patients"
-            bio="Dr. Aditya is a family physician, not a gynaecologist. In 15 years and over 30,000 consultations, he has never done a five-minute appointment. He looks at your sleep, your stress, your metabolic markers, and your full history together, not one part at a time."
+            credential="Senior Family Physician · 15 Years of Experience"
+            bio="Dr. Aditya is a family physician, not a gynaecologist. In 15 years of practice, he has never done a five-minute appointment. He looks at your sleep, your stress, your metabolic markers, and your full history together, not one part at a time."
             quote="When PCOS is involved, the pattern is almost always metabolic. And almost always missed by the time a woman reaches us."
-            stats={["15 Yrs Experience", "30,000+ Patients", "30 Min Minimum", "0 Five-Minute Appointments"]}
+            stats={["15 Yrs Experience", "30 Min Minimum", "0 Five-Minute Appointments"]}
             imageSrc="/images/team/Dr%20Aditya.jpeg"
           />
           <PersonCard

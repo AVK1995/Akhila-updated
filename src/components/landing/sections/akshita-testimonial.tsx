@@ -1,6 +1,7 @@
 "use client";
 
 import { Reveal, LazyVimeoVideo } from "../shared-client";
+import { Pmos, withPmos } from "../shared-static";
 import { CheckIcon, StarIcon } from "../icons";
 
 export function AkshitaTestimonialSection() {
@@ -53,7 +54,7 @@ export function AkshitaTestimonialSection() {
             </h2>
             <div className="section-divider mt-6" />
             <p className="body-lede mt-6">
-              Akshaya, 32, diagnosed with PCOS in 2018 but told it was a
+              Akshaya, 32, diagnosed with <Pmos /> in 2018 but told it was a
               misdiagnosis because her cycles were regular. Then the weight
               stopped moving, the fertility window narrowed, and she found us
               in 2025. Hear her tell it in her own words.
@@ -115,7 +116,7 @@ export function AkshitaTestimonialSection() {
                     className="inline-flex items-center gap-1.5 rounded-full border border-gold-200/70 bg-gold-50/70 px-2.5 py-1 text-[11px] font-medium text-gold-800 backdrop-blur-sm sm:text-[11.5px]"
                   >
                     <StarIcon className="h-2.5 w-2.5 text-gold-500" />
-                    {t}
+                    {withPmos(t)}
                   </span>
                 ))}
               </div>
@@ -142,7 +143,7 @@ export function AkshitaTestimonialSection() {
                           {b.title}
                         </p>
                         <p className="mt-1 text-[12.5px] leading-relaxed text-ink-500 sm:text-[12.5px]">
-                          {b.body}
+                          {withPmos(b.body)}
                         </p>
                       </div>
                     </li>

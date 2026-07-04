@@ -1,6 +1,7 @@
 "use client";
 
 import { Reveal } from "../shared-client";
+import { withPmos } from "../shared-static";
 import { publicEnv } from "@/lib/env";
 
 const fee = publicEnv.assessmentFeeDisplay;
@@ -86,7 +87,7 @@ export function FAQSection() {
                 <div className="px-5 pb-5 pt-0 sm:px-6 sm:pb-6">
                   <div className="border-t border-ink-100/70 pt-4">
                     <p className="text-pretty text-[13.5px] leading-relaxed text-ink-600 sm:text-[14.5px]">
-                      {f.a}
+                      {withPmos(f.a)}
                     </p>
                   </div>
                 </div>

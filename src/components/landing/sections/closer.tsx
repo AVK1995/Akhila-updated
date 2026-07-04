@@ -64,9 +64,9 @@ function StatCounter({ targetText }: { targetText: string }) {
 
 export function CloserSection() {
   const stats = [
-    { value: "30,000+", label: "Patients" },
+    { value: "15 Years", label: "Experience" },
     { value: "90 Days", label: "Programme" },
-    { value: "30 Min", label: "Assessment" },
+    { value: "30 Min", label: "Consultation" },
     { value: publicEnv.assessmentFeeDisplay, label: "To Start" },
   ];
   return (
@@ -98,7 +98,7 @@ export function CloserSection() {
               programme is: I wish I had done this two years ago.
             </blockquote>
             <figcaption className="mt-5 text-[12px] font-semibold uppercase tracking-[0.18em] text-gold-200 sm:text-[13px]">
-              — Dr. Aditya
+              Dr. Aditya
             </figcaption>
           </figure>
         </Reveal>
@@ -123,13 +123,13 @@ export function CloserSection() {
               variant="primary-inverse-lg"
               label={
                 <>
-                  Book <span className="hidden sm:inline">My Clinical </span>
-                  Assessment<span className="hidden sm:inline"> Call</span>
+                  Book <span className="hidden sm:inline">Your </span>
+                  Consultation<span className="hidden sm:inline"> Call</span>
                   {" · "}
                   {publicEnv.assessmentFeeDisplay}
                 </>
               }
-              ariaLabel="Book your clinical assessment call now"
+              ariaLabel="Book your consultation call now"
               className="[&>span]:whitespace-nowrap [&>span]:leading-tight"
               trailing={
                 <ArrowRightIcon
