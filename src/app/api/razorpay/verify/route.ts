@@ -81,6 +81,13 @@ export async function POST(req: Request) {
     lead,
   } = parsed.data;
 
+  const host = req.headers.get("host");
+  console.log(
+    `[verify-payment] START host="${host}" prodHostname="${publicEnv.prodHostname}" ` +
+      `fee=${getServerEnv().ASSESSMENT_FEE_INR} order_id=${razorpay_order_id} ` +
+      `payment_id=${razorpay_payment_id} email=${lead.email}`
+  );
+
   const valid = verifyPaymentSignature({
     orderId: razorpay_order_id,
     paymentId: razorpay_payment_id,
@@ -88,6 +95,9 @@ export async function POST(req: Request) {
   });
 
   if (!valid) {
+    console.warn(
+      `[verify-payment] SIGNATURE INVALID for payment_id=${razorpay_payment_id} — nothing fired`
+    );
     return NextResponse.json({ error: "signature_invalid" }, { status: 400 });
   }
 
@@ -118,10 +128,21 @@ export async function POST(req: Request) {
   // and the Pabbly sheet clean. Signature is still verified and the user
   // still routes to /book-a-call regardless.
   const fireConversions = shouldFireConversionEvents(
-    req.headers.get("host"),
+    host,
     env.ASSESSMENT_FEE_INR
   );
+  console.log(
+    `[verify-payment] GATE host="${host}" prodHostname="${publicEnv.prodHostname}" ` +
+      `fee=${env.ASSESSMENT_FEE_INR} → fireConversions=${fireConversions}`
+  );
   if (!fireConversions) {
+    console.warn(
+      `[verify-payment] SKIPPED BY GATE — payment_id=${razorpay_payment_id}. ` +
+        `request host="${host}" vs prodHostname="${publicEnv.prodHostname}" ` +
+        `(must match EXACTLY, incl. www vs apex), fee=${env.ASSESSMENT_FEE_INR} (must be > 1). ` +
+        `Nothing fired: no Pabbly, no CAPI. ` +
+        `Fix: set NEXT_PUBLIC_SITE_URL to the exact host users pay on, then redeploy.`
+    );
     return NextResponse.json({
       ok: true,
       verified: true,
@@ -236,6 +257,26 @@ export async function POST(req: Request) {
     pabblyResult.status === "fulfilled" && pabblyResult.value.ok === true;
   const capiSucceeded =
     capiResult.status === "fulfilled" && capiResult.value.ok === true;
+
+  console.log(
+    `[verify-payment] RESULT payment_id=${razorpay_payment_id} ` +
+      `pabbly=${pabblySucceeded ? "DELIVERED" : "FAILED"} ` +
+      `capi=${capiSucceeded ? "DELIVERED" : "FAILED"}`
+  );
+  if (!pabblySucceeded) {
+    console.error(
+      `[verify-payment] PABBLY FAILED:`,
+      pabblyResult.status === "fulfilled"
+        ? pabblyResult.value.error
+        : pabblyResult.reason
+    );
+  }
+  if (!capiSucceeded) {
+    console.error(
+      `[verify-payment] CAPI FAILED:`,
+      capiResult.status === "fulfilled" ? capiResult.value : capiResult.reason
+    );
+  }
 
   return NextResponse.json({
     ok: true,
