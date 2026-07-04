@@ -12,6 +12,7 @@ import {
   type ComponentProps,
   type ReactNode,
 } from "react";
+import { flushSync } from "react-dom";
 import { cn } from "@/lib/utils";
 import { withUtm } from "@/lib/utm";
 import { trackVideoEvent } from "@/lib/analytics";
