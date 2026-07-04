@@ -93,7 +93,7 @@ export function EligibilitySection() {
               approach that works at the level where the actual problem lives.
             </blockquote>
             <figcaption className="mt-5 text-[12px] font-semibold uppercase tracking-[0.18em] text-wine-700 sm:text-[13px]">
-              — Akhila
+              Akhila
             </figcaption>
           </figure>
         </Reveal>

@@ -142,7 +142,7 @@ function BookACallTop() {
             </Reveal>
             <Reveal delay={0.12}>
               <p className="mx-auto mt-3.5 max-w-xl text-[14.5px] leading-relaxed text-ink-500 sm:mt-5 sm:text-[15.5px]">
-                This is your 30-minute assessment call with Akhila.
+                This is your 30-minute consultation call with Akhila.
                 Block a slot in the next 7 days for the fastest start. Dr.
                 Aditya joins your protocol once you enrol.
               </p>

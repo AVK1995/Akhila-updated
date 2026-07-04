@@ -1,6 +1,7 @@
 "use client";
 
 import { Reveal, CtaLink } from "../shared-client";
+import { withPmos } from "../shared-static";
 import { ArrowRightIcon, CheckIcon, LockIcon, ShieldIcon } from "../icons";
 import { publicEnv } from "@/lib/env";
 
@@ -13,7 +14,7 @@ export function InvestmentSection() {
     "For women planning to conceive: a narrowing window and increasingly expensive interventions with every month of delay",
   ];
   const features = [
-    "30-minute assessment call with Akhila",
+    "30-minute consultation call with Akhila",
     "Full review of your PCOS history, symptoms, and lifestyle",
     "Clear understanding of what is driving your specific pattern",
     "Honest assessment of whether the programme is the right fit for you",
@@ -82,7 +83,7 @@ export function InvestmentSection() {
                       <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-wine-700/10 text-wine-700">
                         <CheckIcon className="h-3 w-3" strokeWidth={2.5} />
                       </span>
-                      <span className="text-pretty">{f}</span>
+                      <span className="text-pretty">{withPmos(f)}</span>
                     </li>
                   ))}
                 </ul>
@@ -93,13 +94,13 @@ export function InvestmentSection() {
                     variant="primary-lg"
                     label={
                       <>
-                        Book <span className="hidden lg:inline">My </span>
-                        Assessment<span className="hidden lg:inline"> Call</span>
+                        Book <span className="hidden lg:inline">Your </span>
+                        Consultation<span className="hidden lg:inline"> Call</span>
                         {" · "}
                         {publicEnv.assessmentFeeDisplay}
                       </>
                     }
-                    ariaLabel="Book your assessment call now"
+                    ariaLabel="Book your consultation call now"
                     className="w-full [&>span]:whitespace-nowrap [&>span]:leading-tight [&>span]:text-[15px] sm:[&>span]:text-base"
                     trailing={
                       <ArrowRightIcon

@@ -66,10 +66,10 @@ function StatCounter({ targetText }: { targetText: string }) {
 
 export function CloserSection() {
   const stats = [
-    { value: "30,000+", label: "Patients" },
+    { value: "15 Years", label: "Experience" },
     { value: "90 Days", label: "Programme" },
-    { value: "30 Min", label: FREE_FUNNEL_MODE ? "Consultation" : "Assessment" },
-    { value: FREE_FUNNEL_MODE ? "Free" : publicEnv.assessmentFeeDisplay, label: "To Start" },
+    { value: "30 Min", label: "Consultation" },
+    { value: publicEnv.assessmentFeeDisplay, label: "To Start" },
   ];
   return (
     <section id="closer" className="relative scroll-mt-20 overflow-hidden bg-wine-gradient py-20 text-cream-50 sm:py-28 lg:py-32">
@@ -100,7 +100,7 @@ export function CloserSection() {
               programme is: I wish I had done this two years ago.
             </blockquote>
             <figcaption className="mt-5 text-[12px] font-semibold uppercase tracking-[0.18em] text-gold-200 sm:text-[13px]">
-              — Dr. Aditya
+              Dr. Aditya
             </figcaption>
           </figure>
         </Reveal>
@@ -124,26 +124,15 @@ export function CloserSection() {
               href="/checkout"
               variant="primary-inverse-lg"
               label={
-                FREE_FUNNEL_MODE ? (
-                  <>
-                    Book <span className="hidden sm:inline">My </span>Free
-                    Consultation
-                  </>
-                ) : (
-                  <>
-                    Book <span className="hidden sm:inline">My </span>
-                    Assessment<span className="hidden sm:inline"> Call</span>
-                    {" · "}
-                    {publicEnv.assessmentFeeDisplay}
-                  </>
-                )
+                <>
+                  Book <span className="hidden sm:inline">Your </span>
+                  Consultation<span className="hidden sm:inline"> Call</span>
+                  {" · "}
+                  {publicEnv.assessmentFeeDisplay}
+                </>
               }
-              ariaLabel={
-                FREE_FUNNEL_MODE
-                  ? "Book your free consultation now"
-                  : "Book your assessment call now"
-              }
-              className="cta-attention [&>span]:whitespace-nowrap [&>span]:leading-tight"
+              ariaLabel="Book your consultation call now"
+              className="[&>span]:whitespace-nowrap [&>span]:leading-tight"
               trailing={
                 <ArrowRightIcon
                   className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5"

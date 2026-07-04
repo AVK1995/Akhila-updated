@@ -1,5 +1,35 @@
+import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { PlayIcon } from "./icons";
+
+/**
+ * Pmos — the brand's condition term. The medical field is moving from "PCOS"
+ * to "PMOS"; we show the old term struck through with the new term beside it
+ * so search traffic still recognises the page while learning the new name.
+ *
+ * Renders: ~~PCOS~~ PMOS
+ */
+export function Pmos() {
+  return (
+    <>
+      <s className="text-[0.8em] italic">PCOS</s> PMOS
+    </>
+  );
+}
+
+/**
+ * withPmos — render a plain copy string with every literal "PCOS" replaced by
+ * the struck-through <Pmos /> treatment. Lets us keep human-readable strings
+ * in data arrays (still containing "PCOS") while rendering them correctly.
+ * Returns the original string untouched when it has no "PCOS".
+ */
+export function withPmos(text: string): ReactNode {
+  if (!text.includes("PCOS")) return text;
+  const parts = text.split("PCOS");
+  return parts.flatMap((part, i) =>
+    i === 0 ? [part] : [<Pmos key={i} />, part]
+  );
+}
 
 /**
  * ImagePlaceholder: neutral block shown while client-supplied images

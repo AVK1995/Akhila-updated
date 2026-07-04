@@ -1,6 +1,7 @@
 "use client";
 
 import { Reveal } from "../shared-client";
+import { withPmos } from "../shared-static";
 import { StethoscopeIcon, FlaskIcon, DropletIcon, CalendarIcon } from "../icons";
 
 export function DeliverablesSection() {
@@ -85,7 +86,7 @@ export function DeliverablesSection() {
                   <h3 className="mt-5 font-display text-lg font-medium leading-snug text-ink-800 sm:text-[1.3rem]">
                     {d.title}
                   </h3>
-                  <p className="body-prose mt-3">{d.body}</p>
+                  <p className="body-prose mt-3">{withPmos(d.body)}</p>
                 </div>
               </article>
             </Reveal>

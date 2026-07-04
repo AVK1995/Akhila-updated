@@ -25,9 +25,7 @@ const siteUrl = publicEnv.siteUrl;
 const siteName = publicEnv.siteName;
 const fee = publicEnv.assessmentFeeDisplay;
 const description =
-  `Dr. Aditya maps your full metabolic picture first, finds what's actually holding your body back, then builds your 90-day plan around it. Get your energy and rhythm back. Expert-led, root-cause programme. ${
-    FREE_FUNNEL_MODE ? "Free initial consultation." : `Assessment from ${fee}.`
-  }`;
+  `Dr. Aditya runs your fasting insulin, HOMA-IR, cortisol, and gut markers first, finds the exact metabolic breakdown, then builds everything around it. Restore your cycles, lose stubborn weight, and clear your skin in 90 days. Physician-led PMOS programme with therapeutic IV infusion. Assessment from ${fee}.`;
 
 /**
  * Root metadata. Page files that are "use client" (landing/checkout/book-a-call)
@@ -37,7 +35,7 @@ const description =
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "The Metabolic Reset for the Woman Who Has Tried Everything",
+    default: "The PMOS Metabolic Assessment for the Woman Who Has Tried Everything",
     template: "%s · Dr. Aditya & Akhila",
   },
   description,
@@ -56,7 +54,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "The Metabolic Reset by Dr. Aditya & Akhila",
+    title: "The PMOS Metabolic Assessment by Dr. Aditya & Akhila",
     description,
   },
   robots: {
@@ -266,15 +264,15 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
               "@context": "https://schema.org",
-              "@type": "Organization",
-              name: "Dr. Aditya & Akhila's Metabolic Programme",
+              "@type": "MedicalBusiness",
+              name: "Dr. Aditya & Akhila's PMOS Metabolic Programme",
               url: siteUrl,
               description,
               areaServed: "IN",
               offers: {
                 "@type": "Offer",
-                name: FREE_FUNNEL_MODE ? "Free Consultation" : "Metabolic Assessment",
-                price: FREE_FUNNEL_MODE ? "0" : String(publicEnv.assessmentFeeInr),
+                name: "PMOS Metabolic Assessment",
+                price: String(publicEnv.assessmentFeeInr),
                 priceCurrency: "INR",
                 availability: "https://schema.org/InStock",
               },

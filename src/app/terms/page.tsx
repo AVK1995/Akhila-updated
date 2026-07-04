@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Marquee, StickyCTA, Footer } from "@/components/site-chrome";
+import { withPmos } from "@/components/landing/shared-static";
 import { publicEnv } from "@/lib/env";
 
 /* =============================================================================
@@ -16,7 +17,7 @@ import { publicEnv } from "@/lib/env";
 export const metadata: Metadata = {
   title: "Terms of Use",
   description:
-    "Terms of Use for Dr. Aditya & Akhila's metabolic wellness programme website and services.",
+    "Terms of Use for Dr. Aditya & Akhila's PMOS Metabolic Programme website and services.",
 };
 
 /* Navbar + Footer live in src/components/site-chrome.tsx — see import at top. */
@@ -40,8 +41,8 @@ export default function TermsPage() {
     {
       heading: "2. Nature of the services",
       body: [
-        `The services offered through this site include a paid assessment call (${fee}) and, where appropriate, enrolment into the Programme. The services are educational and coaching in nature — personalised nutrition, lifestyle and wellbeing guidance — provided for informational purposes only.`,
-        "Our content and sessions are not medical advice and are not a substitute for care from your own doctor. Nothing on this site is a diagnosis or treatment. Always consult a qualified healthcare professional before making changes to your diet, exercise or lifestyle.",
+        `The services offered through this site include a paid consultation call (${fee}) and, where appropriate, enrolment into the Programme. The services constitute personalised medical, nutritional and lifestyle guidance.`,
+        "Nothing on this site constitutes a diagnosis on its own. A clinical relationship begins only after the assessment call and, where applicable, written confirmation of enrolment.",
       ],
     },
     {
@@ -105,7 +106,7 @@ export default function TermsPage() {
               Last updated · {updatedOn}
             </p>
             <p className="mt-6 text-[15px] leading-relaxed text-ink-500 sm:text-base">
-              {intro}
+              {withPmos(intro)}
             </p>
           </header>
 
@@ -117,9 +118,9 @@ export default function TermsPage() {
                 </h2>
                 <div className="mt-3 space-y-3 text-[14px] leading-relaxed text-ink-500 sm:text-[15px]">
                   {Array.isArray(s.body) ? (
-                    s.body.map((p, i) => <p key={i}>{p}</p>)
+                    s.body.map((p, i) => <p key={i}>{withPmos(p)}</p>)
                   ) : (
-                    <p>{s.body}</p>
+                    <p>{withPmos(s.body)}</p>
                   )}
                 </div>
               </section>

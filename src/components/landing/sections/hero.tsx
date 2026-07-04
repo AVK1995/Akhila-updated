@@ -2,15 +2,15 @@
 
 import { useRef } from "react";
 import { motion } from "motion/react";
-import { CtaLink, LazyVimeoVideo, type LazyVimeoVideoHandle } from "../shared-client";
-import { FloatingOrbs } from "../shared-static";
+import { CtaLink, LazyMp4Video, type LazyMp4VideoHandle } from "../shared-client";
+import { FloatingOrbs, Pmos } from "../shared-static";
 import { ArrowRightIcon, PlayIcon, ShieldIcon } from "../icons";
 import { publicEnv } from "@/lib/env";
 import { FREE_FUNNEL_MODE } from "@/lib/funnel";
 import { UrgencyTimer } from "@/components/urgency-timer";
 
 export function HeroSection() {
-  const videoRef = useRef<LazyVimeoVideoHandle>(null);
+  const videoRef = useRef<LazyMp4VideoHandle>(null);
   return (
     <section
       id="hero"
@@ -43,9 +43,7 @@ export function HeroSection() {
           className="glass-pill inline-flex max-w-full items-center gap-2 whitespace-nowrap rounded-full px-3 py-1.5 text-[9.5px] font-semibold uppercase tracking-[0.08em] text-wine-700 shadow-premium-sm sm:gap-2.5 sm:px-5 sm:py-2 sm:text-[12px] sm:tracking-[0.16em]"
         >
           <span className="live-dot" />
-          {FREE_FUNNEL_MODE
-            ? "The PCOS Metabolic Programme · Free Consultation"
-            : `The PCOS Metabolic Assessment · Only ${publicEnv.assessmentFeeDisplay}`}
+          The <Pmos /> Metabolic Assessment · Only {publicEnv.assessmentFeeDisplay}
         </motion.div>
 
         {/* 2. Headline */}
@@ -55,7 +53,7 @@ export function HeroSection() {
           transition={{ duration: 0.8, delay: 0.08, ease: [0.16, 1, 0.3, 1] }}
           className="display-headline mx-auto max-w-3xl text-center text-[clamp(2rem,5.5vw+0.5rem,3rem)] leading-[1.1] tracking-tight sm:mt-5 sm:leading-[1.05]"
         >
-          Fix your PCOS at the{" "}
+          Fix your <Pmos /> at the{" "}
           <span className="italic text-wine-700">root</span>{" "}
           <span className="text-gradient-wine">before it gets significantly harder to reverse.</span>
         </motion.h1>
@@ -68,31 +66,33 @@ export function HeroSection() {
           className="mx-auto max-w-[36rem] text-pretty text-center text-[15.5px] leading-[1.6] text-ink-500 sm:mt-5 sm:text-[15px] sm:leading-relaxed"
         >
           Watch the video to see how Dr. Aditya, a family physician with{" "}
-          <span className="font-medium text-ink-700">15 years and over 30,000 patients</span>,
+          <span className="font-medium text-ink-700">15 years of clinical experience</span>,
           helps women break the pattern of temporary results, returning
-          symptoms and constant frustration by correcting the metabolic root of
-          PCOS.
+          symptoms and constant frustration by correcting the metabolic root of{" "}
+          <Pmos />.
         </motion.p>
 
-        {/* 4. Video caption — clickable glass pill. Clicking it opens the VSL
-            in FULLSCREEN with sound (the thumbnail itself plays inline). */}
+        {/* 4. Video caption — glass pill that mirrors the eyebrow pill above,
+            with a filled play badge so it reads as a clear "play this" prompt
+            without duplicating the big play button inside the thumbnail.
+            Clicking it starts the hero video in fullscreen (same instance, so
+            exiting fullscreen keeps the same session playing). */}
         <motion.button
           type="button"
-          onClick={() => videoRef.current?.play({ fullscreen: true })}
-          aria-label="Play video in fullscreen: Why Your PCOS Keeps Coming Back"
+          onClick={() => videoRef.current?.playFullscreen()}
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.22, ease: [0.16, 1, 0.3, 1] }}
-          className="glass-pill inline-flex cursor-pointer items-center gap-2.5 rounded-full py-1.5 pl-1.5 pr-4 font-display text-[13px] font-medium text-ink-800 shadow-premium-sm transition-transform duration-200 hover:-translate-y-0.5 active:scale-[0.98] sm:mt-6 sm:py-2 sm:pl-2 sm:pr-5 sm:text-[14px]"
+          className="glass-pill group/watch inline-flex cursor-pointer items-center gap-2.5 rounded-full py-1.5 pl-1.5 pr-4 font-display text-[13px] font-medium text-ink-800 shadow-premium-sm transition-shadow hover:shadow-premium sm:mt-6 sm:py-2 sm:pl-2 sm:pr-5 sm:text-[14px]"
         >
           <span
             aria-hidden="true"
-            className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-wine-700 text-cream-50 shadow-wine-glow sm:h-7 sm:w-7"
+            className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-wine-700 text-cream-50 shadow-wine-glow transition-transform duration-300 group-hover/watch:scale-105 sm:h-7 sm:w-7"
           >
             <PlayIcon className="ml-0.5 h-2.5 w-2.5 sm:h-3 sm:w-3" />
           </span>
           Watch:{" "}
-          <span className="text-wine-700">Why Your PCOS Keeps Coming Back</span>
+          <span className="text-wine-700">Why Your <Pmos /> Keeps Coming Back</span>
         </motion.button>
 
         {/* 5. Hero video */}
@@ -112,12 +112,13 @@ export function HeroSection() {
                   "conic-gradient(from 0deg, rgba(193,150,50,0.45), rgba(115,42,61,0.45), rgba(193,150,50,0.45))",
               }}
             />
-            <LazyVimeoVideo
+            <LazyMp4Video
               ref={videoRef}
-              videoId="1196886151"
-              mp4Src="https://tgox-production-bucket.nyc3.cdn.digitaloceanspaces.com/client_funnel_videos/Akhila/dr_aditya_&_akhila_vsl_v1%20(1080p).mp4"
-              title="Why Your PCOS Keeps Coming Back"
+              src="https://tgox-production-bucket.nyc3.cdn.digitaloceanspaces.com/client_funnel_videos/Akhila/dr_aditya_&_akhila_vsl_v1%20(1080p).mp4"
+              posterSrc="/images/hero/vsl-poster.jpg"
+              posterAlt="Dr. Aditya & Akhila, why your PCOS keeps coming back"
               aspect="16/9"
+              title="Why Your PCOS Keeps Coming Back, with Dr. Aditya & Akhila"
               playSize="md"
             />
           </div>
@@ -134,26 +135,15 @@ export function HeroSection() {
             href="/checkout"
             variant="primary-lg"
             label={
-              FREE_FUNNEL_MODE ? (
-                <>
-                  Book <span className="hidden sm:inline">Your </span>Free
-                  Consultation
-                </>
-              ) : (
-                <>
-                  Book <span className="hidden sm:inline">Your </span>
-                  Assessment<span className="hidden sm:inline"> Call</span>
-                  {" · "}
-                  {publicEnv.assessmentFeeDisplay}
-                </>
-              )
+              <>
+                Book <span className="hidden sm:inline">Your </span>
+                Consultation<span className="hidden sm:inline"> Call</span>
+                {" · "}
+                {publicEnv.assessmentFeeDisplay}
+              </>
             }
-            ariaLabel={
-              FREE_FUNNEL_MODE
-                ? "Book your free consultation"
-                : `Book your assessment call for ${publicEnv.assessmentFeeDisplay}`
-            }
-            className="cta-attention max-w-full [&>span]:whitespace-nowrap [&>span]:leading-tight [&>span]:text-[15px] sm:[&>span]:text-base"
+            ariaLabel={`Book your consultation call for ${publicEnv.assessmentFeeDisplay}`}
+            className="max-w-full [&>span]:whitespace-nowrap [&>span]:leading-tight [&>span]:text-[15px] sm:[&>span]:text-base"
             trailing={
               <ArrowRightIcon
                 className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5"
@@ -163,17 +153,8 @@ export function HeroSection() {
           />
           <p className="flex items-center gap-2 whitespace-nowrap text-[10px] font-medium uppercase tracking-[0.1em] text-ink-400 sm:text-[12px] sm:tracking-[0.16em]">
             <ShieldIcon className="h-3 w-3 text-gold-600" />
-            {FREE_FUNNEL_MODE ? (
-              <>
-                <span className="sm:hidden">Free call with Akhila</span>
-                <span className="hidden sm:inline">Free · 30-min consultation with Akhila</span>
-              </>
-            ) : (
-              <>
-                <span className="sm:hidden">Call with Akhila · Refundable</span>
-                <span className="hidden sm:inline">Refundable · 30-min assessment with Akhila</span>
-              </>
-            )}
+            <span className="sm:hidden">Call with Akhila · Refundable</span>
+            <span className="hidden sm:inline">Refundable · 30-min consultation with Akhila</span>
           </p>
           {FREE_FUNNEL_MODE && <UrgencyTimer className="mt-0.5" />}
         </motion.div>

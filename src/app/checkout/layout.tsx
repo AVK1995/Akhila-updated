@@ -7,8 +7,8 @@ import { publicEnv } from "@/lib/env";
  * can't export `metadata`.
  */
 export const metadata: Metadata = {
-  title: "Secure Checkout · Book Your Assessment",
-  description: `Complete your booking for the 30-minute metabolic assessment call with Akhila. ${publicEnv.assessmentFeeDisplay}, fully refundable.`,
+  title: "Secure Checkout · Book Your Consultation",
+  description: `Complete your booking for the 30-minute PMOS consultation call with Akhila. ${publicEnv.assessmentFeeDisplay}, fully refundable.`,
   robots: { index: false, follow: false },
 };
 

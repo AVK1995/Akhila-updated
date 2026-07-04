@@ -4,7 +4,7 @@ import { FREE_FUNNEL_MODE } from "@/lib/funnel";
 
 export const runtime = "edge";
 export const alt =
-  "Dr. Aditya & Akhila's Metabolic Programme. For the woman who has tried everything except the root cause.";
+  "Dr. Aditya & Akhila's PMOS Metabolic Programme. For the woman who has tried everything except the right diagnosis.";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -100,7 +100,7 @@ export default async function OGImage() {
                 marginTop: 2,
               }}
             >
-              The Metabolic Reset Programme
+              The PMOS Metabolic Programme
             </div>
           </div>
         </div>
