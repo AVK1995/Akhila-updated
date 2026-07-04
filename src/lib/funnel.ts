@@ -18,7 +18,7 @@
  * (CTAs, modal). `openLeadModal()` only touches `window` when called, so it is
  * safe to import server-side.
  */
-export const FREE_FUNNEL_MODE = true;
+export const FREE_FUNNEL_MODE = false;
 
 /** Custom DOM event that opens the global lead-capture modal. */
 export const LEAD_MODAL_EVENT = "akhila:open-lead";
