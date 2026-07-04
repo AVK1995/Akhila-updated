@@ -6,6 +6,8 @@ import { CtaLink, LazyMp4Video, type LazyMp4VideoHandle } from "../shared-client
 import { FloatingOrbs, Pmos } from "../shared-static";
 import { ArrowRightIcon, PlayIcon, ShieldIcon } from "../icons";
 import { publicEnv } from "@/lib/env";
+import { FREE_FUNNEL_MODE } from "@/lib/funnel";
+import { UrgencyTimer } from "@/components/urgency-timer";
 
 export function HeroSection() {
   const videoRef = useRef<LazyMp4VideoHandle>(null);
@@ -154,6 +156,7 @@ export function HeroSection() {
             <span className="sm:hidden">Call with Akhila · Refundable</span>
             <span className="hidden sm:inline">Refundable · 30-min consultation with Akhila</span>
           </p>
+          {FREE_FUNNEL_MODE && <UrgencyTimer className="mt-0.5" />}
         </motion.div>
       </div>
     </section>

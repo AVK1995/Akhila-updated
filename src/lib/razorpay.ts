@@ -40,23 +40,3 @@ export function verifyPaymentSignature(args: {
   if (a.length !== b.length) return false;
   return crypto.timingSafeEqual(a, b);
 }
-
-/**
- * Verifies the Razorpay webhook signature (X-Razorpay-Signature header).
- * Used to authenticate server-to-server callbacks from Razorpay.
- */
-export function verifyWebhookSignature(
-  rawBody: string,
-  signature: string
-): boolean {
-  const env = getServerEnv();
-  if (!env.RAZORPAY_WEBHOOK_SECRET) return false;
-  const expected = crypto
-    .createHmac("sha256", env.RAZORPAY_WEBHOOK_SECRET)
-    .update(rawBody)
-    .digest("hex");
-  const a = Buffer.from(expected, "utf8");
-  const b = Buffer.from(signature, "utf8");
-  if (a.length !== b.length) return false;
-  return crypto.timingSafeEqual(a, b);
-}

@@ -76,11 +76,11 @@ export function AkshitaTestimonialSection() {
                 />
                 <LazyVimeoVideo
                   videoId="1192533748"
+                  mp4Src="https://tgox-production-bucket.nyc3.cdn.digitaloceanspaces.com/client_funnel_videos/Akhila/whatsapp_video_2026-05-15_at_1.30.50_pm%20(540p).mp4"
                   hash="abc123def"
                   aspect="9/16"
                   title="Akshaya's PCOS journey with Dr. Aditya & Akhila"
                   playSize="md"
-                  posterSrc="https://i.vimeocdn.com/video/2157834620-afa34ac910e913b246067789c2d03feb8bac3eb6d65fc8ae618ca76aba684463-d_640"
                 />
               </div>
               <div className="mt-4 flex items-center gap-3 rounded-2xl border border-ink-100/80 bg-white/70 px-4 py-3 shadow-premium-sm backdrop-blur-sm">

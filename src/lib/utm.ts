@@ -20,6 +20,11 @@ export const UTM_KEYS = [
   "ttclid",
   "msclkid",
   "ref",
+  // First-touch attribution: the full URL of the first page in the session
+  // and the document.referrer at that moment. Captured by the inline script
+  // in layout.tsx and never overwritten by subsequent navigations.
+  "landing_url",
+  "referrer",
 ] as const;
 
 export type UtmKey = (typeof UTM_KEYS)[number];

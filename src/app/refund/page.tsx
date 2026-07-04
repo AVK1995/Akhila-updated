@@ -3,7 +3,7 @@ import { Marquee, StickyCTA, Footer } from "@/components/site-chrome";
 import { publicEnv } from "@/lib/env";
 
 /* =============================================================================
- * REFUND POLICY — Akhila PCOS Metabolic Programme
+ * REFUND POLICY — Akhila Metabolic Wellness Programme
  * =============================================================================
  * All content for /refund lives here. Edit any clause directly below.
  * Pure server component — no interactivity, no client state.
@@ -47,7 +47,7 @@ export default function RefundPage() {
       heading: "3. The 90-Day Programme",
       body: [
         "Programme pricing is determined after your assessment call, based on your specific case. We do not collect Programme fees online without first having had the assessment conversation.",
-        "Programme refunds, where applicable, are governed by the written agreement signed at the time of enrolment. Because the Programme includes time-bound clinical inputs (IV infusions, lab review, weekly check-ins), pro-rated refunds depend on the stage at which a cancellation request is made.",
+        "Programme refunds, where applicable, are governed by the written agreement signed at the time of enrolment. Because the Programme includes time-bound, personalised inputs delivered on a schedule, pro-rated refunds depend on the stage at which a cancellation request is made.",
       ],
     },
     {

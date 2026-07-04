@@ -109,6 +109,12 @@ export function StickyCTA() {
 
   const onClick = useCallback((e: React.MouseEvent<HTMLAnchorElement>) => {
     if (typeof window === "undefined") return;
+    // Free mode: open the lead-capture modal instead of routing to /checkout.
+    if (FREE_FUNNEL_MODE) {
+      e.preventDefault();
+      openLeadModal();
+      return;
+    }
     const target = withUtm("/checkout");
     if (target !== "/checkout") {
       e.preventDefault();
@@ -203,12 +209,18 @@ export function Footer({ hasSticky = false }: { hasSticky?: boolean }) {
             <Link href="/terms" className="text-ink-600 transition-colors hover:text-wine-700">Terms</Link>
             <span aria-hidden="true" className="text-ink-300">·</span>
             <Link href="/privacy" className="text-ink-600 transition-colors hover:text-wine-700">Privacy</Link>
-            <span aria-hidden="true" className="text-ink-300">·</span>
-            <Link href="/refund" className="text-ink-600 transition-colors hover:text-wine-700">Refund</Link>
+            {!FREE_FUNNEL_MODE && (
+              <>
+                <span aria-hidden="true" className="text-ink-300">·</span>
+                <Link href="/refund" className="text-ink-600 transition-colors hover:text-wine-700">Refund</Link>
+              </>
+            )}
           </nav>
           <p className="mt-3 px-2 text-center text-[10.5px] leading-relaxed text-ink-400">
-            Clinical guidance, not a substitute for emergency medical care.
-            Individual results vary.
+            For educational and informational purposes only; not medical advice.
+            Individual results vary and are not typical or guaranteed. This
+            website is not affiliated with or endorsed by Meta. FACEBOOK and
+            INSTAGRAM are trademarks of Meta Platforms, Inc.
           </p>
         </div>
 
@@ -235,15 +247,22 @@ export function Footer({ hasSticky = false }: { hasSticky?: boolean }) {
             <ul className="mt-4 space-y-2.5 text-sm">
               <li><Link href="/terms" className="text-ink-500 transition-colors hover:text-wine-700">Terms of Use</Link></li>
               <li><Link href="/privacy" className="text-ink-500 transition-colors hover:text-wine-700">Privacy Policy</Link></li>
-              <li><Link href="/refund" className="text-ink-500 transition-colors hover:text-wine-700">Refund Policy</Link></li>
+              {!FREE_FUNNEL_MODE && (
+                <li><Link href="/refund" className="text-ink-500 transition-colors hover:text-wine-700">Refund Policy</Link></li>
+              )}
             </ul>
           </div>
           <div>
             <h3 className="font-display text-sm font-medium text-ink-700">Disclaimer</h3>
             <p className="mt-4 text-xs leading-relaxed text-ink-400">
-              This programme provides clinical guidance and is not a substitute
-              for emergency medical care. Individual results vary. Not
-              affiliated with any social media platform.
+              All content and coaching services provided by Dr. Aditya and
+              Akhila are for educational and informational purposes only and do
+              not guarantee specific results. This is not medical advice. Always
+              consult a qualified healthcare professional before making changes
+              to your diet, exercise or lifestyle. Individual results vary and
+              are not typical or guaranteed. This website is not affiliated with
+              or endorsed by Meta. FACEBOOK and INSTAGRAM are trademarks of Meta
+              Platforms, Inc.
             </p>
           </div>
         </div>
@@ -252,7 +271,7 @@ export function Footer({ hasSticky = false }: { hasSticky?: boolean }) {
             with the "Made with care in India" line restored at sm+. */}
         <div className="mt-5 flex flex-col items-center gap-1.5 border-t border-ink-100 pt-4 text-center sm:mt-10 sm:flex-row sm:items-center sm:justify-between sm:gap-3 sm:pt-6 sm:text-left">
           <p className="text-[10.5px] text-ink-400 sm:text-xs">
-            © {year} Dr. Aditya &amp; Akhila Clinical Team. All rights reserved.
+            © {year} Dr. Aditya &amp; Akhila. All rights reserved.
           </p>
           <p className="hidden text-xs text-ink-400 sm:block">Made with care in India.</p>
         </div>

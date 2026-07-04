@@ -1,5 +1,6 @@
 import { ImageResponse } from "next/og";
 import { publicEnv } from "@/lib/env";
+import { FREE_FUNNEL_MODE } from "@/lib/funnel";
 
 export const runtime = "edge";
 export const alt =
@@ -119,7 +120,9 @@ export default async function OGImage() {
               marginBottom: 24,
             }}
           >
-            Rs. {publicEnv.assessmentFeeInr} · Assessment Call · Refundable
+            {FREE_FUNNEL_MODE
+              ? "Free Consultation Call"
+              : `Rs. ${publicEnv.assessmentFeeInr} · Assessment Call · Refundable`}
           </div>
           <div
             style={{
@@ -142,7 +145,7 @@ export default async function OGImage() {
             >
               tried everything.
             </div>
-            <div style={{ display: "flex" }}>Except the right diagnosis.</div>
+            <div style={{ display: "flex" }}>Except the root cause.</div>
           </div>
         </div>
 
@@ -157,10 +160,10 @@ export default async function OGImage() {
           }}
         >
           {[
-            "Physician-Led",
-            "IV Infusion Included",
+            "Expert-Led",
+            "Nutrient Support Included",
             "Personalised Assessment",
-            "Money-Back Guarantee",
+            FREE_FUNNEL_MODE ? "Free Consultation" : "Money-Back Guarantee",
           ].map((t) => (
             <div
               key={t}

@@ -56,7 +56,8 @@ src/lib/                    GLOBAL utilities (pure logic, no UI)
 
 ```bash
 cd akhila-funnel
-cp .env.example .env.local      # fill in real keys (see below)
+# .env.local is the SINGLE source of truth for env vars. No .env.example
+# template — open .env.local and fill in real values directly (see below).
 npm install
 npm run dev                     # Turbopack dev server · http://localhost:3000
 ```
@@ -163,6 +164,29 @@ The abandoned webhook payload is identical minus `paymentId` / `orderId` / `paid
 | Payment gateway logic | `src/app/api/razorpay/*` + `src/lib/razorpay.ts` |
 | Abandoned-cart timer logic | `src/lib/abandonedCart.ts` |
 | Webhook payload shape | `src/lib/pabbly.ts` |
+
+## Recovery — backfill Pabbly for a date range
+
+If both PATH A (verify) and PATH B (webhook) fail for a payment (e.g.
+Pabbly is down for an extended period), recover with the backfill
+script:
+
+```bash
+# Dry-run first — prints what WOULD be sent
+node scripts/backfill-pabbly.mjs 2026-05-25 2026-05-26
+
+# Once dry-run looks correct, send for real
+node scripts/backfill-pabbly.mjs 2026-05-25 2026-05-26 --send
+
+# Skip specific payment IDs (already reconciled manually)
+node scripts/backfill-pabbly.mjs 2026-05-25 2026-05-26 --send --skip pay_X,pay_Y
+```
+
+The script applies the same funnel guardrail as the webhook (only
+processes payments where `notes.funnel === "akhila-pcos"`), skips
+payments already marked `pabblyFired`, and stamps the marker after
+successful sends so re-running is idempotent. Reads creds from
+`.env.local`. No `npm install` needed — uses only Node built-ins.
 
 ## Serverless deployment note
 

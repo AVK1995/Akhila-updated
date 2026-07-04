@@ -5,6 +5,8 @@ import { animate, useInView, useReducedMotion } from "motion/react";
 import { Reveal, CtaLink } from "../shared-client";
 import { ArrowRightIcon } from "../icons";
 import { publicEnv } from "@/lib/env";
+import { FREE_FUNNEL_MODE } from "@/lib/funnel";
+import { UrgencyTimer } from "@/components/urgency-timer";
 
 /**
  * StatCounter: animates a numeric value when it scrolls into view.
@@ -141,6 +143,7 @@ export function CloserSection() {
             <p className="text-center text-[13px] leading-relaxed text-cream-100/70 sm:text-sm">
               You will not leave the call with Akhila confused. Click above and secure your slot.
             </p>
+            {FREE_FUNNEL_MODE && <UrgencyTimer variant="dark" />}
           </div>
         </Reveal>
       </div>

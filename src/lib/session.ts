@@ -21,6 +21,11 @@ export type CheckoutLead = {
   paid?: boolean;
   paymentId?: string;
   orderId?: string;
+  /** Free lead-capture flow extras (FREE_FUNNEL_MODE). Optional so the paid
+   *  checkout lead shape is unchanged when the flag is flipped back. */
+  location?: string;
+  greatestChallenge?: string;
+  willingToInvest?: string;
 };
 
 const KEY = "akhila_lead_v1";

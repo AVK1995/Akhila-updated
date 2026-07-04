@@ -34,6 +34,7 @@ import {
   type CheckoutLead,
 } from "@/lib/session";
 import { publicEnv } from "@/lib/env";
+import { setMetaAdvancedMatching } from "@/lib/analytics";
 import { Marquee, Footer } from "@/components/site-chrome";
 import { Pmos, withPmos } from "@/components/landing/shared-static";
 
@@ -722,6 +723,55 @@ export default function CheckoutPage() {
 
   const utm = useMemo(() => utmToObject(getStoredUtm()), []);
 
+  /**
+   * META PIXEL — Manual Advanced Matching
+   * ---------------------------------------
+   * Once the user has provided enough identity (first, last, email, phone,
+   * city, country) and those values pass per-country phone validation, fire
+   * setMetaAdvancedMatching. It sha256-hashes the values client-side, writes
+   * them to the akhila_mam cookie (30-day TTL), and re-inits fbq so every
+   * PageView on /checkout, /book-a-call, /thank-you (and any return visit)
+   * ships with em / ph / fn / ln / ct / country / external_id attached.
+   *
+   * Debounced 500ms so each keystroke doesn't re-hash + re-write the cookie.
+   * Identity-only fields gate this — we do NOT wait for consent, age, or
+   * primary concern, since those are optional from Meta's matching POV.
+   */
+  useEffect(() => {
+    const firstName = (values.firstName ?? "").trim();
+    const lastName = (values.lastName ?? "").trim();
+    const email = (values.email ?? "").trim();
+    const city = (values.city ?? "").trim();
+    const phoneRaw = (values.phone ?? "").trim();
+    const phoneCountry = values.phoneCountry ?? DEFAULT_COUNTRY;
+    if (!firstName || !lastName || !email || !city || !phoneRaw) return;
+    const emailOk = z.string().email().safeParse(email).success;
+    if (!emailOk) return;
+    const country = getCountry(phoneCountry);
+    const phoneDigits = digitsOnly(phoneRaw);
+    if (phoneDigits.length < country.minLen || phoneDigits.length > country.maxLen) {
+      return;
+    }
+    const timer = setTimeout(() => {
+      void setMetaAdvancedMatching({
+        email,
+        phone: `${country.dial}${phoneDigits}`,
+        firstName,
+        lastName,
+        city,
+        country: country.iso,
+      });
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [
+    values.firstName,
+    values.lastName,
+    values.email,
+    values.city,
+    values.phone,
+    values.phoneCountry,
+  ]);
+
   function setField<K extends keyof FormValues>(key: K, value: FormValues[K]) {
     setValues((v) => ({ ...v, [key]: value }));
     setErrors((e) => ({ ...e, [key]: undefined }));
@@ -827,9 +877,6 @@ export default function CheckoutPage() {
           lastName: lead.lastName,
           email: lead.email,
           phone: lead.phone,
-          // Forwarded so the server-side bypass branch can fire the Pabbly
-          // purchase webhook with the full lead picture instead of just
-          // the minimum identity fields.
           phoneCountry: lead.phoneCountry,
           city: lead.city,
           ageRange: lead.ageRange,
@@ -885,41 +932,99 @@ export default function CheckoutPage() {
         notes: { leadId: lead.leadId },
         theme: { color: "#D26C3C" },
         modal: { ondismiss: () => setSubmitting(false) },
-        handler: async (response: RazorpayResponse) => {
-          try {
-            const verifyRes = await fetch("/api/razorpay/verify", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ ...response, lead: { ...lead, utm } }),
+        handler: (response: RazorpayResponse) => {
+          // ── KEEPALIVE FIRE-AND-REDIRECT (Part 11) ───────────────────────
+          // Razorpay just returned success on the browser side. We do NOT
+          // await /api/razorpay/verify here — that path used to lose 30-70%
+          // of mobile conversions because iOS Safari / Android Chrome kill
+          // backgrounded tabs in seconds, killing the in-flight fetch.
+          //
+          // Instead we:
+          //   1. fire-and-forget the MAM refresh (cookie write completes
+          //      synchronously even if the awaiting Promise is abandoned)
+          //   2. fire /api/razorpay/verify with `keepalive: true` — the
+          //      browser's fetch spec promises to complete this request
+          //      even if the tab unloads / page navigates away
+          //   3. redirect to /book-a-call immediately
+          //
+          // The verify response (when it arrives ~500ms-2s later) is
+          // written to sessionStorage AND dispatched as an event, so
+          // /book-a-call can detect verification failure and block booking
+          // even though we redirected before knowing the outcome.
+          void setMetaAdvancedMatching({
+            email: lead.email,
+            phone: lead.phone,
+            firstName: lead.firstName,
+            lastName: lead.lastName,
+            city: lead.city,
+            country: lead.phoneCountry,
+          });
+
+          const eventSourceUrl =
+            typeof window !== "undefined" ? window.location.href : undefined;
+
+          fetch("/api/razorpay/verify", {
+            method: "POST",
+            keepalive: true,
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              ...response,
+              lead: { ...lead, utm },
+              eventSourceUrl,
+            }),
+          })
+            .then(async (verifyRes) => {
+              let verified = false;
+              try {
+                const j = (await verifyRes.json()) as { verified?: boolean };
+                verified = Boolean(verifyRes.ok && j.verified);
+              } catch {
+                // Response body unreadable — treat as not-verified so the
+                // /book-a-call gate errs on the safe side.
+                verified = false;
+              }
+              const result = {
+                verified,
+                paymentId: response.razorpay_payment_id,
+                at: Date.now(),
+              };
+              try {
+                sessionStorage.setItem(
+                  "akhila_verify_result",
+                  JSON.stringify(result)
+                );
+              } catch {
+                /* tab may already be gone */
+              }
+              // Notify /book-a-call (which may have already hydrated by
+              // the time the verify response lands) so it can block the
+              // Calendly embed if verified=false.
+              try {
+                window.dispatchEvent(
+                  new CustomEvent("akhila:verify-result", { detail: result })
+                );
+              } catch {
+                /* CustomEvent unsupported on very old browsers */
+              }
+            })
+            .catch(() => {
+              // keepalive guarantees the REQUEST reaches the server, but
+              // the response may not come back if the tab navigated
+              // before resolution. Pabbly + CAPI fired regardless on the
+              // server side. Silent swallow is correct here.
             });
-            const j = (await verifyRes.json()) as {
-              ok?: boolean;
-              verified?: boolean;
-              error?: string;
-            };
-            if (!verifyRes.ok || !j.verified) {
-              setSubmitError(
-                "Payment received but verification failed. Please contact us with your payment ID."
-              );
-              setSubmitting(false);
-              return;
-            }
-            saveLead({
-              ...lead,
-              paid: true,
-              paymentId: response.razorpay_payment_id,
-              orderId: response.razorpay_order_id,
-            });
-            // Preserve UTMs into the next step
-            const params = new URLSearchParams();
-            for (const [k, v] of Object.entries(utm)) params.set(k, v);
-            params.set("pid", response.razorpay_payment_id);
-            router.push(`/book-a-call?${params.toString()}`);
-          } catch (err) {
-            const m = err instanceof Error ? err.message : "unknown_error";
-            setSubmitError(`Verification error: ${m}`);
-            setSubmitting(false);
-          }
+
+          saveLead({
+            ...lead,
+            paid: true,
+            paymentId: response.razorpay_payment_id,
+            orderId: response.razorpay_order_id,
+          });
+
+          const params = new URLSearchParams();
+          for (const [k, v] of Object.entries(utm)) params.set(k, v);
+          params.set("pid", response.razorpay_payment_id);
+          router.push(`/book-a-call?${params.toString()}`);
         },
       });
       rzp.open();

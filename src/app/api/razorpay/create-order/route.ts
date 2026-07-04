@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getRazorpay } from "@/lib/razorpay";
 import { getServerEnv } from "@/lib/env";
-import { sendPurchaseWebhook } from "@/lib/pabbly";
 import { cancelAbandoned } from "@/lib/abandonedCart";
 
 export const runtime = "nodejs";
@@ -13,7 +12,10 @@ const schema = z.object({
   lastName: z.string().min(1),
   email: z.string().email(),
   phone: z.string().min(7),
-  /** Optional fields used only to decide / report the bypass path. */
+  // Optional context. Not packed into notes anymore (verify-payment builds
+  // the full Pabbly payload from its own request body + cookies); kept only
+  // so the bypass branch can short-circuit and so a couple of debug notes
+  // land in the Razorpay dashboard.
   phoneCountry: z.string().min(2).max(4).optional(),
   city: z.string().optional(),
   ageRange: z.string().optional(),
@@ -25,12 +27,13 @@ const schema = z.object({
 /**
  * Creates a Razorpay order for the assessment fee, OR — if the request
  * carries a coupon code matching the server-only BYPASS_COUPON_CODE env var —
- * skips Razorpay entirely, fires the Pabbly purchase webhook with a synthetic
- * `BYPASS-…` id pair, and returns `{ bypass: true, … }` so the client can
+ * skips Razorpay entirely and returns `{ bypass: true, … }` so the client can
  * route straight to /book-a-call.
  *
- * The amount is read server-side from env so the client cannot tamper with it.
- * The bypass coupon is compared case-insensitively after trimming whitespace.
+ * No order notes carry tracking data and no webhook exists — verify-payment
+ * is the single firing path and rebuilds everything it needs from its own
+ * request. The bypass branch fires nothing (synthetic ₹0 order is always
+ * below the amount gate); it's a pure UI shortcut for internal testers.
  */
 export async function POST(req: Request) {
   let json: unknown;
@@ -50,10 +53,10 @@ export async function POST(req: Request) {
   const env = getServerEnv();
 
   // ───────────────────────── BYPASS PATH ─────────────────────────
-  // If a bypass coupon is configured AND the user typed it (case-insensitive,
-  // trimmed), we short-circuit Razorpay entirely. The downstream flow is
-  // identical to a verified payment — Pabbly webhook fires, abandoned-cart
-  // timer is cancelled — except the id pair is synthetic.
+  // Internal-tester shortcut: skip Razorpay entirely and route to
+  // /book-a-call. Fires NO Pabbly / CAPI (the synthetic ₹0 order is below
+  // the amount gate, and verify-payment — the only firing path — is never
+  // reached). Coupon compared case-insensitively after trimming.
   const configuredBypass = env.BYPASS_COUPON_CODE.trim().toLowerCase();
   const submittedCoupon = (parsed.data.couponCode ?? "").trim().toLowerCase();
   const isBypass =
@@ -63,29 +66,7 @@ export async function POST(req: Request) {
     const ts = Date.now();
     const orderId = `BYPASS-order-${ts}-${parsed.data.leadId.slice(-8)}`;
     const paymentId = `BYPASS-pay-${ts}-${parsed.data.leadId.slice(-8)}`;
-
-    // Best-effort: cancel abandoned-cart timer + fire purchase webhook.
     cancelAbandoned(parsed.data.leadId);
-    const webhook = await sendPurchaseWebhook({
-      leadId: parsed.data.leadId,
-      firstName: parsed.data.firstName,
-      lastName: parsed.data.lastName,
-      fullName: `${parsed.data.firstName} ${parsed.data.lastName}`.trim(),
-      email: parsed.data.email,
-      phone: parsed.data.phone,
-      phoneCountry: parsed.data.phoneCountry ?? "",
-      city: parsed.data.city,
-      ageRange: parsed.data.ageRange,
-      primaryConcern: parsed.data.primaryConcern,
-      couponCode: parsed.data.couponCode,
-      utm: parsed.data.utm,
-      paymentId,
-      orderId,
-      amountInr: 0,
-      paidAt: new Date().toISOString(),
-      source: "bypass_coupon",
-    });
-
     return NextResponse.json({
       bypass: true,
       orderId,
@@ -93,7 +74,6 @@ export async function POST(req: Request) {
       amount: 0,
       currency: "INR",
       keyId: env.RAZORPAY_KEY_ID,
-      webhook: webhook.ok ? "delivered" : "failed",
     });
   }
 
@@ -111,13 +91,12 @@ export async function POST(req: Request) {
       amount: env.ASSESSMENT_FEE_INR * 100, // paise
       currency: "INR",
       receipt: parsed.data.leadId.slice(0, 40),
+      // Minimal debug notes for the Razorpay dashboard only. NOT read by any
+      // code — verify-payment rebuilds the full Pabbly + CAPI payload from
+      // its own request body + cookies.
       notes: {
         leadId: parsed.data.leadId,
-        firstName: parsed.data.firstName,
-        lastName: parsed.data.lastName,
-        fullName: `${parsed.data.firstName} ${parsed.data.lastName}`.trim(),
         email: parsed.data.email,
-        phone: parsed.data.phone,
         product: "PCOS Metabolic Assessment",
       },
     });
