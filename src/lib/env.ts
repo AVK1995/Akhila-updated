@@ -86,8 +86,20 @@ export function getServerEnv(): ServerEnv {
   return _serverEnv;
 }
 
-const SITE_URL_RAW =
-  process.env.NEXT_PUBLIC_SITE_URL ?? "https://akhila.example.com";
+/**
+ * Normalise NEXT_PUBLIC_SITE_URL into a valid absolute URL. A scheme-less value
+ * like "dradityabapuji.com" (easy to paste into a Vercel env by mistake) would
+ * otherwise make `new URL()` throw — which crashes the production build at
+ * `metadataBase` AND silently breaks the prod-host tracking gate. Prefix
+ * https:// when the scheme is missing so both keep working.
+ */
+function normaliseSiteUrl(raw: string | undefined): string {
+  const t = (raw ?? "").trim();
+  if (!t) return "https://akhila.example.com";
+  return /^https?:\/\//i.test(t) ? t : `https://${t}`;
+}
+
+const SITE_URL_RAW = normaliseSiteUrl(process.env.NEXT_PUBLIC_SITE_URL);
 
 /**
  * Hostname extracted from NEXT_PUBLIC_SITE_URL. Used as the single source
@@ -104,7 +116,8 @@ const PROD_HOSTNAME = (() => {
 })();
 
 export const publicEnv = {
-  siteUrl: process.env.NEXT_PUBLIC_SITE_URL ?? "https://akhila.example.com",
+  // Normalised (scheme-guaranteed) — safe for `new URL()` / metadataBase.
+  siteUrl: SITE_URL_RAW,
   siteName: process.env.NEXT_PUBLIC_SITE_NAME ?? "Dr. Aditya & Akhila's PMOS Metabolic Programme",
   razorpayKeyId: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID ?? "",
   calendlyUrl: process.env.NEXT_PUBLIC_CALENDLY_URL ?? "",
