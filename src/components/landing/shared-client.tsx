@@ -12,6 +12,7 @@ import {
   type ComponentProps,
   type ReactNode,
 } from "react";
+import { flushSync } from "react-dom";
 import { cn } from "@/lib/utils";
 import { withUtm } from "@/lib/utm";
 import { trackVideoEvent } from "@/lib/analytics";
@@ -136,18 +137,10 @@ export type LazyVimeoVideoHandle = {
 };
 
 type LazyVimeoVideoProps = {
-  /** Vimeo numeric id. Empty string → renders the placeholder frame. Still
-   *  passed when `mp4Src` is set so analytics keep a stable key across the
-   *  Vimeo → CDN switch. */
+  /** Vimeo numeric id. Empty string → renders the placeholder frame. */
   videoId: string;
+  /** Privacy hash for unlisted videos (the `h=` param). Public videos omit it. */
   hash?: string;
-  /**
-   * Direct .mp4 URL (e.g. a DigitalOcean Spaces CDN endpoint). When set, the
-   * component plays this through a native <video> instead of the Vimeo iframe —
-   * used while Vimeo is unavailable. Same thumbnail → click-to-play → fullscreen
-   * UX, and it fires the SAME dataLayer video events as the Vimeo path.
-   */
-  mp4Src?: string;
   aspect?: "16/9" | "9/16" | "4/3" | "3/4" | "1/1";
   title: string;
   posterSrc?: string;
@@ -161,8 +154,8 @@ type LazyVimeoVideoProps = {
  * on click and plays inline WITH sound. An external trigger can call the
  * exposed `play({ fullscreen: true })` handle to open it fullscreen instead.
  */
-const LazyVimeoVideoVimeo = forwardRef<LazyVimeoVideoHandle, LazyVimeoVideoProps>(
-  function LazyVimeoVideoVimeo(
+export const LazyVimeoVideo = forwardRef<LazyVimeoVideoHandle, LazyVimeoVideoProps>(
+  function LazyVimeoVideo(
     {
       videoId,
       hash,
@@ -387,6 +380,9 @@ export const LazyMp4Video = forwardRef<
   LazyMp4VideoHandle,
   {
     src: string;
+    /** Stable analytics key for this video, so the native-MP4 player emits the
+     *  same dataLayer events as the Vimeo path. */
+    videoId?: string;
     aspect?: "16/9" | "9/16" | "4/3" | "3/4" | "1/1";
     title: string;
     posterSrc: string;
@@ -395,7 +391,7 @@ export const LazyMp4Video = forwardRef<
     playSize?: "sm" | "md" | "lg";
   }
 >(function LazyMp4Video(
-  { src, aspect = "16/9", title, posterSrc, posterAlt, className, playSize = "md" },
+  { src, videoId = "", aspect = "16/9", title, posterSrc, posterAlt, className, playSize = "md" },
   ref
 ) {
   const [playing, setPlaying] = useState(false);
@@ -446,6 +442,47 @@ export const LazyMp4Video = forwardRef<
     }
   }, [playing, playCurrent, enterFullscreen]);
 
+  // Track real playback (not just the click) on the native player: start,
+  // 25/50/75 % milestones, and completion — the same dataLayer events the
+  // Vimeo path fires, so both players report identically.
+  useEffect(() => {
+    if (!playing) return;
+    const el = videoRef.current;
+    if (!el) return;
+
+    const base = { video_id: videoId, video_title: title };
+    let started = false;
+    const milestones = [25, 50, 75];
+    const fired = new Set<number>();
+
+    const onPlay = () => {
+      if (started) return;
+      started = true;
+      trackVideoEvent("VideoPlayStart", base);
+    };
+    const onTimeUpdate = () => {
+      const duration = el.duration;
+      if (!duration || !Number.isFinite(duration)) return;
+      const pct = Math.floor((el.currentTime / duration) * 100);
+      for (const m of milestones) {
+        if (pct >= m && !fired.has(m)) {
+          fired.add(m);
+          trackVideoEvent("VideoProgress", { ...base, percent: m });
+        }
+      }
+    };
+    const onEnded = () => trackVideoEvent("VideoComplete", { ...base, percent: 100 });
+
+    el.addEventListener("play", onPlay);
+    el.addEventListener("timeupdate", onTimeUpdate);
+    el.addEventListener("ended", onEnded);
+    return () => {
+      el.removeEventListener("play", onPlay);
+      el.removeEventListener("timeupdate", onTimeUpdate);
+      el.removeEventListener("ended", onEnded);
+    };
+  }, [playing, videoId, title]);
+
   // On phones, a landscape (16:9) video shown in a portrait fullscreen gets
   // cropped. When THIS video enters fullscreen, rotate the screen to landscape
   // so it fills naturally (like YouTube); unlock on exit. Covers both our
@@ -485,12 +522,13 @@ export const LazyMp4Video = forwardRef<
           playCurrent();
           enterFullscreen();
         } else {
+          trackVideoEvent("VideoPlayClick", { video_id: videoId, video_title: title });
           wantFullscreenRef.current = true;
           setPlaying(true);
         }
       },
     }),
-    [playing, playCurrent, enterFullscreen]
+    [playing, playCurrent, enterFullscreen, videoId, title]
   );
 
   if (playing) {
@@ -521,7 +559,10 @@ export const LazyMp4Video = forwardRef<
   return (
     <button
       type="button"
-      onClick={() => setPlaying(true)}
+      onClick={() => {
+        trackVideoEvent("VideoPlayClick", { video_id: videoId, video_title: title });
+        setPlaying(true);
+      }}
       aria-label={`Play video: ${title}`}
       className={cn("block w-full cursor-pointer", className)}
     >

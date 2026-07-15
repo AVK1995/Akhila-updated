@@ -25,6 +25,7 @@ import { useCallback, useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { withUtm } from "@/lib/utm";
 import { publicEnv } from "@/lib/env";
+import { FREE_FUNNEL_MODE, openLeadModal } from "@/lib/funnel";
 import { Pmos } from "./landing/shared-static";
 
 /* ─────────────────────────────────────────────────────────────────────────────

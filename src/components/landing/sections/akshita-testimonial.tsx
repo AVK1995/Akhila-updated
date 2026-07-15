@@ -1,6 +1,6 @@
 "use client";
 
-import { Reveal, LazyVimeoVideo } from "../shared-client";
+import { Reveal, LazyMp4Video } from "../shared-client";
 import { Pmos, withPmos } from "../shared-static";
 import { CheckIcon, StarIcon } from "../icons";
 
@@ -74,10 +74,11 @@ export function AkshitaTestimonialSection() {
                       "conic-gradient(from 0deg, rgba(193,150,50,0.5), rgba(115,42,61,0.5), rgba(193,150,50,0.5))",
                   }}
                 />
-                <LazyVimeoVideo
-                  videoId="1192533748"
-                  mp4Src="https://tgox-production-bucket.nyc3.cdn.digitaloceanspaces.com/client_funnel_videos/Akhila/whatsapp_video_2026-05-15_at_1.30.50_pm%20(540p).mp4"
-                  hash="abc123def"
+                <LazyMp4Video
+                  src="https://tgox-production-bucket.nyc3.cdn.digitaloceanspaces.com/client_funnel_videos/Akhila/whatsapp_video_2026-05-15_at_1.30.50_pm%20(540p).mp4"
+                  videoId="akshaya-testimonial"
+                  posterSrc="/images/results/akshaya-poster.jpg"
+                  posterAlt="Akshaya sharing her PCOS journey"
                   aspect="9/16"
                   title="Akshaya's PCOS journey with Dr. Aditya & Akhila"
                   playSize="md"
