@@ -251,7 +251,7 @@ export const LazyVimeoVideo = forwardRef<LazyVimeoVideoHandle, LazyVimeoVideoPro
       // player, same analytics events). Touching state here would reload the
       // iframe (playsinline param) and restart the video.
       if (playing) {
-        if (fs) iframeRef.current?.requestFullscreen?.().catch(() => {});
+        if (fs) safeFullscreen(iframeRef.current);
         return;
       }
       trackVideoEvent("VideoPlayClick", { video_id: videoId, video_title: title });
@@ -260,9 +260,10 @@ export const LazyVimeoVideo = forwardRef<LazyVimeoVideoHandle, LazyVimeoVideoPro
         setPlaying(true);
       });
       if (fs) {
-        // Desktop/Android: take the iframe fullscreen. iPhone rejects this but
-        // is already going fullscreen natively via playsinline=0.
-        iframeRef.current?.requestFullscreen?.().catch(() => {});
+        // Desktop/Android: take the iframe fullscreen. iPhone has no
+        // Element.requestFullscreen, so this is a no-op there — it's already
+        // handing off to the native player via playsinline=0.
+        safeFullscreen(iframeRef.current);
       }
     },
     [playing, videoId, title]
@@ -343,14 +344,37 @@ export const LazyVimeoVideo = forwardRef<LazyVimeoVideoHandle, LazyVimeoVideoPro
   );
 });
 
-/** Take a native <video> fullscreen. iOS Safari only supports fullscreen on the
- *  <video> element itself (webkitEnterFullscreen) — not the standard API. */
-function requestVideoFullscreen(el: HTMLVideoElement) {
-  const ios = el as HTMLVideoElement & { webkitEnterFullscreen?: () => void };
-  if (typeof el.requestFullscreen === "function") {
-    el.requestFullscreen().catch(() => {});
-  } else if (typeof ios.webkitEnterFullscreen === "function") {
-    ios.webkitEnterFullscreen();
+/**
+ * Take an element fullscreen without EVER throwing into React.
+ *
+ * iOS is the reason this exists. iPhone Safari has no Element.requestFullscreen,
+ * and `webkitEnterFullscreen()` throws InvalidStateError when the media isn't
+ * ready yet. Either one escaping (we call this from a click handler and an
+ * effect) surfaces as Next.js's "a client-side exception has occurred" white
+ * screen. Every failure mode here is non-fatal: worst case we just don't go
+ * fullscreen and the video still plays.
+ */
+function safeFullscreen(
+  el:
+    | (Element & {
+        webkitRequestFullscreen?: () => void;
+        webkitEnterFullscreen?: () => void;
+      })
+    | null
+) {
+  if (!el) return;
+  try {
+    if (typeof el.requestFullscreen === "function") {
+      const p = el.requestFullscreen();
+      if (p && typeof p.catch === "function") p.catch(() => {});
+    } else if (typeof el.webkitRequestFullscreen === "function") {
+      el.webkitRequestFullscreen();
+    } else if (typeof el.webkitEnterFullscreen === "function") {
+      // iOS Safari: only the <video> element itself can go fullscreen.
+      el.webkitEnterFullscreen();
+    }
+  } catch {
+    /* unsupported or media not ready (iOS) — never break the page */
   }
 }
 
@@ -409,21 +433,7 @@ export const LazyMp4Video = forwardRef<
   }[aspect];
 
   const enterFullscreen = useCallback(() => {
-    const el = videoRef.current as
-      | (HTMLVideoElement & {
-          webkitRequestFullscreen?: () => void;
-          webkitEnterFullscreen?: () => void;
-        })
-      | null;
-    if (!el) return;
-    if (el.requestFullscreen) {
-      el.requestFullscreen().catch(() => {});
-    } else if (el.webkitRequestFullscreen) {
-      el.webkitRequestFullscreen();
-    } else if (el.webkitEnterFullscreen) {
-      // iOS Safari only supports fullscreen on the <video> element itself.
-      el.webkitEnterFullscreen();
-    }
+    safeFullscreen(videoRef.current);
   }, []);
 
   const playCurrent = useCallback(() => {
@@ -498,15 +508,16 @@ export const LazyMp4Video = forwardRef<
       | { lock?: (o: string) => Promise<void>; unlock?: () => void }
       | undefined;
     const onFsChange = () => {
-      const el = videoRef.current;
-      if (el && document.fullscreenElement === el) {
-        orientation?.lock?.("landscape").catch(() => {});
-      } else if (!document.fullscreenElement) {
-        try {
+      try {
+        const el = videoRef.current;
+        if (el && document.fullscreenElement === el) {
+          const p = orientation?.lock?.("landscape");
+          if (p && typeof p.catch === "function") p.catch(() => {});
+        } else if (!document.fullscreenElement) {
           orientation?.unlock?.();
-        } catch {
-          /* unlock not supported — ignore */
         }
+      } catch {
+        /* orientation lock unsupported (iOS/desktop) — ignore */
       }
     };
     document.addEventListener("fullscreenchange", onFsChange);
