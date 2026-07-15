@@ -124,15 +124,10 @@ export function CloserSection() {
               href="/checkout"
               variant="primary-inverse-lg"
               label={
-                <>
-                  Book <span className="hidden sm:inline">Your </span>
-                  Consultation<span className="hidden sm:inline"> Call</span>
-                  {" · "}
-                  {publicEnv.assessmentFeeDisplay}
-                </>
+                <>Book your Metabolic Assessment Call {publicEnv.assessmentFeeDisplay}</>
               }
-              ariaLabel="Book your consultation call now"
-              className="[&>span]:whitespace-nowrap [&>span]:leading-tight"
+              ariaLabel={`Book your Metabolic Assessment Call ${publicEnv.assessmentFeeDisplay}`}
+              className="[&>span]:text-balance [&>span]:leading-tight"
               trailing={
                 <ArrowRightIcon
                   className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5"

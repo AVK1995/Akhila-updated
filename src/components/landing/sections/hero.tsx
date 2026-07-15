@@ -135,15 +135,10 @@ export function HeroSection() {
             href="/checkout"
             variant="primary-lg"
             label={
-              <>
-                Book <span className="hidden sm:inline">Your </span>
-                Consultation<span className="hidden sm:inline"> Call</span>
-                {" · "}
-                {publicEnv.assessmentFeeDisplay}
-              </>
+              <>Book your Metabolic Assessment Call {publicEnv.assessmentFeeDisplay}</>
             }
-            ariaLabel={`Book your consultation call for ${publicEnv.assessmentFeeDisplay}`}
-            className="max-w-full [&>span]:whitespace-nowrap [&>span]:leading-tight [&>span]:text-[15px] sm:[&>span]:text-base"
+            ariaLabel={`Book your Metabolic Assessment Call ${publicEnv.assessmentFeeDisplay}`}
+            className="max-w-full [&>span]:text-balance [&>span]:leading-tight [&>span]:text-[15px] sm:[&>span]:text-base"
             trailing={
               <ArrowRightIcon
                 className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5"

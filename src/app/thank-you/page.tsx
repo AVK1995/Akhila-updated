@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { cn } from "@/lib/utils";
 import { Marquee, Footer } from "@/components/site-chrome";
+import { MamReapply } from "@/components/MamReapply";
 import { withPmos } from "@/components/landing/shared-static";
 import { MamReapply } from "@/components/MamReapply";
 import { FREE_FUNNEL_MODE } from "@/lib/funnel";

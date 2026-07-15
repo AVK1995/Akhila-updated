@@ -163,14 +163,11 @@ export function StickyCTA() {
           <Link
             href="/checkout"
             onClick={onClick}
-            aria-label={`Book your consultation call for ${publicEnv.assessmentFeeDisplay}`}
+            aria-label={`Book your Metabolic Assessment Call ${publicEnv.assessmentFeeDisplay}`}
             className="sticky-cta group flex-1 justify-center sm:flex-initial"
           >
-            <span className="whitespace-nowrap leading-tight">
-              Book <span className="hidden sm:inline">Your </span>
-              Consultation<span className="hidden sm:inline"> Call</span>
-              {" · "}
-              {publicEnv.assessmentFeeDisplay}
+            <span className="text-balance text-center leading-tight">
+              Book your Metabolic Assessment Call {publicEnv.assessmentFeeDisplay}
             </span>
             <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-cream-50/15 transition-transform duration-300 group-hover:translate-x-0.5 sm:h-7 sm:w-7">
               <ArrowRightIcon className="h-3.5 w-3.5" strokeWidth={2} />
