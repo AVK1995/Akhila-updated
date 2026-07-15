@@ -76,13 +76,9 @@ export function AkshitaTestimonialSection() {
                 />
                 <LazyMp4Video
                   src="https://tgox-production-bucket.nyc3.cdn.digitaloceanspaces.com/client_funnel_videos/Akhila/whatsapp_video_2026-05-15_at_1.30.50_pm%20(540p).mp4"
-                  // No committed still for this clip yet — empty posterSrc falls
-                  // back to the branded placeholder frame (VideoThumbnail) rather
-                  // than a broken <img>. Drop a ~1s frame at
-                  // public/images/testimonial/akshaya-poster.jpg and set it here
-                  // to match the hero / thank-you posters.
-                  posterSrc=""
-                  posterAlt="Akshaya, who reversed her PCOS with Dr. Aditya & Akhila"
+                  videoId="akshaya-testimonial"
+                  posterSrc="/images/results/akshaya-poster.jpg"
+                  posterAlt="Akshaya sharing her PCOS journey"
                   aspect="9/16"
                   title="Akshaya's PCOS journey with Dr. Aditya & Akhila"
                   playSize="md"

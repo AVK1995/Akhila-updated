@@ -137,18 +137,10 @@ export type LazyVimeoVideoHandle = {
 };
 
 type LazyVimeoVideoProps = {
-  /** Vimeo numeric id. Empty string → renders the placeholder frame. Still
-   *  passed when `mp4Src` is set so analytics keep a stable key across the
-   *  Vimeo → CDN switch. */
+  /** Vimeo numeric id. Empty string → renders the placeholder frame. */
   videoId: string;
+  /** Privacy hash for unlisted videos (the `h=` param). Public videos omit it. */
   hash?: string;
-  /**
-   * Direct .mp4 URL (e.g. a DigitalOcean Spaces CDN endpoint). When set, the
-   * component plays this through a native <video> instead of the Vimeo iframe —
-   * used while Vimeo is unavailable. Same thumbnail → click-to-play → fullscreen
-   * UX, and it fires the SAME dataLayer video events as the Vimeo path.
-   */
-  mp4Src?: string;
   aspect?: "16/9" | "9/16" | "4/3" | "3/4" | "1/1";
   title: string;
   posterSrc?: string;
@@ -162,8 +154,8 @@ type LazyVimeoVideoProps = {
  * on click and plays inline WITH sound. An external trigger can call the
  * exposed `play({ fullscreen: true })` handle to open it fullscreen instead.
  */
-const LazyVimeoVideoVimeo = forwardRef<LazyVimeoVideoHandle, LazyVimeoVideoProps>(
-  function LazyVimeoVideoVimeo(
+export const LazyVimeoVideo = forwardRef<LazyVimeoVideoHandle, LazyVimeoVideoProps>(
+  function LazyVimeoVideo(
     {
       videoId,
       hash,
@@ -259,7 +251,7 @@ const LazyVimeoVideoVimeo = forwardRef<LazyVimeoVideoHandle, LazyVimeoVideoProps
       // player, same analytics events). Touching state here would reload the
       // iframe (playsinline param) and restart the video.
       if (playing) {
-        if (fs) iframeRef.current?.requestFullscreen?.().catch(() => {});
+        if (fs) safeFullscreen(iframeRef.current);
         return;
       }
       trackVideoEvent("VideoPlayClick", { video_id: videoId, video_title: title });
@@ -268,9 +260,10 @@ const LazyVimeoVideoVimeo = forwardRef<LazyVimeoVideoHandle, LazyVimeoVideoProps
         setPlaying(true);
       });
       if (fs) {
-        // Desktop/Android: take the iframe fullscreen. iPhone rejects this but
-        // is already going fullscreen natively via playsinline=0.
-        iframeRef.current?.requestFullscreen?.().catch(() => {});
+        // Desktop/Android: take the iframe fullscreen. iPhone has no
+        // Element.requestFullscreen, so this is a no-op there — it's already
+        // handing off to the native player via playsinline=0.
+        safeFullscreen(iframeRef.current);
       }
     },
     [playing, videoId, title]
@@ -351,14 +344,37 @@ const LazyVimeoVideoVimeo = forwardRef<LazyVimeoVideoHandle, LazyVimeoVideoProps
   );
 });
 
-/** Take a native <video> fullscreen. iOS Safari only supports fullscreen on the
- *  <video> element itself (webkitEnterFullscreen) — not the standard API. */
-function requestVideoFullscreen(el: HTMLVideoElement) {
-  const ios = el as HTMLVideoElement & { webkitEnterFullscreen?: () => void };
-  if (typeof el.requestFullscreen === "function") {
-    el.requestFullscreen().catch(() => {});
-  } else if (typeof ios.webkitEnterFullscreen === "function") {
-    ios.webkitEnterFullscreen();
+/**
+ * Take an element fullscreen without EVER throwing into React.
+ *
+ * iOS is the reason this exists. iPhone Safari has no Element.requestFullscreen,
+ * and `webkitEnterFullscreen()` throws InvalidStateError when the media isn't
+ * ready yet. Either one escaping (we call this from a click handler and an
+ * effect) surfaces as Next.js's "a client-side exception has occurred" white
+ * screen. Every failure mode here is non-fatal: worst case we just don't go
+ * fullscreen and the video still plays.
+ */
+function safeFullscreen(
+  el:
+    | (Element & {
+        webkitRequestFullscreen?: () => void;
+        webkitEnterFullscreen?: () => void;
+      })
+    | null
+) {
+  if (!el) return;
+  try {
+    if (typeof el.requestFullscreen === "function") {
+      const p = el.requestFullscreen();
+      if (p && typeof p.catch === "function") p.catch(() => {});
+    } else if (typeof el.webkitRequestFullscreen === "function") {
+      el.webkitRequestFullscreen();
+    } else if (typeof el.webkitEnterFullscreen === "function") {
+      // iOS Safari: only the <video> element itself can go fullscreen.
+      el.webkitEnterFullscreen();
+    }
+  } catch {
+    /* unsupported or media not ready (iOS) — never break the page */
   }
 }
 
@@ -388,6 +404,9 @@ export const LazyMp4Video = forwardRef<
   LazyMp4VideoHandle,
   {
     src: string;
+    /** Stable analytics key for this video, so the native-MP4 player emits the
+     *  same dataLayer events as the Vimeo path. */
+    videoId?: string;
     aspect?: "16/9" | "9/16" | "4/3" | "3/4" | "1/1";
     title: string;
     posterSrc: string;
@@ -396,7 +415,7 @@ export const LazyMp4Video = forwardRef<
     playSize?: "sm" | "md" | "lg";
   }
 >(function LazyMp4Video(
-  { src, aspect = "16/9", title, posterSrc, posterAlt, className, playSize = "md" },
+  { src, videoId = "", aspect = "16/9", title, posterSrc, posterAlt, className, playSize = "md" },
   ref
 ) {
   const [playing, setPlaying] = useState(false);
@@ -414,21 +433,7 @@ export const LazyMp4Video = forwardRef<
   }[aspect];
 
   const enterFullscreen = useCallback(() => {
-    const el = videoRef.current as
-      | (HTMLVideoElement & {
-          webkitRequestFullscreen?: () => void;
-          webkitEnterFullscreen?: () => void;
-        })
-      | null;
-    if (!el) return;
-    if (el.requestFullscreen) {
-      el.requestFullscreen().catch(() => {});
-    } else if (el.webkitRequestFullscreen) {
-      el.webkitRequestFullscreen();
-    } else if (el.webkitEnterFullscreen) {
-      // iOS Safari only supports fullscreen on the <video> element itself.
-      el.webkitEnterFullscreen();
-    }
+    safeFullscreen(videoRef.current);
   }, []);
 
   const playCurrent = useCallback(() => {
@@ -447,6 +452,47 @@ export const LazyMp4Video = forwardRef<
     }
   }, [playing, playCurrent, enterFullscreen]);
 
+  // Track real playback (not just the click) on the native player: start,
+  // 25/50/75 % milestones, and completion — the same dataLayer events the
+  // Vimeo path fires, so both players report identically.
+  useEffect(() => {
+    if (!playing) return;
+    const el = videoRef.current;
+    if (!el) return;
+
+    const base = { video_id: videoId, video_title: title };
+    let started = false;
+    const milestones = [25, 50, 75];
+    const fired = new Set<number>();
+
+    const onPlay = () => {
+      if (started) return;
+      started = true;
+      trackVideoEvent("VideoPlayStart", base);
+    };
+    const onTimeUpdate = () => {
+      const duration = el.duration;
+      if (!duration || !Number.isFinite(duration)) return;
+      const pct = Math.floor((el.currentTime / duration) * 100);
+      for (const m of milestones) {
+        if (pct >= m && !fired.has(m)) {
+          fired.add(m);
+          trackVideoEvent("VideoProgress", { ...base, percent: m });
+        }
+      }
+    };
+    const onEnded = () => trackVideoEvent("VideoComplete", { ...base, percent: 100 });
+
+    el.addEventListener("play", onPlay);
+    el.addEventListener("timeupdate", onTimeUpdate);
+    el.addEventListener("ended", onEnded);
+    return () => {
+      el.removeEventListener("play", onPlay);
+      el.removeEventListener("timeupdate", onTimeUpdate);
+      el.removeEventListener("ended", onEnded);
+    };
+  }, [playing, videoId, title]);
+
   // On phones, a landscape (16:9) video shown in a portrait fullscreen gets
   // cropped. When THIS video enters fullscreen, rotate the screen to landscape
   // so it fills naturally (like YouTube); unlock on exit. Covers both our
@@ -462,15 +508,16 @@ export const LazyMp4Video = forwardRef<
       | { lock?: (o: string) => Promise<void>; unlock?: () => void }
       | undefined;
     const onFsChange = () => {
-      const el = videoRef.current;
-      if (el && document.fullscreenElement === el) {
-        orientation?.lock?.("landscape").catch(() => {});
-      } else if (!document.fullscreenElement) {
-        try {
+      try {
+        const el = videoRef.current;
+        if (el && document.fullscreenElement === el) {
+          const p = orientation?.lock?.("landscape");
+          if (p && typeof p.catch === "function") p.catch(() => {});
+        } else if (!document.fullscreenElement) {
           orientation?.unlock?.();
-        } catch {
-          /* unlock not supported — ignore */
         }
+      } catch {
+        /* orientation lock unsupported (iOS/desktop) — ignore */
       }
     };
     document.addEventListener("fullscreenchange", onFsChange);
@@ -486,12 +533,13 @@ export const LazyMp4Video = forwardRef<
           playCurrent();
           enterFullscreen();
         } else {
+          trackVideoEvent("VideoPlayClick", { video_id: videoId, video_title: title });
           wantFullscreenRef.current = true;
           setPlaying(true);
         }
       },
     }),
-    [playing, playCurrent, enterFullscreen]
+    [playing, playCurrent, enterFullscreen, videoId, title]
   );
 
   if (playing) {
@@ -522,7 +570,10 @@ export const LazyMp4Video = forwardRef<
   return (
     <button
       type="button"
-      onClick={() => setPlaying(true)}
+      onClick={() => {
+        trackVideoEvent("VideoPlayClick", { video_id: videoId, video_title: title });
+        setPlaying(true);
+      }}
       aria-label={`Play video: ${title}`}
       className={cn("block w-full cursor-pointer", className)}
     >

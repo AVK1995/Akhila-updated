@@ -2,7 +2,7 @@
 
 import { useRef } from "react";
 import { motion } from "motion/react";
-import { CtaLink, LazyMp4Video, type LazyMp4VideoHandle } from "../shared-client";
+import { CtaLink, LazyVimeoVideo, type LazyVimeoVideoHandle } from "../shared-client";
 import { FloatingOrbs, Pmos } from "../shared-static";
 import { ArrowRightIcon, PlayIcon, ShieldIcon } from "../icons";
 import { publicEnv } from "@/lib/env";
@@ -10,7 +10,7 @@ import { FREE_FUNNEL_MODE } from "@/lib/funnel";
 import { UrgencyTimer } from "@/components/urgency-timer";
 
 export function HeroSection() {
-  const videoRef = useRef<LazyMp4VideoHandle>(null);
+  const videoRef = useRef<LazyVimeoVideoHandle>(null);
   return (
     <section
       id="hero"
@@ -65,11 +65,11 @@ export function HeroSection() {
           transition={{ duration: 0.8, delay: 0.18, ease: [0.16, 1, 0.3, 1] }}
           className="mx-auto max-w-[36rem] text-pretty text-center text-[15.5px] leading-[1.6] text-ink-500 sm:mt-5 sm:text-[15px] sm:leading-relaxed"
         >
-          Watch the video to see how Dr. Aditya, a family physician with{" "}
+          Watch the video to see how family physician Dr. Aditya, with{" "}
           <span className="font-medium text-ink-700">15 years of clinical experience</span>,
-          helps women break the pattern of temporary results, returning
-          symptoms and constant frustration by correcting the metabolic root of{" "}
-          <Pmos />.
+          and clinical nutritionist Akhila help women break the pattern of
+          temporary results, returning symptoms, and constant frustration by
+          correcting the metabolic root of <Pmos />.
         </motion.p>
 
         {/* 4. Video caption — glass pill that mirrors the eyebrow pill above,
@@ -79,11 +79,11 @@ export function HeroSection() {
             exiting fullscreen keeps the same session playing). */}
         <motion.button
           type="button"
-          onClick={() => videoRef.current?.playFullscreen()}
+          onClick={() => videoRef.current?.play({ fullscreen: true })}
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.22, ease: [0.16, 1, 0.3, 1] }}
-          className="glass-pill group/watch inline-flex cursor-pointer items-center gap-2.5 rounded-full py-1.5 pl-1.5 pr-4 font-display text-[13px] font-medium text-ink-800 shadow-premium-sm transition-shadow hover:shadow-premium sm:mt-6 sm:py-2 sm:pl-2 sm:pr-5 sm:text-[14px]"
+          className="glass-pill group/watch inline-flex max-w-full cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-full py-1.5 pl-1.5 pr-3 font-display text-[10.5px] font-medium text-ink-800 shadow-premium-sm transition-shadow hover:shadow-premium sm:mt-6 sm:gap-2.5 sm:py-2 sm:pl-2 sm:pr-5 sm:text-[14px]"
         >
           <span
             aria-hidden="true"
@@ -112,10 +112,10 @@ export function HeroSection() {
                   "conic-gradient(from 0deg, rgba(193,150,50,0.45), rgba(115,42,61,0.45), rgba(193,150,50,0.45))",
               }}
             />
-            <LazyMp4Video
+            <LazyVimeoVideo
               ref={videoRef}
-              src="https://tgox-production-bucket.nyc3.cdn.digitaloceanspaces.com/client_funnel_videos/Akhila/dr_aditya_&_akhila_vsl_v1%20(1080p).mp4"
-              posterSrc="/images/hero/vsl-poster.jpg"
+              videoId="1209856216"
+              posterSrc="/images/hero/akhila_hero.jpeg"
               posterAlt="Dr. Aditya & Akhila, why your PCOS keeps coming back"
               aspect="16/9"
               title="Why Your PCOS Keeps Coming Back, with Dr. Aditya & Akhila"
