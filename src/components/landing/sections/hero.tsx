@@ -83,7 +83,10 @@ export function HeroSection() {
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.22, ease: [0.16, 1, 0.3, 1] }}
-          className="glass-pill group/watch inline-flex max-w-full cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-full py-1.5 pl-1.5 pr-3 font-display text-[10.5px] font-medium text-ink-800 shadow-premium-sm transition-shadow hover:shadow-premium sm:mt-6 sm:gap-2.5 sm:py-2 sm:pl-2 sm:pr-5 sm:text-[14px]"
+          /* Caption stays on ONE line from 360px up (every current phone). Below
+             that (old 320px iPhone SE/5) nowrap would clip the text inside the
+             pill, so allow it to wrap there instead. */
+          className="glass-pill group/watch inline-flex max-w-full cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-full py-1.5 pl-1.5 pr-3 font-display text-[10.5px] font-medium text-ink-800 shadow-premium-sm transition-shadow hover:shadow-premium max-[359px]:whitespace-normal max-[359px]:text-center sm:mt-6 sm:gap-2.5 sm:py-2 sm:pl-2 sm:pr-5 sm:text-[14px]"
         >
           <span
             aria-hidden="true"
