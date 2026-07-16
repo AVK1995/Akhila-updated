@@ -55,40 +55,50 @@ export function DeliverablesSection() {
           </div>
         </Reveal>
 
-        <div className="mt-14 grid gap-5 sm:mt-16 sm:gap-6 lg:grid-cols-2">
+        {/* Accordion, not cards: the full write-ups pushed the CTA far below the
+            fold on phones. Collapsed by default so the whole offer is scannable
+            in one screen and each item expands in place, FAQ-style. */}
+        <div className="mx-auto mt-12 max-w-3xl space-y-3 sm:mt-14">
           {deliverables.map((d, i) => (
-            <Reveal key={d.n} delay={i * 0.06}>
-              <article className="group relative h-full overflow-hidden rounded-3xl border border-ink-100/80 bg-gradient-to-br from-white via-white to-cream-100/60 p-7 shadow-premium transition-all duration-500 ease-smooth hover:-translate-y-1 hover:border-gold-200/80 hover:shadow-premium-lg sm:p-8">
-                <span
-                  aria-hidden="true"
-                  className="absolute inset-x-8 top-0 h-px origin-center scale-x-0 bg-gradient-to-r from-transparent via-gold-400 to-transparent transition-transform duration-700 ease-smooth group-hover:scale-x-100"
-                />
-                <span
-                  aria-hidden="true"
-                  className="pointer-events-none absolute -bottom-6 right-2 select-none font-display text-[110px] font-medium leading-none text-gold-100/70 transition-all duration-700 group-hover:-translate-y-1 group-hover:text-gold-200/80 sm:right-4 sm:text-[140px]"
-                >
-                  {d.n}
-                </span>
-                <span
-                  aria-hidden="true"
-                  className="pointer-events-none absolute inset-0 bg-gradient-to-br from-wine-50/0 via-transparent to-gold-50/0 opacity-0 transition-opacity duration-700 group-hover:from-wine-50/40 group-hover:to-gold-50/30 group-hover:opacity-100"
-                />
-
-                <div className="relative">
-                  <div className="flex items-start justify-between gap-4">
-                    <span className="icon-disc icon-disc-wine h-14 w-14 shrink-0 sm:h-16 sm:w-16">
-                      <d.icon className="relative h-5 w-5 sm:h-6 sm:w-6" strokeWidth={1.6} />
+            <Reveal key={d.n} delay={i * 0.04}>
+              <details className="group rounded-2xl border border-ink-100 bg-white shadow-premium-sm transition-all duration-500 ease-smooth open:border-gold-200/80 open:shadow-premium hover:border-gold-200/70">
+                <summary className="flex cursor-pointer list-none items-center gap-3.5 px-4 py-3.5 sm:px-6 sm:py-4">
+                  <span className="icon-disc icon-disc-wine h-10 w-10 shrink-0 sm:h-11 sm:w-11">
+                    <d.icon className="relative h-4 w-4 sm:h-5 sm:w-5" strokeWidth={1.6} />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-pretty font-display text-[14.5px] font-medium leading-snug text-ink-800 sm:text-[16.5px]">
+                      {d.title}
                     </span>
-                    <span className="rounded-full border border-gold-200/70 bg-gold-50/70 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-gold-700 backdrop-blur-sm sm:text-[11px]">
+                    <span className="mt-0.5 block text-[10px] font-semibold uppercase tracking-[0.12em] text-gold-700 sm:text-[11px]">
                       {d.value}
                     </span>
+                  </span>
+                  <span
+                    aria-hidden="true"
+                    className="mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-ink-100 bg-cream-50 text-wine-700 transition-all duration-300 group-open:rotate-45 group-open:border-gold-200 group-open:bg-gold-50"
+                  >
+                    <svg
+                      className="h-3.5 w-3.5"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M12 5v14M5 12h14" />
+                    </svg>
+                  </span>
+                </summary>
+                <div className="px-4 pb-4 pt-0 sm:px-6 sm:pb-6">
+                  <div className="border-t border-ink-100/70 pt-3.5">
+                    <p className="body-prose text-[13.5px] sm:text-[15px]">
+                      {withPmos(d.body)}
+                    </p>
                   </div>
-                  <h3 className="mt-5 font-display text-lg font-medium leading-snug text-ink-800 sm:text-[1.3rem]">
-                    {d.title}
-                  </h3>
-                  <p className="body-prose mt-3">{withPmos(d.body)}</p>
                 </div>
-              </article>
+              </details>
             </Reveal>
           ))}
         </div>

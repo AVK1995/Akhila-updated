@@ -30,10 +30,13 @@ export default function LandingPage() {
       <Marquee />
       <main id="main" className="relative">
         <HeroSection />
-        <DeliverablesSection />
-        <ClientResultsSection />
-        <AkshitaTestimonialSection />
+        {/* Straight after the VSL: who you're hearing from (Akhila, then
+            Dr. Aditya), then the client testimonial video, then the case
+            patterns that back it up. */}
         <TeamSection />
+        <AkshitaTestimonialSection />
+        <ClientResultsSection />
+        <DeliverablesSection />
         <EligibilitySection />
         {/* Investment (pricing) + Guarantee (money-back/refund) are payment-
             specific — hidden in free mode, restored when FREE_FUNNEL_MODE=false. */}

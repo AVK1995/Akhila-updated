@@ -170,11 +170,16 @@ export function StickyCTA() {
           <Link
             href="/checkout"
             onClick={onClick}
-            aria-label={`Book your Metabolic Assessment Call ${publicEnv.assessmentFeeDisplay}`}
+            aria-label={
+              FREE_FUNNEL_MODE
+                ? "Book your metabolic assessment"
+                : `Book your metabolic assessment for ${publicEnv.assessmentFeeDisplay}`
+            }
             className="sticky-cta group flex-1 justify-center sm:flex-initial"
           >
-            <span className="text-balance text-center leading-tight">
-              Book your Metabolic Assessment Call {publicEnv.assessmentFeeDisplay}
+            <span className="whitespace-nowrap text-[clamp(11px,3.2vw,15px)] leading-tight">
+              Book Your Metabolic Assessment
+              {!FREE_FUNNEL_MODE && <>{" · "}{publicEnv.assessmentFeeDisplay}</>}
             </span>
             <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-cream-50/15 transition-transform duration-300 group-hover:translate-x-0.5 sm:h-7 sm:w-7">
               <ArrowRightIcon className="h-3.5 w-3.5" strokeWidth={2} />

@@ -92,11 +92,9 @@ export function InvestmentSection() {
                   <CtaLink
                     href="/checkout"
                     variant="primary-lg"
-                    label={
-                      <>Book your Metabolic Assessment Call {publicEnv.assessmentFeeDisplay}</>
-                    }
-                    ariaLabel={`Book your Metabolic Assessment Call ${publicEnv.assessmentFeeDisplay}`}
-                    className="w-full [&>span]:text-balance [&>span]:leading-tight [&>span]:text-[15px] sm:[&>span]:text-base"
+                    label={<>Book Your Metabolic Assessment{" · "}{publicEnv.assessmentFeeDisplay}</>}
+                    ariaLabel={`Book your metabolic assessment for ${publicEnv.assessmentFeeDisplay}`}
+                    className="w-full [&>span]:whitespace-nowrap [&>span]:leading-tight [&>span]:text-[clamp(11px,3.2vw,16px)]"
                     trailing={
                       <ArrowRightIcon
                         className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5"

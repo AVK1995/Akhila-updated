@@ -258,6 +258,11 @@ export const LazyVimeoVideo = forwardRef<LazyVimeoVideoHandle, LazyVimeoVideoPro
       player.on("ended", () => {
         trackVideoEvent("VideoComplete", { ...base, percent: 100 });
       });
+    }).catch(() => {
+      // The @vimeo/player SDK is lazy-loaded purely for analytics. If its
+      // chunk fails to load (Turbopack HMR hiccup, a mid-session redeploy, a
+      // flaky network), swallow it: the video itself plays via the iframe and
+      // the page must never crash over a tracking dependency.
     });
 
     return () => {
@@ -352,12 +357,14 @@ export const LazyVimeoVideo = forwardRef<LazyVimeoVideoHandle, LazyVimeoVideoPro
     );
   }
 
-  // Plain thumbnail click → play inline (in-frame) with sound. Fullscreen is
-  // reserved for the external "Watch" caption via the imperative handle.
+  // Any tap on the thumbnail opens the video in fullscreen (desktop via the
+  // Fullscreen API on the iframe; iOS via the native player handoff with
+  // playsinline=0). Same behavior as the "Watch" caption, so there's no
+  // inline-only path.
   return (
     <button
       type="button"
-      onClick={() => startPlayback(false)}
+      onClick={() => startPlayback(true)}
       aria-label={`Play video: ${title}`}
       className={cn("block w-full cursor-pointer", className)}
     >
