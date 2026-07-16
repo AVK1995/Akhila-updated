@@ -6,6 +6,7 @@ import { CtaLink, LazyVimeoVideo, type LazyVimeoVideoHandle } from "../shared-cl
 import { FloatingOrbs, Pmos } from "../shared-static";
 import { ArrowRightIcon, PlayIcon, ShieldIcon } from "../icons";
 import { publicEnv } from "@/lib/env";
+import { trackGa4EventOnce } from "@/lib/ga4";
 import { FREE_FUNNEL_MODE } from "@/lib/funnel";
 import { UrgencyTimer } from "@/components/urgency-timer";
 
@@ -105,7 +106,10 @@ export function HeroSection() {
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.22, ease: [0.16, 1, 0.3, 1] }}
-          className="glass-pill group/watch inline-flex max-w-full cursor-pointer items-center gap-2 whitespace-nowrap rounded-full py-1.5 pl-1.5 pr-4 font-display text-[13px] font-medium text-ink-800 shadow-premium-sm transition-shadow hover:shadow-premium sm:mt-6 sm:gap-2.5 sm:py-2 sm:pl-2 sm:pr-5 sm:text-[14px]"
+          /* One line from 360px up (every current phone). On the old 320px
+             iPhone SE/5, nowrap would clip the text inside the pill, so allow
+             it to wrap there instead. */
+          className="glass-pill group/watch inline-flex max-w-full cursor-pointer items-center gap-2 whitespace-nowrap rounded-full py-1.5 pl-1.5 pr-4 font-display text-[13px] font-medium text-ink-800 shadow-premium-sm transition-shadow hover:shadow-premium max-[359px]:whitespace-normal max-[359px]:text-center sm:mt-6 sm:gap-2.5 sm:py-2 sm:pl-2 sm:pr-5 sm:text-[14px]"
         >
           <span
             aria-hidden="true"
@@ -135,6 +139,9 @@ export function HeroSection() {
             />
             <LazyVimeoVideo
               ref={videoRef}
+              // GA4 `video_play` (once per browser). Only the hero VSL reports
+              // it — the thank-you video uses the same component and must not.
+              onPlay={() => trackGa4EventOnce("video_play")}
               videoId="1209856216"
               posterSrc="/images/hero/akhila_hero.jpeg"
               posterAlt="Dr. Aditya & Akhila, why your PCOS keeps coming back"

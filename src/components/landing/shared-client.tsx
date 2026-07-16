@@ -16,6 +16,8 @@ import { flushSync } from "react-dom";
 import { cn } from "@/lib/utils";
 import { withUtm } from "@/lib/utm";
 import { trackVideoEvent } from "@/lib/analytics";
+import { trackGa4EventOnce } from "@/lib/ga4";
+import { fireAddToCartOnce } from "@/lib/meta-client";
 import { FREE_FUNNEL_MODE, openLeadModal } from "@/lib/funnel";
 import { PlayButton3D, VideoThumbnail } from "./shared-static";
 
@@ -83,6 +85,14 @@ export function CtaLink({
   const onClick = useCallback(
     (e: React.MouseEvent<HTMLAnchorElement>) => {
       if (typeof window === "undefined") return;
+      // ── Intent tracking — every CTA that advances toward checkout ──────
+      // GA4 `add_to_cart` (once per browser) + Meta CAPI `add_to_cart` (once
+      // per browser, via beacon so it survives the navigation below). Both are
+      // fire-and-forget and independent of each other; neither blocks the click.
+      if (href === "/checkout") {
+        trackGa4EventOnce("add_to_cart");
+        fireAddToCartOnce();
+      }
       // Free mode: every checkout CTA opens the lead-capture modal instead of
       // routing to the paid /checkout page.
       if (FREE_FUNNEL_MODE && href === "/checkout") {
@@ -147,6 +157,13 @@ type LazyVimeoVideoProps = {
   posterAlt?: string;
   className?: string;
   playSize?: "sm" | "md" | "lg";
+  /**
+   * Called once per mount when the player ACTUALLY starts playing (Vimeo SDK
+   * `play`), not merely when the thumbnail is clicked. Opt-in per instance so
+   * only the hero VSL reports GA4 `video_play` — this component also renders
+   * the thank-you video, which must not.
+   */
+  onPlay?: () => void;
 };
 
 /**
@@ -165,6 +182,7 @@ export const LazyVimeoVideo = forwardRef<LazyVimeoVideoHandle, LazyVimeoVideoPro
       posterAlt,
       className,
       playSize = "md",
+      onPlay,
     },
     ref
   ) {
@@ -173,6 +191,12 @@ export const LazyVimeoVideo = forwardRef<LazyVimeoVideoHandle, LazyVimeoVideoPro
   // playsinline (iPhone native-fullscreen handoff = the only path to iOS audio).
   const [fullscreen, setFullscreen] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
+  // Held in a ref so an inline `onPlay={() => ...}` can't re-run the SDK effect
+  // below (which would detach and re-attach the player on every render).
+  const onPlayRef = useRef(onPlay);
+  useEffect(() => {
+    onPlayRef.current = onPlay;
+  }, [onPlay]);
   const aspectClass = {
     "16/9": "aspect-[16/9]",
     "9/16": "aspect-[9/16]",
@@ -216,6 +240,9 @@ export const LazyVimeoVideo = forwardRef<LazyVimeoVideoHandle, LazyVimeoVideoPro
         if (started) return;
         started = true;
         trackVideoEvent("VideoPlayStart", base);
+        // Real playback began (not just a thumbnail click) — this is what the
+        // hero VSL reports as GA4 `video_play`.
+        onPlayRef.current?.();
       });
 
       player.on("timeupdate", (data: { percent: number }) => {

@@ -25,6 +25,7 @@ import { cn } from "@/lib/utils";
 import { getLead } from "@/lib/session";
 import { getStoredUtm, withUtm } from "@/lib/utm";
 import { publicEnv } from "@/lib/env";
+import { trackGa4EventOnce } from "@/lib/ga4";
 import { Marquee, Footer } from "@/components/site-chrome";
 import { Reveal } from "@/components/landing/shared-client";
 import { CalendarIcon, CheckIcon, ClockIcon } from "@/components/landing/icons";
@@ -150,6 +151,24 @@ function BookACallTop() {
 
   useEffect(() => {
     setHost(window.location.host);
+  }, []);
+
+  // ── GA4 `book_call` ─────────────────────────────────────────────────────
+  // Booking happens INSIDE the Calendly iframe, so there is no button of ours
+  // to attach to. Calendly postMessages `calendly.event_scheduled` to the
+  // parent when a slot is actually booked — that's the real signal, and it
+  // beats counting a click that may never complete. Origin-checked, and fired
+  // once per browser (see src/lib/ga4.ts).
+  useEffect(() => {
+    function onCalendlyMessage(e: MessageEvent) {
+      if (typeof e.origin !== "string" || !e.origin.endsWith("calendly.com")) return;
+      const data = e.data as { event?: unknown } | null;
+      if (data && typeof data === "object" && data.event === "calendly.event_scheduled") {
+        trackGa4EventOnce("book_call");
+      }
+    }
+    window.addEventListener("message", onCalendlyMessage);
+    return () => window.removeEventListener("message", onCalendlyMessage);
   }, []);
 
   const calendlyUrl = publicEnv.calendlyUrl;

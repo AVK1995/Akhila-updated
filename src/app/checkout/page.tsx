@@ -35,6 +35,8 @@ import {
 } from "@/lib/session";
 import { publicEnv } from "@/lib/env";
 import { setMetaAdvancedMatching } from "@/lib/analytics";
+import { trackGa4EventOnce } from "@/lib/ga4";
+import { fireInitiateCheckoutOnce } from "@/lib/meta-client";
 import { Marquee, Footer } from "@/components/site-chrome";
 import { Pmos, withPmos } from "@/components/landing/shared-static";
 
@@ -828,6 +830,15 @@ export default function CheckoutPage() {
   async function handlePay(e: React.FormEvent) {
     e.preventDefault();
     setSubmitError(null);
+
+    // ── GA4 `initiate_checkout` — BEFORE validation, by design ───────────
+    // The signal we want is "did the visitor try to pay". A half-filled form
+    // that bounces off validation below still counts: they clicked Pay, and the
+    // validation errors they get back are their own feedback loop. Fires once
+    // per browser (see src/lib/ga4.ts). Deliberately separate from the Meta
+    // `initiate_checkout`, which fires only on a VALID form further down.
+    trackGa4EventOnce("initiate_checkout");
+
     const parsed = schema.safeParse(values);
     if (!parsed.success) {
       const fieldErrors: FieldErrors = {};
@@ -914,6 +925,22 @@ export default function CheckoutPage() {
         router.push(`/book-a-call?${params.toString()}`);
         return;
       }
+
+      // ── Meta CAPI `initiate_checkout` — real, paid intent ───────────────
+      // Reached only when: the form validated, the order was created, and this
+      // is NOT a bypass-coupon QA order (that branch returned above). The
+      // Razorpay modal opens on the next line, so this is the true "wallet is
+      // out" moment. Fires once per unique email per browser. Awaited so it
+      // leaves before the modal steals focus, but it can never block payment —
+      // every failure path inside resolves quietly.
+      await fireInitiateCheckoutOnce({
+        firstName: lead.firstName,
+        lastName: lead.lastName,
+        email: lead.email,
+        phone: lead.phone,
+        phoneCountry: lead.phoneCountry,
+        city: lead.city,
+      });
 
       const rzp = new window.Razorpay({
         key: order.keyId || razorpayKeyId,
