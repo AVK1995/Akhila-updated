@@ -25,6 +25,8 @@ import { useCallback, useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { withUtm } from "@/lib/utm";
 import { publicEnv } from "@/lib/env";
+import { trackGa4EventOnce } from "@/lib/ga4";
+import { fireAddToCartOnce } from "@/lib/meta-client";
 import { FREE_FUNNEL_MODE, openLeadModal } from "@/lib/funnel";
 import { Pmos } from "./landing/shared-static";
 
@@ -110,6 +112,11 @@ export function StickyCTA() {
 
   const onClick = useCallback((e: React.MouseEvent<HTMLAnchorElement>) => {
     if (typeof window === "undefined") return;
+    // ── Intent tracking — this bar is a checkout CTA like any other ──────
+    // GA4 `add_to_cart` (once per browser) + Meta CAPI `add_to_cart` (once per
+    // browser). Same pair fired by <CtaLink>; neither blocks the click.
+    trackGa4EventOnce("add_to_cart");
+    fireAddToCartOnce();
     // Free mode: open the lead-capture modal instead of routing to /checkout.
     if (FREE_FUNNEL_MODE) {
       e.preventDefault();

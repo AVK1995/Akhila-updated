@@ -6,6 +6,7 @@ import { CtaLink, LazyVimeoVideo, type LazyVimeoVideoHandle } from "../shared-cl
 import { FloatingOrbs, Pmos } from "../shared-static";
 import { ArrowRightIcon, PlayIcon, ShieldIcon } from "../icons";
 import { publicEnv } from "@/lib/env";
+import { trackGa4EventOnce } from "@/lib/ga4";
 import { FREE_FUNNEL_MODE } from "@/lib/funnel";
 import { UrgencyTimer } from "@/components/urgency-timer";
 
@@ -117,6 +118,9 @@ export function HeroSection() {
             />
             <LazyVimeoVideo
               ref={videoRef}
+              // GA4 `video_play` (once per browser). Only the hero VSL reports
+              // it — the thank-you video uses the same component and must not.
+              onPlay={() => trackGa4EventOnce("video_play")}
               videoId="1209856216"
               posterSrc="/images/hero/akhila_hero.jpeg"
               posterAlt="Dr. Aditya & Akhila, why your PCOS keeps coming back"
