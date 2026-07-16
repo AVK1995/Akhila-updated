@@ -66,9 +66,11 @@ function PersonCard({
                 ✦
               </span>
 
-              {/* Identity caption — slides up + fades in on hover */}
-              <div className="pointer-events-none absolute inset-x-0 bottom-0 translate-y-3 opacity-0 transition-all duration-500 ease-smooth group-hover/portrait:translate-y-0 group-hover/portrait:opacity-100">
-                <div className="px-5 pb-5 pt-14 sm:px-6 sm:pb-6">
+              {/* Identity caption. Touch devices (< lg) can't hover, so it's
+                  always shown there — with its own dark gradient for legibility.
+                  Desktop (lg+) keeps the slide-up-on-hover reveal, untouched. */}
+              <div className="pointer-events-none absolute inset-x-0 bottom-0 translate-y-0 opacity-100 transition-all duration-500 ease-smooth lg:translate-y-3 lg:opacity-0 lg:group-hover/portrait:translate-y-0 lg:group-hover/portrait:opacity-100">
+                <div className="bg-gradient-to-t from-ink-900/85 via-ink-900/35 to-transparent px-5 pb-5 pt-16 sm:px-6 sm:pb-6 lg:from-transparent lg:via-transparent lg:pt-14">
                   <p className="font-display text-[16px] font-medium leading-tight text-cream-50 sm:text-[18px]">
                     {name}
                   </p>
@@ -147,16 +149,9 @@ export function TeamSection() {
           </div>
         </Reveal>
 
+        {/* Akhila leads: the ads are Akhila-fronted and she takes the first
+            call, so hers is the first face after the VSL. Dr. Aditya follows. */}
         <div className="mt-16 space-y-20 sm:mt-20 sm:space-y-24 lg:space-y-28">
-          <PersonCard
-            name="Dr. Aditya"
-            heading="The physician behind the method."
-            credential="Senior Family Physician · 15 Years of Experience"
-            bio="Dr. Aditya is a family physician, not a gynaecologist. In 15 years of practice, he has never done a five-minute appointment. He looks at your sleep, your stress, your metabolic markers, and your full history together, not one part at a time."
-            quote="When PCOS is involved, the pattern is almost always metabolic. And almost always missed by the time a woman reaches us."
-            stats={["15 Yrs Experience", "30 Min Minimum", "0 Five-Minute Appointments"]}
-            imageSrc="/images/team/Dr%20Aditya.jpeg"
-          />
           <PersonCard
             name="Akhila"
             heading="The nutritionist behind the results."
@@ -165,6 +160,15 @@ export function TeamSection() {
             quote="The goal is food that works with your body, that you actually want to eat, and that holds across three months and beyond."
             stats={["Gut-Skin Axis Protocol", "4-Week Update Cycle", "2× / Month Direct Sessions", "90 Days"]}
             imageSrc="/images/team/Akhila.jpeg"
+          />
+          <PersonCard
+            name="Dr. Aditya"
+            heading="The physician behind the method."
+            credential="Senior Family Physician · 15 Years of Experience"
+            bio="Dr. Aditya is a family physician, not a gynaecologist. In 15 years of practice, he has never done a five-minute appointment. He looks at your sleep, your stress, your metabolic markers, and your full history together, not one part at a time."
+            quote="When PCOS is involved, the pattern is almost always metabolic. And almost always missed by the time a woman reaches us."
+            stats={["15 Yrs Experience", "30 Min Minimum", "0 Five-Minute Appointments"]}
+            imageSrc="/images/team/Dr%20Aditya.jpeg"
             reversed
           />
         </div>

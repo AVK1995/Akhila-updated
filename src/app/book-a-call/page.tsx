@@ -20,7 +20,7 @@
  */
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { getLead } from "@/lib/session";
 import { getStoredUtm, withUtm } from "@/lib/utm";
@@ -64,6 +64,13 @@ function BookACallTop() {
   const [email, setEmail] = useState<string>("");
   const [paid, setPaid] = useState<boolean>(false);
   const [verifyFailedPid, setVerifyFailedPid] = useState<string | null>(null);
+  /** Flips true once Calendly reports the slot is booked (auto-redirect) or the
+   *  user taps the manual confirm button. Drives the "taking you there" state. */
+  const [booked, setBooked] = useState(false);
+  /** Current page host. Calendly only emits its `calendly.event_scheduled`
+   *  postMessage when the embed URL carries `embed_domain` + `embed_type`, so
+   *  we must feed it the real host. Empty during SSR; set on mount. */
+  const [host, setHost] = useState("");
 
   useEffect(() => {
     const lead = getLead();
@@ -105,16 +112,57 @@ function BookACallTop() {
     };
   }, []);
 
-  function goToThankYou() {
+  const goToThankYou = useCallback(() => {
     const utm = getStoredUtm();
     router.push(withUtm("/thank-you", utm));
-  }
+  }, [router]);
+
+  /**
+   * PRIMARY confirmation path: Calendly posts a `calendly.event_scheduled`
+   * message to the parent window the moment a slot is booked. This fires on
+   * FREE Calendly too — it's part of the embed messaging, not a paid feature.
+   * We catch it, show a brief "confirmed" state, then send them to /thank-you.
+   *
+   * (The visible "Confirm my booking" button below is the fallback for the
+   * rare case this message is blocked — some browsers/extensions drop
+   * cross-origin messages.)
+   */
+  useEffect(() => {
+    function onMessage(e: MessageEvent) {
+      if (
+        typeof e.origin !== "string" ||
+        !e.origin.includes("calendly.com") ||
+        typeof e.data !== "object" ||
+        e.data === null
+      ) {
+        return;
+      }
+      if ((e.data as { event?: string }).event === "calendly.event_scheduled") {
+        setBooked(true);
+        // Let Calendly paint its own "You are scheduled" screen for a beat
+        // before we move them to our confirmation.
+        window.setTimeout(goToThankYou, 1600);
+      }
+    }
+    window.addEventListener("message", onMessage);
+    return () => window.removeEventListener("message", onMessage);
+  }, [goToThankYou]);
+
+  useEffect(() => {
+    setHost(window.location.host);
+  }, []);
 
   const calendlyUrl = publicEnv.calendlyUrl;
+  // `embed_type=Inline` + `embed_domain=<host>` are what make Calendly post its
+  // scheduling events (incl. `calendly.event_scheduled`) up to this window.
+  // Without them the iframe renders but stays silent, so the auto-redirect
+  // never fires — this was the bug.
   const calendlyEmbedSrc = calendlyUrl
-    ? `${calendlyUrl}?hide_gdpr_banner=1&primary_color=5A1E30${
-        name ? `&name=${encodeURIComponent(name)}` : ""
-      }${email ? `&email=${encodeURIComponent(email)}` : ""}`
+    ? `${calendlyUrl}?hide_gdpr_banner=1&primary_color=5A1E30&embed_type=Inline${
+        host ? `&embed_domain=${encodeURIComponent(host)}` : ""
+      }${name ? `&name=${encodeURIComponent(name)}` : ""}${
+        email ? `&email=${encodeURIComponent(email)}` : ""
+      }`
     : "";
 
   return (
@@ -243,6 +291,42 @@ function BookACallTop() {
                   </div>
                 )}
               </div>
+
+              {/* Post-booking confirmation. We auto-forward the moment Calendly
+                  reports the slot is booked; this panel is the manual fallback
+                  so nobody gets stranded if that message is blocked. Only shown
+                  when a live calendar is actually embedded. */}
+              {calendlyEmbedSrc && !verifyFailedPid && (
+                <div className="mx-auto mt-6 max-w-2xl rounded-2xl border border-gold-200/70 bg-gradient-to-br from-gold-50/70 via-cream-50 to-wine-50/40 p-5 text-center shadow-premium-sm sm:mt-8 sm:p-6">
+                  {booked ? (
+                    <p className="flex items-center justify-center gap-2.5 font-display text-[15px] font-medium text-wine-700 sm:text-base">
+                      <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-wine-300 border-t-wine-700" />
+                      Slot locked in. Taking you to your confirmation&hellip;
+                    </p>
+                  ) : (
+                    <>
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-wine-700 sm:text-[12px]">
+                        Last step
+                      </p>
+                      <p className="mx-auto mt-2 max-w-md text-[14px] leading-relaxed text-ink-600 sm:text-[15px]">
+                        Once the calendar above shows your slot is confirmed,
+                        we&apos;ll whisk you to your confirmation automatically.
+                        If it doesn&apos;t move on its own, tap below.
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setBooked(true);
+                          goToThankYou();
+                        }}
+                        className="btn-primary mt-4"
+                      >
+                        Show my confirmation
+                      </button>
+                    </>
+                  )}
+                </div>
+              )}
 
               <p className="mt-4 text-center text-[12px] text-ink-400 sm:text-[13px]">
                 Issues with the calendar? Email{" "}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useCallback, useRef } from "react";
 import { motion } from "motion/react";
 import { CtaLink, LazyVimeoVideo, type LazyVimeoVideoHandle } from "../shared-client";
 import { FloatingOrbs, Pmos } from "../shared-static";
@@ -11,6 +11,29 @@ import { UrgencyTimer } from "@/components/urgency-timer";
 
 export function HeroSection() {
   const videoRef = useRef<LazyVimeoVideoHandle>(null);
+
+  /**
+   * "Watch the video below." → play the VSL in FULLSCREEN, on every device and
+   * OS. Desktop/Android take the iframe fullscreen via the Fullscreen API; iOS
+   * hands off to its native fullscreen player (playsinline=0) — the only path
+   * to sound there. Fullscreen must be requested inside this tap to stay within
+   * the user-activation window, so playback starts here synchronously.
+   *
+   * We still scroll the player into view first so that when the viewer exits
+   * fullscreen the same (still-playing) video is right there in the page.
+   */
+  const watchVideo = useCallback(() => {
+    const target = document.getElementById("hero-video");
+    if (target) {
+      const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+      target.scrollIntoView({
+        behavior: reduce ? "auto" : "smooth",
+        block: "center",
+      });
+    }
+    videoRef.current?.play({ fullscreen: true });
+  }, []);
+
   return (
     <section
       id="hero"
@@ -73,17 +96,16 @@ export function HeroSection() {
         </motion.p>
 
         {/* 4. Video caption — glass pill that mirrors the eyebrow pill above,
-            with a filled play badge so it reads as a clear "play this" prompt
-            without duplicating the big play button inside the thumbnail.
-            Clicking it starts the hero video in fullscreen (same instance, so
-            exiting fullscreen keeps the same session playing). */}
+            with a filled play badge so it reads as a clear "play this" prompt.
+            Tapping it scrolls the VSL into view and plays it in place (no
+            modal, no new page). Plain copy, no brand jargon. */}
         <motion.button
           type="button"
-          onClick={() => videoRef.current?.play({ fullscreen: true })}
+          onClick={watchVideo}
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.22, ease: [0.16, 1, 0.3, 1] }}
-          className="glass-pill group/watch inline-flex max-w-full cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-full py-1.5 pl-1.5 pr-3 font-display text-[10.5px] font-medium text-ink-800 shadow-premium-sm transition-shadow hover:shadow-premium sm:mt-6 sm:gap-2.5 sm:py-2 sm:pl-2 sm:pr-5 sm:text-[14px]"
+          className="glass-pill group/watch inline-flex max-w-full cursor-pointer items-center gap-2 whitespace-nowrap rounded-full py-1.5 pl-1.5 pr-4 font-display text-[13px] font-medium text-ink-800 shadow-premium-sm transition-shadow hover:shadow-premium sm:mt-6 sm:gap-2.5 sm:py-2 sm:pl-2 sm:pr-5 sm:text-[14px]"
         >
           <span
             aria-hidden="true"
@@ -91,8 +113,7 @@ export function HeroSection() {
           >
             <PlayIcon className="ml-0.5 h-2.5 w-2.5 sm:h-3 sm:w-3" />
           </span>
-          Watch:{" "}
-          <span className="text-wine-700">Why Your <Pmos /> Keeps Coming Back</span>
+          <span className="text-wine-700">Watch the video below.</span>
         </motion.button>
 
         {/* 5. Hero video */}
@@ -135,10 +156,17 @@ export function HeroSection() {
             href="/checkout"
             variant="primary-lg"
             label={
-              <>Book your Metabolic Assessment Call {publicEnv.assessmentFeeDisplay}</>
+              <>
+                Book Your Metabolic Assessment
+                {!FREE_FUNNEL_MODE && <>{" · "}{publicEnv.assessmentFeeDisplay}</>}
+              </>
             }
-            ariaLabel={`Book your Metabolic Assessment Call ${publicEnv.assessmentFeeDisplay}`}
-            className="max-w-full [&>span]:text-balance [&>span]:leading-tight [&>span]:text-[15px] sm:[&>span]:text-base"
+            ariaLabel={
+              FREE_FUNNEL_MODE
+                ? "Book your metabolic assessment"
+                : `Book your metabolic assessment for ${publicEnv.assessmentFeeDisplay}`
+            }
+            className="max-w-full [&>span]:whitespace-nowrap [&>span]:leading-tight [&>span]:text-[clamp(11px,3.2vw,16px)]"
             trailing={
               <ArrowRightIcon
                 className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5"

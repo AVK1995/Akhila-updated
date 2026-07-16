@@ -233,20 +233,30 @@ function digitsOnly(s: string): string {
  * FORM SCHEMA + TYPES
  * ─────────────────────────────────────────────────────────────────────────────
  */
+/**
+ * The form collects ONE "Full name" field, but Pabbly's CRM sheet has separate
+ * first_name / last_name columns (C/D) and Meta CAPI matches on them, so we
+ * split here and keep the downstream payload byte-identical. A single-word name
+ * (mononyms are common in India) yields an empty last name rather than blocking
+ * the booking.
+ */
+function splitFullName(full: string): { firstName: string; lastName: string } {
+  const parts = full.trim().split(/\s+/).filter(Boolean);
+  const firstName = parts.shift() ?? "";
+  return { firstName, lastName: parts.join(" ") };
+}
+
 const schema = z
   .object({
-    firstName: z.string().min(1, "Please enter your first name").max(60),
-    lastName:  z.string().min(1, "Please enter your last name").max(60),
+    fullName: z.string().trim().min(2, "Please enter your full name").max(120),
     email:     z.string().email("Enter a valid email"),
-    city:      z.string().min(1, "Please enter your city").max(60),
+    city:      z.string().min(1, "Please enter your city or town").max(60),
     phoneCountry: z.string().min(2).max(4),
     phone: z
       .string()
-      .min(4, "Enter your phone number")
+      .min(4, "Enter your WhatsApp number")
       .max(20)
       .regex(/^[\d\s\-()]+$/, "Only digits, spaces and dashes are allowed"),
-    ageRange:       z.string().min(1, "Please select your age range").max(20),
-    primaryConcern: z.string().min(1, "Please select your primary concern").max(120),
     couponCode:     z.string().max(40).optional().or(z.literal("")),
     consent: z.literal(true, {
       errorMap: () => ({
@@ -664,14 +674,11 @@ export default function CheckoutPage() {
   const razorpayKeyId = publicEnv.razorpayKeyId;
 
   const [values, setValues] = useState<Partial<FormValues>>({
-    firstName: "",
-    lastName: "",
+    fullName: "",
     email: "",
     phoneCountry: DEFAULT_COUNTRY,
     phone: "",
     city: "",
-    ageRange: "",
-    primaryConcern: "",
     couponCode: "",
     consent: undefined,
   });
@@ -679,6 +686,9 @@ export default function CheckoutPage() {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [rzpReady, setRzpReady] = useState(false);
+  /** Mobile-only: the order-summary card collapses into a dropdown above the
+   *  form. Desktop always shows it (in the sticky right column). */
+  const [summaryOpen, setSummaryOpen] = useState(false);
   /**
    * Coupon-applied UX state. We don't validate codes against a server
    * discount table (none exists yet); the Apply button just confirms
@@ -705,14 +715,11 @@ export default function CheckoutPage() {
         ? existing.phone.slice(c.dial.length).trim()
         : existing.phone;
       setValues({
-        firstName: existing.firstName,
-        lastName: existing.lastName,
+        fullName: `${existing.firstName} ${existing.lastName}`.trim(),
         email: existing.email,
         phoneCountry: storedCountry,
         phone: localDigits,
         city: existing.city,
-        ageRange: existing.ageRange,
-        primaryConcern: existing.primaryConcern,
         couponCode: existing.couponCode ?? "",
         consent: existing.consent ? true : undefined,
       });
@@ -738,13 +745,12 @@ export default function CheckoutPage() {
    * primary concern, since those are optional from Meta's matching POV.
    */
   useEffect(() => {
-    const firstName = (values.firstName ?? "").trim();
-    const lastName = (values.lastName ?? "").trim();
+    const { firstName, lastName } = splitFullName(values.fullName ?? "");
     const email = (values.email ?? "").trim();
     const city = (values.city ?? "").trim();
     const phoneRaw = (values.phone ?? "").trim();
     const phoneCountry = values.phoneCountry ?? DEFAULT_COUNTRY;
-    if (!firstName || !lastName || !email || !city || !phoneRaw) return;
+    if (!firstName || !email || !city || !phoneRaw) return;
     const emailOk = z.string().email().safeParse(email).success;
     if (!emailOk) return;
     const country = getCountry(phoneCountry);
@@ -764,8 +770,7 @@ export default function CheckoutPage() {
     }, 500);
     return () => clearTimeout(timer);
   }, [
-    values.firstName,
-    values.lastName,
+    values.fullName,
     values.email,
     values.city,
     values.phone,
@@ -783,19 +788,13 @@ export default function CheckoutPage() {
    */
   async function fireInitIfReady(next: Partial<FormValues>) {
     const candidate = { ...values, ...next };
-    if (
-      !candidate.firstName ||
-      !candidate.lastName ||
-      !candidate.email ||
-      !candidate.phone
-    )
-      return;
+    const { firstName, lastName } = splitFullName(candidate.fullName ?? "");
+    if (!firstName || !candidate.email || !candidate.phone) return;
     const emailValid = z.string().email().safeParse(candidate.email).success;
     if (!emailValid) return;
     if (
       initFiredRef.current &&
-      !next.firstName &&
-      !next.lastName &&
+      !next.fullName &&
       !next.email &&
       !next.phone
     ) {
@@ -810,14 +809,12 @@ export default function CheckoutPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           leadId: leadIdRef.current,
-          firstName: candidate.firstName,
-          lastName: candidate.lastName,
+          firstName,
+          lastName,
           email: candidate.email,
           phone: e164,
           phoneCountry: country.iso,
           city: candidate.city || undefined,
-          ageRange: candidate.ageRange || undefined,
-          primaryConcern: candidate.primaryConcern || undefined,
           couponCode: candidate.couponCode || undefined,
           utm,
           source: "checkout_form_blur",
@@ -850,16 +847,17 @@ export default function CheckoutPage() {
     leadIdRef.current = leadId;
     const country = getCountry(parsed.data.phoneCountry);
     const e164 = `${country.dial}${digitsOnly(parsed.data.phone)}`;
+    // Age range + primary concern are collected on the Calendly booking step
+    // now, so they're no longer part of the checkout lead.
+    const { firstName, lastName } = splitFullName(parsed.data.fullName);
     const lead: CheckoutLead = {
       leadId,
-      firstName: parsed.data.firstName,
-      lastName: parsed.data.lastName,
+      firstName,
+      lastName,
       email: parsed.data.email,
       phone: e164,
       phoneCountry: country.iso,
       city: parsed.data.city,
-      ageRange: parsed.data.ageRange,
-      primaryConcern: parsed.data.primaryConcern,
       couponCode: parsed.data.couponCode || undefined,
       consent: true,
       createdAt: new Date().toISOString(),
@@ -1057,8 +1055,9 @@ export default function CheckoutPage() {
         <section className="pb-20 pt-8 sm:pt-10 lg:pt-12">
         <div className="container-tight">
           <div className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:gap-10 [&>*]:min-w-0">
-            {/* LEFT: form */}
-            <form onSubmit={handlePay} noValidate>
+            {/* LEFT: form. On mobile it sits BELOW the summary dropdown
+                (order-2); on desktop it's the left column (order-1). */}
+            <form onSubmit={handlePay} noValidate className="order-2 lg:order-1">
               <h1 className="font-display text-xl font-medium leading-tight text-ink-800 sm:text-[26px] lg:text-[28px]">
                 Book your <Pmos /> metabolic assessment
               </h1>
@@ -1068,30 +1067,17 @@ export default function CheckoutPage() {
               </p>
 
               <div className="mt-6 space-y-3.5 sm:mt-7">
-                <div className="grid gap-3.5 sm:grid-cols-2">
-                  <Field
-                    id="firstName"
-                    label="First name"
-                    type="text"
-                    required
-                    autoComplete="given-name"
-                    value={values.firstName ?? ""}
-                    error={errors.firstName}
-                    onChange={(v) => setField("firstName", v)}
-                    onBlur={() => fireInitIfReady({})}
-                  />
-                  <Field
-                    id="lastName"
-                    label="Last name"
-                    type="text"
-                    required
-                    autoComplete="family-name"
-                    value={values.lastName ?? ""}
-                    error={errors.lastName}
-                    onChange={(v) => setField("lastName", v)}
-                    onBlur={() => fireInitIfReady({})}
-                  />
-                </div>
+                <Field
+                  id="fullName"
+                  label="Full name"
+                  type="text"
+                  required
+                  autoComplete="name"
+                  value={values.fullName ?? ""}
+                  error={errors.fullName}
+                  onChange={(v) => setField("fullName", v)}
+                  onBlur={() => fireInitIfReady({})}
+                />
                 <Field
                   id="email"
                   label="Email address"
@@ -1107,7 +1093,7 @@ export default function CheckoutPage() {
                 <div className="grid gap-3.5 sm:grid-cols-2">
                   <Field
                     id="city"
-                    label="City"
+                    label="City or town"
                     type="text"
                     required
                     autoComplete="address-level2"
@@ -1117,7 +1103,7 @@ export default function CheckoutPage() {
                   />
                   <PhoneField
                     id="phone"
-                    label="Phone (WhatsApp preferred)"
+                    label="WhatsApp number"
                     required
                     country={values.phoneCountry ?? DEFAULT_COUNTRY}
                     value={values.phone ?? ""}
@@ -1125,41 +1111,6 @@ export default function CheckoutPage() {
                     onCountryChange={(iso) => setField("phoneCountry", iso)}
                     onChange={(v) => setField("phone", v)}
                     onBlur={() => fireInitIfReady({})}
-                  />
-                </div>
-                <div className="grid gap-3.5 sm:grid-cols-2">
-                  <SelectField
-                    id="ageRange"
-                    label="Age range *"
-                    value={values.ageRange ?? ""}
-                    error={errors.ageRange}
-                    onChange={(v) => setField("ageRange", v)}
-                    options={[
-                      { value: "", label: "Select…" },
-                      { value: "Under 21", label: "Under 21" },
-                      { value: "21–25", label: "21–25" },
-                      { value: "26–30", label: "26–30" },
-                      { value: "31–35", label: "31–35" },
-                      { value: "36–40", label: "36–40" },
-                      { value: "Over 40", label: "Over 40" },
-                    ]}
-                  />
-                  <SelectField
-                    id="primaryConcern"
-                    label="Primary concern *"
-                    value={values.primaryConcern ?? ""}
-                    error={errors.primaryConcern}
-                    onChange={(v) => setField("primaryConcern", v)}
-                    options={[
-                      { value: "", label: "Select…" },
-                      { value: "Irregular cycles", label: "Irregular cycles" },
-                      { value: "Weight that won't move", label: "Weight that won't move" },
-                      { value: "Acne / hair fall / skin", label: "Acne / hair fall / skin" },
-                      { value: "Fatigue / energy", label: "Fatigue / energy" },
-                      { value: "Trying to conceive", label: "Trying to conceive" },
-                      { value: "Insulin resistance", label: "Insulin resistance" },
-                      { value: "Other", label: "Other" },
-                    ]}
                   />
                 </div>
               </div>
@@ -1233,10 +1184,52 @@ export default function CheckoutPage() {
               </p>
             </form>
 
-            {/* RIGHT: order summary */}
-            <aside>
+            {/* RIGHT (desktop) / TOP (mobile): order summary.
+                Mobile: order-1 so it's above the form, and it collapses into a
+                dropdown. Desktop: right column, always expanded, untouched. */}
+            <aside className="order-1 lg:order-2">
               <div className="lg:sticky lg:top-6">
-                <div className="rounded-3xl border border-wine-200/40 bg-white p-6 shadow-premium-lg sm:p-7">
+                {/* Mobile-only dropdown toggle. Hidden on desktop. */}
+                <button
+                  type="button"
+                  onClick={() => setSummaryOpen((o) => !o)}
+                  aria-expanded={summaryOpen}
+                  aria-controls="order-summary-card"
+                  className="flex w-full items-center justify-between gap-3 rounded-2xl border border-wine-200/40 bg-white px-5 py-3.5 shadow-premium-sm lg:hidden"
+                >
+                  <span className="flex items-center gap-2.5">
+                    <span className="icon-disc icon-disc-wine h-8 w-8 shrink-0 !rounded-full">
+                      <StethoscopeIcon className="relative h-3.5 w-3.5" />
+                    </span>
+                    <span className="font-display text-[15px] font-medium text-ink-800">
+                      What&rsquo;s included
+                    </span>
+                  </span>
+                  <span className="flex items-center gap-2">
+                    <span className="font-display text-[15px] font-medium text-wine-700">
+                      {publicEnv.assessmentFeeDisplay}
+                    </span>
+                    <span
+                      aria-hidden="true"
+                      className={cn(
+                        "inline-flex h-6 w-6 items-center justify-center rounded-full border border-ink-100 bg-cream-50 text-wine-700 transition-transform duration-300",
+                        summaryOpen && "rotate-180"
+                      )}
+                    >
+                      <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="m6 9 6 6 6-6" />
+                      </svg>
+                    </span>
+                  </span>
+                </button>
+
+                <div
+                  id="order-summary-card"
+                  className={cn(
+                    "mt-3 rounded-3xl border border-wine-200/40 bg-white p-6 shadow-premium-lg sm:p-7 lg:mt-0 lg:block",
+                    summaryOpen ? "block" : "hidden"
+                  )}
+                >
                   <div className="flex items-center gap-3">
                     <span className="icon-disc icon-disc-wine h-10 w-10 shrink-0 !rounded-full">
                       <StethoscopeIcon className="relative h-4 w-4" />
@@ -1341,7 +1334,12 @@ export default function CheckoutPage() {
                   </p>
                 </div>
 
-                <p className="mt-4 text-center text-[12px] leading-relaxed text-ink-400 sm:text-[13px]">
+                <p
+                  className={cn(
+                    "mt-4 text-center text-[12px] leading-relaxed text-ink-400 sm:text-[13px] lg:block",
+                    summaryOpen ? "block" : "hidden"
+                  )}
+                >
                   By proceeding you confirm the details above are accurate.
                   Confirmation lands in your inbox immediately after payment.
                 </p>

@@ -124,10 +124,17 @@ export function CloserSection() {
               href="/checkout"
               variant="primary-inverse-lg"
               label={
-                <>Book your Metabolic Assessment Call {publicEnv.assessmentFeeDisplay}</>
+                <>
+                  Book Your Metabolic Assessment
+                  {!FREE_FUNNEL_MODE && <>{" · "}{publicEnv.assessmentFeeDisplay}</>}
+                </>
               }
-              ariaLabel={`Book your Metabolic Assessment Call ${publicEnv.assessmentFeeDisplay}`}
-              className="[&>span]:text-balance [&>span]:leading-tight"
+              ariaLabel={
+                FREE_FUNNEL_MODE
+                  ? "Book your metabolic assessment"
+                  : `Book your metabolic assessment for ${publicEnv.assessmentFeeDisplay}`
+              }
+              className="max-w-full [&>span]:whitespace-nowrap [&>span]:leading-tight [&>span]:text-[clamp(11px,3.2vw,16px)]"
               trailing={
                 <ArrowRightIcon
                   className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5"

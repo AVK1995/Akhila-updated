@@ -13,8 +13,10 @@ export type CheckoutLead = {
   phone: string;          // E.164-ish, e.g. "+919876543210"
   phoneCountry: string;   // ISO-2 country code, e.g. "IN"
   city: string;
-  ageRange: string;
-  primaryConcern: string;
+  /** Collected on the Calendly booking step now, not at checkout — optional so
+   *  older stored leads (and the free flow) still parse. */
+  ageRange?: string;
+  primaryConcern?: string;
   couponCode?: string;
   consent: boolean;
   createdAt: string;
