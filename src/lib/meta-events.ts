@@ -4,8 +4,10 @@
  * Two additional server-side CAPI events that sit ABOVE the existing `sales`
  * conversion in the funnel:
  *
- *   add_to_cart        landing CTA click  → intent to buy
- *   initiate_checkout  Pay-button click   → wallet out, Razorpay opening
+ *   add_to_cart  landing CTA click  → intent to buy
+ *   ic_event     Pay-button click   → wallet out, Razorpay opening
+ *                (named `ic_event`, NOT `initiate_checkout` — see the event
+ *                 name constants below for why)
  *
  * These are peers of the existing `sales` event (src/lib/meta.ts), not part of
  * it: they are triggered by the visitor's browser action via our own API routes
@@ -15,10 +17,10 @@
  *
  * HEALTH & WELLNESS POSTURE — mirrors `sales` exactly (see META_HW_HARDENING.md
  * and src/lib/meta.ts). Do not diverge:
- *   - CUSTOM snake_case event names, never Meta standard `AddToCart` /
- *     `InitiateCheckout`. Standard events are blocked BY NAME on this
- *     H&W-classified dataset, exactly as `Purchase` is — which is why the
- *     conversion event is the custom `sales`.
+ *   - CUSTOM event names that do not collide with a Meta standard event in any
+ *     casing. Standard events are blocked BY NAME on this H&W-classified
+ *     dataset, exactly as `Purchase` is — which is why the conversion event is
+ *     the custom `sales`. See the event name constants below.
  *   - `custom_data` stays minimal + PHI-free: `value` + `currency` only. No
  *     content_ids / content_name / product / UTM — those could hint at a health
  *     condition.
@@ -39,9 +41,25 @@ import { originOnly } from "./utils";
 
 const CAPI_VERSION = "v25.0";
 
-/** Custom, snake_case — matches the `sales` / `consult` convention. */
+/**
+ * Event names MUST NOT collide with a Meta STANDARD event name — in any
+ * casing. Meta normalises `initiate_checkout` to the standard `InitiateCheckout`
+ * and blocks it by name on this H&W-classified dataset, exactly as it blocks
+ * `Purchase` (→ `sales`) and `Lead` (→ `consult`):
+ *
+ *   "The standard event 'initiate_checkout' is blocked because it suggests the
+ *    use of information not allowed under Meta's terms, based on the
+ *    categorisation of your data source."   — Events Manager, confirmed
+ *
+ * So snake_case alone does NOT make a name custom. `ic_event` is safe because
+ * no standard event is called that, the same reason `sales`/`consult` are safe.
+ *
+ * ⚠️ `add_to_cart` normalises to the standard `AddToCart` and is therefore
+ * expected to be blocked the same way once it first fires. If Events Manager
+ * flags it, rename it here (e.g. `atc_event`) — nothing else needs to change.
+ */
 const ATC_EVENT_NAME = "add_to_cart";
-const IC_EVENT_NAME = "initiate_checkout";
+const IC_EVENT_NAME = "ic_event";
 
 function sha256(value: string): string {
   return crypto.createHash("sha256").update(value).digest("hex");
@@ -167,8 +185,8 @@ export async function sendAddToCartEvent(
 }
 
 /**
- * Fire ONE custom `initiate_checkout` event (Pay clicked, form valid, Razorpay
- * about to open).
+ * Fire ONE custom `ic_event` event (Pay clicked, form valid, Razorpay about to
+ * open). Named `ic_event` because Meta blocks `initiate_checkout` by name.
  *
  * The full form is available here, so user_data carries the SAME hashed match
  * signals as `sales` (EMQ 9+). `external_id` uses the identical

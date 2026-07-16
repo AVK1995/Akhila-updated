@@ -22,11 +22,15 @@ const schema = z.object({
 /**
  * POST /api/meta/initiate-checkout
  *
- * Fires the custom Meta CAPI `initiate_checkout` event at the moment the
- * visitor has filled a VALID form, clicked Pay, and the Razorpay modal is about
- * to open. Called from the checkout submit handler AFTER /api/razorpay/
- * create-order succeeds and the bypass-coupon branch is ruled out, so QA bypass
- * orders never fire it.
+ * Fires the custom Meta CAPI `ic_event` event at the moment the visitor has
+ * filled a VALID form, clicked Pay, and the Razorpay modal is about to open.
+ * Called from the checkout submit handler AFTER /api/razorpay/create-order
+ * succeeds and the bypass-coupon branch is ruled out, so QA bypass orders never
+ * fire it.
+ *
+ * The route path keeps the descriptive `initiate-checkout` slug — it is ours
+ * and never reaches Meta. Only the EVENT name had to change: Meta blocks
+ * `initiate_checkout` by name on this H&W dataset (see src/lib/meta-events.ts).
  *
  * The full customer body is available here, so the event carries the same
  * hashed match signals as `sales` (EMQ 9+), with `external_id` derived
