@@ -37,8 +37,8 @@ type CaseResult = {
 function CaseCard({ r }: { r: CaseResult }) {
   return (
     <article className="group relative flex h-full flex-col overflow-hidden rounded-3xl border border-ink-100 bg-white shadow-premium transition-[transform,box-shadow,border-color] duration-300 ease-out hover:-translate-y-[3px] hover:border-gold-200 hover:shadow-premium-lg motion-reduce:transform-none">
-      {/* Photo */}
-      <div className="relative aspect-[4/3] w-full overflow-hidden bg-cream-100">
+      {/* Photo — 16:9 to show the full before/after side-by-side without cropping */}
+      <div className="relative aspect-[16/9] w-full overflow-hidden bg-cream-100">
         {r.imageSrc ? (
           <Image
             src={r.imageSrc}
