@@ -115,7 +115,14 @@ export async function fireInitiateCheckoutOnce(
       }),
     });
 
-    if (res.ok) {
+    // Only stamp the dedup flag when the event was ACTUALLY sent to Meta
+    // (`capi:"sent"`). The route returns 200 with `skipped:"test_mode"` behind
+    // the prod-host/fee gate (localhost, previews, ₹1 test) — stamping on that
+    // would permanently suppress the real event for this browser+email once a
+    // pre-prod attempt happened. On skip/error we leave the flag unset so a
+    // genuine production checkout can still fire it.
+    const body = (await res.json().catch(() => ({}))) as { capi?: string };
+    if (res.ok && body.capi === "sent") {
       try {
         window.localStorage.setItem(IC_FLAG, emailHash);
       } catch {

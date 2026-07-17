@@ -52,3 +52,12 @@ export function claimEventId(eventId: string): boolean {
   store.claimed.set(eventId, Date.now());
   return true;
 }
+
+/**
+ * Release a previously-claimed id so it can be claimed (and fire) again. Used
+ * by the Razorpay webhook when firing failed and it returns 5xx: releasing lets
+ * Razorpay's retry re-fire instead of being deduped away on a warm instance.
+ */
+export function releaseEventId(eventId: string): void {
+  if (eventId) store.claimed.delete(eventId);
+}

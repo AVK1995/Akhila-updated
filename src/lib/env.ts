@@ -25,6 +25,12 @@ const ASSESSMENT_FEE_INR_NUM = Number(RAW_FEE);
 const serverSchema = z.object({
   RAZORPAY_KEY_ID: z.string().min(1, "RAZORPAY_KEY_ID required"),
   RAZORPAY_KEY_SECRET: z.string().min(1, "RAZORPAY_KEY_SECRET required"),
+  /**
+   * Razorpay WEBHOOK secret — SEPARATE from RAZORPAY_KEY_SECRET. Set when you
+   * create the webhook in the Razorpay dashboard; signs every webhook POST to
+   * /api/razorpay/webhook. Empty → the webhook fails closed (rejects all).
+   */
+  RAZORPAY_WEBHOOK_SECRET: z.string().optional().default(""),
   ASSESSMENT_FEE_INR: z.coerce.number().int().positive().default(ASSESSMENT_FEE_INR_NUM),
   PABBLY_PURCHASE_WEBHOOK_URL: z.string().url().optional().or(z.literal("")),
   // PABBLY_ABANDONED_WEBHOOK_URL disabled — see .env.local. Restore this
@@ -72,6 +78,7 @@ export function getServerEnv(): ServerEnv {
     _serverEnv = {
       RAZORPAY_KEY_ID: process.env.RAZORPAY_KEY_ID ?? "",
       RAZORPAY_KEY_SECRET: process.env.RAZORPAY_KEY_SECRET ?? "",
+      RAZORPAY_WEBHOOK_SECRET: process.env.RAZORPAY_WEBHOOK_SECRET ?? "",
       ASSESSMENT_FEE_INR: ASSESSMENT_FEE_INR_NUM,
       PABBLY_PURCHASE_WEBHOOK_URL: process.env.PABBLY_PURCHASE_WEBHOOK_URL ?? "",
       // PABBLY_ABANDONED_WEBHOOK_URL: process.env.PABBLY_ABANDONED_WEBHOOK_URL ?? "",
