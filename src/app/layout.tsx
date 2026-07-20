@@ -214,8 +214,11 @@ const META_PIXEL_SNIPPET = META_PIXEL_ID
  * IDs are public (visible in page source), so they live as literals here;
  * setting either to "" cleanly disables that tracker.
  */
-const GA4_MEASUREMENT_ID: string = "G-08N5C538K1";
-const CLARITY_PROJECT_ID: string = "x1rh78gic1";
+// Property/project for the vsl.dradityabapuji.com subdomain. (The apex
+// dradityabapuji.com used G-08N5C538K1 / x1rh78gic1 — different property, do
+// not mix them or the reports merge two sites.)
+const GA4_MEASUREMENT_ID: string = "G-2Z80C0XJKZ";
+const CLARITY_PROJECT_ID: string = "xpajndnxtg";
 
 const GA4_SNIPPET = GA4_MEASUREMENT_ID
   ? `

@@ -52,8 +52,8 @@ classification **harmless** by pre-building the corrective bypass.
 2. Events Manager: **Auto-events OFF**, **Automatic Advanced Matching OFF**, **allow-list prod domain only**, self-categorize to a non-restricted category.
 3. Neutral UTM campaign naming.
 4. If `HighTicketClosed` is referenced in Ads Manager / a Custom Conversion, update it.
-5. Set `NEXT_PUBLIC_SITE_URL=https://www.dradityabapuji.com` + `NEXT_PUBLIC_SITE_NAME` (no "PCOS") in Vercel Production; apex→www 308 redirect. The pixel + gate match on this host exactly.
-6. Apps Script Script Property `EVENT_SOURCE_URL_DEFAULT=https://www.dradityabapuji.com`.
+5. Set `NEXT_PUBLIC_SITE_URL=https://vsl.dradityabapuji.com` + `NEXT_PUBLIC_SITE_NAME` (no "PCOS") in Vercel Production. The pixel + gate match on this host EXACTLY — every other host (apex, www, previews) must redirect here or it fires nothing.
+6. Apps Script Script Property `EVENT_SOURCE_URL_DEFAULT=https://vsl.dradityabapuji.com`.
 
 ## Escalation ladder (if the custom event later degrades)
 1. Confirm `sales` registers as **Server** in Test Events.

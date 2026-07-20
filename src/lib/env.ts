@@ -95,7 +95,7 @@ export function getServerEnv(): ServerEnv {
 
 /**
  * Normalise NEXT_PUBLIC_SITE_URL into a valid absolute URL. A scheme-less value
- * like "dradityabapuji.com" (easy to paste into a Vercel env by mistake) would
+ * like "vsl.dradityabapuji.com" (easy to paste into a Vercel env by mistake) would
  * otherwise make `new URL()` throw — which crashes the production build at
  * `metadataBase` AND silently breaks the prod-host tracking gate. Prefix
  * https:// when the scheme is missing so both keep working.
