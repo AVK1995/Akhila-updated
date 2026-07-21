@@ -3,32 +3,25 @@ import { cn } from "@/lib/utils";
 import { PlayIcon } from "./icons";
 
 /**
- * Pmos — the brand's condition term. The medical field is moving from "PCOS"
- * to "PMOS"; we show the old term struck through with the new term beside it
- * so search traffic still recognises the page while learning the new name.
+ * CONDITION TERM — single source of truth for how the condition is written.
  *
- * Renders: ~~PCOS~~ PMOS
+ * The brand briefly moved to "PMOS" (rendered as struck-through PCOS + PMOS).
+ * That was reverted: the site says plain "PCOS" everywhere again. These two
+ * helpers are kept as the ONE place to change it if the wording ever moves
+ * again — every call site already routes through them.
  */
 export function Pmos() {
-  return (
-    <>
-      <s className="text-[0.8em] italic">PCOS</s> PMOS
-    </>
-  );
+  return <>PCOS</>;
 }
 
 /**
- * withPmos — render a plain copy string with every literal "PCOS" replaced by
- * the struck-through <Pmos /> treatment. Lets us keep human-readable strings
- * in data arrays (still containing "PCOS") while rendering them correctly.
- * Returns the original string untouched when it has no "PCOS".
+ * Pass-through for copy strings that mention the condition. Data arrays keep
+ * plain, human-readable text (already containing "PCOS"), so this simply
+ * returns it. Kept alongside <Pmos /> so a future wording change is a
+ * one-file edit rather than a site-wide find-and-replace.
  */
 export function withPmos(text: string): ReactNode {
-  if (!text.includes("PCOS")) return text;
-  const parts = text.split("PCOS");
-  return parts.flatMap((part, i) =>
-    i === 0 ? [part] : [<Pmos key={i} />, part]
-  );
+  return text;
 }
 
 /**

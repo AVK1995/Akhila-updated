@@ -946,7 +946,7 @@ export default function CheckoutPage() {
         key: order.keyId || razorpayKeyId,
         amount: order.amount,
         currency: order.currency,
-        name: "PMOS Metabolic Assessment",
+        name: "PCOS Metabolic Assessment",
         description: "Akhila · 30-minute consultation call",
         order_id: order.orderId,
         prefill: {

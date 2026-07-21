@@ -15,7 +15,7 @@ import { publicEnv } from "@/lib/env";
 
 export const metadata: Metadata = {
   title: "Refund Policy",
-  description: `How refunds work for the ${publicEnv.assessmentFeeDisplay} PMOS Metabolic Assessment Call and the Programme.`,
+  description: `How refunds work for the ${publicEnv.assessmentFeeDisplay} PCOS Metabolic Assessment Call and the Programme.`,
 };
 
 /* Navbar + Footer live in src/components/site-chrome.tsx — see import at top. */
