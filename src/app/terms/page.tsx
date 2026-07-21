@@ -17,7 +17,7 @@ import { publicEnv } from "@/lib/env";
 export const metadata: Metadata = {
   title: "Terms of Use",
   description:
-    "Terms of Use for Dr. Aditya & Akhila's PMOS Metabolic Programme website and services.",
+    "Terms of Use for Dr. Aditya & Akhila's PCOS Metabolic Programme website and services.",
 };
 
 /* Navbar + Footer live in src/components/site-chrome.tsx — see import at top. */

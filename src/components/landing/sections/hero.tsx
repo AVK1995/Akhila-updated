@@ -143,7 +143,7 @@ export function HeroSection() {
               // it — the thank-you video uses the same component and must not.
               onPlay={() => trackGa4EventOnce("video_play")}
               videoId="1209856216"
-              posterSrc="/images/hero/akhila_hero.jpeg"
+              posterSrc="/images/hero/akhila_hero_pcos.jpg"
               posterAlt="Dr. Aditya & Akhila, why your PCOS keeps coming back"
               aspect="16/9"
               title="Why Your PCOS Keeps Coming Back, with Dr. Aditya & Akhila"
