@@ -20,7 +20,7 @@ import { ThankYouVideo } from "./thank-you-video";
 export const metadata: Metadata = {
   title: "You're All Set. See You On The Call",
   description:
-    "Thank you for booking your PCOS metabolic assessment with Dr. Aditya & Akhila.",
+    "Thank you for booking your personalised PCOS diagnosis and recovery plan with Dr. Aditya & Akhila.",
   robots: { index: false, follow: false },
 };
 
@@ -70,7 +70,7 @@ export default function ThankYouPage() {
     {
       icon: ClockIcon,
       title: "What to expect on your call with Akhila",
-      body: "Akhila will walk through your PCOS history, current symptoms, sleep, stress and what you have already tried, then give you a clear read on whether the programme is the right fit. Dr. Aditya joins your protocol only once you enrol.",
+      body: "Akhila will walk through your PCOS history, current symptoms, sleep, stress and what you have already tried, then name what is actually driving your pattern and give you a clear read on whether the programme is the right fit. Dr. Aditya joins your protocol only once you enrol.",
     },
     // Refund policy step is payment-specific — hidden in free mode.
     ...(FREE_FUNNEL_MODE
@@ -79,7 +79,7 @@ export default function ThankYouPage() {
           {
             icon: ShieldIcon,
             title: "Refund policy",
-            body: "If you finish the call with Akhila without clarity on your next step, your assessment fee is fully refunded. No questions asked.",
+            body: "If you finish the call with Akhila without clarity on your next step, your consultation fee is fully refunded. No questions asked.",
           },
         ]),
   ];
@@ -98,8 +98,8 @@ export default function ThankYouPage() {
           </h1>
           <p className="mt-5 text-[14px] leading-relaxed text-ink-500 sm:text-[15px]">
             Your slot is booked. Akhila will review your details before the
-            call so you hit the ground running. Dr. Aditya joins your
-            protocol only once you enrol.
+            call, so you walk out of it knowing what is actually driving your
+            PCOS. Dr. Aditya joins your protocol only once you enrol.
           </p>
 
           <ThankYouVideo />

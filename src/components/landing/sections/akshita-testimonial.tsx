@@ -50,9 +50,8 @@ export function AkshitaTestimonialSection() {
             <span className="section-label">Watch a Real Journey</span>
             <h2 className="display-headline text-display-lg sm:text-display-xl">
               Three months later,{" "}
-              <span className="italic text-wine-700">she was pregnant.</span>
+              <span className="title-underline italic text-wine-700">she was pregnant.</span>
             </h2>
-            <div className="section-divider mt-6" />
             <p className="body-lede mt-6">
               Akshaya, 32, diagnosed with <Pmos /> in 2018 but told it was a
               misdiagnosis because her cycles were regular. Then the weight

@@ -43,7 +43,7 @@ export default function PrivacyPage() {
     {
       heading: "2. Why we collect it",
       body: [
-        "To deliver the service you booked (the assessment call and any subsequent programme).",
+        "To deliver the service you booked (the consultation call and any subsequent programme).",
         "To send you confirmation, prep notes, calendar invites, and follow-up communications relevant to your booking.",
         "To run our automations (e.g. Pabbly) so legitimate communications reach you on time.",
         "To measure ad performance in aggregate and improve targeting.",

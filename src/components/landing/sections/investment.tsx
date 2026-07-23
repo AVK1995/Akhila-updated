@@ -1,8 +1,9 @@
 "use client";
 
-import { Reveal, CtaLink } from "../shared-client";
+import { Reveal } from "../shared-client";
 import { withPmos } from "../shared-static";
-import { ArrowRightIcon, CheckIcon, LockIcon, ShieldIcon } from "../icons";
+import { CtaBlock } from "../cta-block";
+import { CheckIcon, LockIcon, ShieldIcon } from "../icons";
 import { publicEnv } from "@/lib/env";
 
 export function InvestmentSection() {
@@ -18,18 +19,25 @@ export function InvestmentSection() {
     "Full review of your PCOS history, symptoms, and lifestyle",
     "Clear understanding of what is driving your specific pattern",
     "Honest assessment of whether the programme is the right fit for you",
-    "If you enrol, your assessment becomes the foundation of your entire programme",
+    "If you enrol, this consultation becomes the foundation of your entire programme",
   ];
   return (
-    <section id="investment" className="relative scroll-mt-20 py-14 sm:py-20 lg:py-24">
+    <section id="investment" className="section-peach relative scroll-mt-20 py-14 sm:py-20 lg:py-24">
       <div className="container-tight">
-        <div className="grid gap-12 lg:grid-cols-[1.1fr_1fr] lg:items-start lg:gap-16">
+        {/* min-w-0 on the columns: without it the pricing card's CTA sizes the
+            single mobile track to its min-content and overflows the container. */}
+        <div className="grid gap-12 [&>*]:min-w-0 lg:grid-cols-[1.1fr_1fr] lg:items-start lg:gap-16">
           <Reveal>
             <div className="text-center lg:text-left">
               <span className="section-label">Investment</span>
               <h2 className="display-headline text-display-lg sm:text-display-xl">
                 A small investment.{" "}
-                <span className="block text-gradient-wine">A serious commitment.</span>
+                {/* Outer span keeps the forced line break; the inner one is
+                    inline-block so the rule sits under the text, not the
+                    full-width block. */}
+                <span className="block">
+                  <span className="title-underline text-gradient-wine">A serious commitment.</span>
+                </span>
               </h2>
               <p className="mt-6 text-[15px] italic leading-relaxed text-ink-500 sm:text-base">
                 Before you look at the number, calculate what you have already spent.
@@ -52,7 +60,7 @@ export function InvestmentSection() {
           <Reveal delay={0.1}>
             <div className="relative lg:sticky lg:top-24">
               <div className="absolute -inset-4 -z-10 rounded-[2rem] bg-gradient-to-br from-wine-100/50 via-gold-100/40 to-wine-100/50 blur-3xl" />
-              <div className="rounded-3xl border border-wine-200/50 bg-white p-7 shadow-premium-xl sm:p-9">
+              <div className="rounded-3xl border border-wine-200/50 bg-white p-5 shadow-premium-xl sm:p-7 lg:p-9">
                 <div className="flex items-center justify-between">
                   <span className="inline-flex items-center gap-1.5 rounded-full bg-wine-700 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-cream-50 shadow-wine-glow sm:text-[12px]">
                     Start Here
@@ -88,20 +96,9 @@ export function InvestmentSection() {
                   ))}
                 </ul>
 
+                {/* Same conversion unit as every other CTA on the page. */}
                 <div className="mt-8 flex flex-col gap-3">
-                  <CtaLink
-                    href="/checkout"
-                    variant="primary-lg"
-                    label={<>Book Your Metabolic Assessment{" · "}{publicEnv.assessmentFeeDisplay}</>}
-                    ariaLabel={`Book your metabolic assessment for ${publicEnv.assessmentFeeDisplay}`}
-                    className="w-full [&>span]:whitespace-nowrap [&>span]:leading-tight [&>span]:text-[clamp(11px,3.2vw,16px)]"
-                    trailing={
-                      <ArrowRightIcon
-                        className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5"
-                        strokeWidth={2}
-                      />
-                    }
-                  />
+                  <CtaBlock twoLine />
                   <p className="flex items-center justify-center gap-2 text-[12px] text-ink-400 sm:text-[13px]">
                     <LockIcon className="h-3 w-3" />
                     Secure checkout · Razorpay · Cards, UPI, Wallets

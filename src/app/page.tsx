@@ -18,6 +18,7 @@ import { DeliverablesSection } from "@/components/landing/sections/deliverables"
 import { ClientResultsSection } from "@/components/landing/sections/client-results";
 import { AkshitaTestimonialSection } from "@/components/landing/sections/akshita-testimonial";
 import { TeamSection } from "@/components/landing/sections/team";
+import { ApproachSection } from "@/components/landing/sections/approach";
 import { EligibilitySection } from "@/components/landing/sections/eligibility";
 import { InvestmentSection } from "@/components/landing/sections/investment";
 import { GuaranteeSection } from "@/components/landing/sections/guarantee";
@@ -29,21 +30,23 @@ export default function LandingPage() {
     <>
       <Marquee />
       <main id="main" className="relative">
+        {/* Revised landing flow: hook + proof → qualify → featured story →
+            named case studies → who we are → how we work → what you get →
+            objections → close. */}
         <HeroSection />
-        {/* Straight after the VSL: who you're hearing from (Akhila, then
-            Dr. Aditya), then the client testimonial video, then the case
-            patterns that back it up. */}
-        <TeamSection />
+        <EligibilitySection />
         <AkshitaTestimonialSection />
         <ClientResultsSection />
+        <TeamSection />
+        <ApproachSection />
         <DeliverablesSection />
-        <EligibilitySection />
         {/* Investment (pricing) + Guarantee (money-back/refund) are payment-
             specific — hidden in free mode, restored when FREE_FUNNEL_MODE=false. */}
         {!FREE_FUNNEL_MODE && <InvestmentSection />}
         {!FREE_FUNNEL_MODE && <GuaranteeSection />}
-        <CloserSection />
+        {/* Objections last, then the closing CTA has the final word. */}
         <FAQSection />
+        <CloserSection />
       </main>
       <Footer hasSticky />
       <StickyCTA />

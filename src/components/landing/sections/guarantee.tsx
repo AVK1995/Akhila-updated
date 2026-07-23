@@ -1,6 +1,7 @@
 "use client";
 
 import { Reveal } from "../shared-client";
+import { CtaBlock } from "../cta-block";
 import { CheckIcon, ShieldIcon } from "../icons";
 import { publicEnv } from "@/lib/env";
 
@@ -56,7 +57,7 @@ export function GuaranteeSection() {
 
                 <h2 className="mt-5 font-display text-[clamp(1.55rem,2.6vw+0.8rem,2.4rem)] font-medium leading-[1.08] tracking-tight text-cream-50">
                   100%{" "}
-                  <span className="bg-gradient-to-r from-gold-200 via-gold-300 to-gold-200 bg-clip-text text-transparent">
+                  <span className="title-underline title-underline-dark bg-gradient-to-r from-gold-200 via-gold-300 to-gold-200 bg-clip-text text-transparent">
                     Refund If No Clarity.
                   </span>
                 </h2>
@@ -104,6 +105,9 @@ export function GuaranteeSection() {
                   case. Refund processed within 7 working days to your original
                   payment method.
                 </p>
+
+                {/* Guarantee → CTA, matching the reference's flow. */}
+                <CtaBlock variant="dark" className="mt-9 w-full sm:mt-10" />
               </div>
             </div>
           </div>

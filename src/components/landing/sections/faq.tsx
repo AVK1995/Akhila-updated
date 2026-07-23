@@ -9,39 +9,27 @@ const fee = publicEnv.assessmentFeeDisplay;
 
 const faqs: { q: string; a: string; hideInFree?: boolean }[] = [
   {
-    q: "What exactly happens on the 30-minute assessment call?",
-    a: "Akhila walks through your PCOS history, current symptoms, sleep, stress, gut, and what you have already tried. You leave with a clear read on what is driving your specific pattern and an honest assessment of whether the programme is the right fit for you. Dr. Aditya joins only after you enrol; the first call is with Akhila.",
+    q: "I've already tried diets, medications and supplements. How is this different?",
+    a: "Most women who come to us have already tried multiple approaches with only temporary improvements. Instead of giving every woman with PCOS the same advice, we first identify what's actually driving your symptoms through a detailed clinical assessment. Your treatment plan is then built around your body, not just your diagnosis.",
   },
   {
-    q: "Do I need recent bloodwork before the call with Akhila?",
-    a: "No. The call with Akhila is a clinical conversation first. If we need tests, we order them after. If you do have recent reports (insulin, HOMA-IR, thyroid, AMH, anything relevant), email them to us before the call so Akhila can read them in context.",
+    q: "My work schedule is unpredictable. What if I can't be perfectly consistent?",
+    a: "You don't need a perfect routine to make progress. Our recommendations are designed to work within real life, whether you're working long hours, travelling frequently or managing a demanding career. The goal isn't perfection. It's building an approach you can actually sustain.",
   },
   {
-    q: "How is this different from a regular gynaecologist visit?",
-    a: "We do not open with a prescription. We open with the metabolic markers most PCOS plans skip: fasting insulin, HOMA-IR, cortisol, inflammatory load, gut markers. The protocol is then built around what those actually reveal about your body.",
+    q: "I'm planning to conceive in the next few years. Is this the right time to address my PCOS?",
+    a: "Absolutely. Many women choose to improve their metabolic and hormonal health before trying to conceive or before beginning fertility treatment. While we never promise pregnancy outcomes, optimising your health beforehand can play an important role in supporting fertility and overall reproductive health.",
   },
   {
-    q: "What does the full programme cost after the assessment?",
-    a: "Programme pricing is determined after the assessment, based on the protocols your case actually needs. There is no fixed package. It is calibrated to your clinical picture. That is the whole point of doing the assessment first.",
+    q: "Will I receive the same plan as everyone else?",
+    a: "No. Every recommendation is personalised based on your symptoms, blood reports, metabolic health, lifestyle, work schedule and long-term goals. No two women receive identical treatment plans because no two women develop PCOS for exactly the same reasons.",
   },
   {
-    q: "What if I do not feel I got clarity from the call?",
-    a: `We refund the ${fee} in full. No friction, no chasing, no cooling-off period. Provided you attend the full call and answer Akhila's questions honestly, the refund is processed within 7 working days.`,
-    hideInFree: true,
-  },
-  {
-    q: "How soon can I start the programme after my assessment?",
-    a: "If you are a fit and choose to proceed, your protocol begins within 5–7 working days. IV infusions are scheduled at a partner clinic close to your location, with timings that work around your week.",
-  },
-  {
-    q: "Is this programme for men too, or only women?",
-    a: "This programme is built specifically for women with PCOS and metabolic dysregulation. We do not take male patients into this track. Dr. Aditya does consult male patients separately for general metabolic concerns. Reach out and we will point you to the right path.",
-  },
-  {
-    q: "Can I do the programme if I live outside India?",
-    a: "Yes for the clinical consultations and nutrition architecture; both run remotely. IV infusions require an in-person clinic visit, so we will assess at your assessment call whether your city allows that component or whether we adapt the protocol accordingly.",
+    q: "How do I know if this programme is right for me?",
+    a: "It starts with a one-on-one consultation. We'll understand your symptoms, review your medical history and discuss your goals before recommending the next steps. If we don't believe our approach is the right fit for you, we'll tell you honestly.",
   },
 ];
+
 
 export function FAQSection() {
   // Free mode hides the refund/payment-specific question(s).
@@ -53,10 +41,11 @@ export function FAQSection() {
           <div className="mx-auto max-w-2xl text-center">
             <span className="section-label">Common Questions</span>
             <h2 className="display-headline text-display-lg sm:text-display-xl">
-              The questions women{" "}
-              <span className="italic text-wine-700">actually ask</span> us.
+              Common Questions From{" "}
+              <span className="title-underline text-gradient-wine italic">
+                Career-Driven Women With {withPmos("PCOS")}
+              </span>
             </h2>
-            <div className="section-divider mt-6" />
             <p className="body-lede mt-6">
               If something isn&apos;t answered here, write to us. We respond personally.
             </p>

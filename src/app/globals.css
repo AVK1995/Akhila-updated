@@ -64,6 +64,24 @@
     --wine-800: 19  58% 34%;
     --wine-900: 24  49% 11%;   /* #2A1A0E Warm Black  */
 
+    /* Ink tokens as H S% L% triplets, mirroring the `ink` palette in
+     * tailwind.config.ts. --ink-900 was referenced by all 16 of the 3D button
+     * / card box-shadows before it existed, which invalidated every one of
+     * those shadow declarations — the raised effect never actually rendered. */
+    --ink-800: 15 18%  9%;   /* #1A1412 */
+    --ink-900: 12 24%  4%;   /* #0D0908 */
+
+    /* Cream surface tokens, mirroring the `cream` palette in
+     * tailwind.config.ts as H S% L% triplets so raw CSS below can call
+     * hsl(var(--cream-*)). These were referenced by .btn-3d-inverse before
+     * they existed, which silently invalidated its whole background-image
+     * declaration and left the inverse CTA with no fill. */
+    --cream-50:  40 60% 98%;   /* #FDFBF7 */
+    --cream-100: 40 55% 96%;   /* #FAF6EE */
+    --cream-200: 41 49% 92%;   /* #F5EFE2 */
+    --cream-300: 41 46% 87%;   /* #EDE3CE */
+    --cream-400: 42 43% 79%;   /* #E0D2B2 */
+
     /* Legacy aliases — kept so a few selection/focus rules below
      * keep working without churn. They now track the brand knob. */
     --color-bg: 253 251 247;          /* cream-50 */
@@ -281,11 +299,76 @@
   }
 
   .btn-primary {
-    @apply btn bg-wine-700 px-7 py-3.5 text-[15px] text-white shadow-wine-glow hover:bg-wine-800 hover:shadow-premium-lg active:scale-[0.98] sm:text-base;
+    @apply btn btn-3d px-7 py-3.5 text-[15px] text-white sm:text-base;
   }
 
   .btn-primary-lg {
-    @apply btn bg-wine-700 px-8 py-4 text-base text-white shadow-wine-glow hover:bg-wine-800 hover:shadow-premium-lg active:scale-[0.98] sm:px-10 sm:py-5 sm:text-lg;
+    @apply btn btn-3d px-8 py-4 text-base text-white sm:px-10 sm:py-5 sm:text-lg;
+  }
+
+  /* ─── Raised 3D CTA ───────────────────────────────────────────────────
+     Vertical gradient + a bright inset top edge and dark inset bottom edge
+     give the button real depth; the drop shadow is the "lift" off the page.
+     Hover raises it, active presses it back down. */
+  .btn-3d {
+    background-image: linear-gradient(
+      180deg,
+      hsl(var(--wine-500)) 0%,
+      hsl(var(--wine-700)) 55%,
+      hsl(var(--wine-800)) 100%
+    );
+    box-shadow:
+      inset 0 1.5px 0 hsl(0 0% 100% / 0.35),
+      inset 0 -3px 8px hsl(var(--ink-900) / 0.35),
+      0 10px 22px -8px hsl(var(--wine-700) / 0.65),
+      0 3px 6px hsl(var(--ink-900) / 0.18);
+    transform: translateY(0);
+  }
+  .btn-3d:hover {
+    background-image: linear-gradient(
+      180deg,
+      hsl(var(--wine-400)) 0%,
+      hsl(var(--wine-600)) 55%,
+      hsl(var(--wine-800)) 100%
+    );
+    box-shadow:
+      inset 0 1.5px 0 hsl(0 0% 100% / 0.45),
+      inset 0 -3px 8px hsl(var(--ink-900) / 0.3),
+      0 16px 30px -8px hsl(var(--wine-700) / 0.7),
+      0 4px 8px hsl(var(--ink-900) / 0.2);
+    transform: translateY(-1.5px);
+  }
+  .btn-3d:active {
+    transform: translateY(1px);
+    box-shadow:
+      inset 0 2px 6px hsl(var(--ink-900) / 0.4),
+      0 4px 10px -4px hsl(var(--wine-700) / 0.55);
+  }
+
+  /* Inverse (cream on dark) gets the same physical treatment. */
+  .btn-3d-inverse {
+    background-image: linear-gradient(
+      180deg,
+      hsl(0 0% 100%) 0%,
+      hsl(var(--cream-50)) 55%,
+      hsl(var(--cream-200)) 100%
+    );
+    box-shadow:
+      inset 0 1.5px 0 hsl(0 0% 100% / 0.9),
+      inset 0 -3px 8px hsl(var(--ink-900) / 0.16),
+      0 12px 26px -8px hsl(var(--ink-900) / 0.55),
+      0 3px 6px hsl(var(--ink-900) / 0.28);
+  }
+  .btn-3d-inverse:hover {
+    transform: translateY(-1.5px);
+    box-shadow:
+      inset 0 1.5px 0 hsl(0 0% 100%),
+      inset 0 -3px 8px hsl(var(--ink-900) / 0.12),
+      0 18px 34px -8px hsl(var(--ink-900) / 0.6),
+      0 4px 8px hsl(var(--ink-900) / 0.3);
+  }
+  .btn-3d-inverse:active {
+    transform: translateY(1px);
   }
 
   .btn-gold {
@@ -295,10 +378,10 @@
   /* Cream pill with wine text — for use on dark wine backgrounds (Closer section).
      Same size + radius + shadow rhythm as btn-primary-lg, only colour inverts.   */
   .btn-primary-inverse {
-    @apply btn bg-cream-50 px-7 py-3.5 text-[15px] text-wine-800 shadow-premium-lg hover:bg-white hover:shadow-premium-xl active:scale-[0.98] sm:text-base;
+    @apply btn btn-3d-inverse px-7 py-3.5 text-[15px] text-wine-800 sm:text-base;
   }
   .btn-primary-inverse-lg {
-    @apply btn bg-cream-50 px-8 py-4 text-base text-wine-800 shadow-premium-lg hover:bg-white hover:shadow-premium-xl active:scale-[0.98] sm:px-10 sm:py-5 sm:text-lg;
+    @apply btn btn-3d-inverse px-8 py-4 text-base text-wine-800 sm:px-10 sm:py-5 sm:text-lg;
   }
 
   .btn-secondary {
@@ -448,10 +531,31 @@
 
   /* ─── Sticky CTA — breathing wine pill with shimmer ──────────────────── */
   .sticky-cta {
-    @apply relative inline-flex items-center gap-2.5 overflow-hidden rounded-full px-5 py-3 text-[14px] font-medium text-cream-50 sm:px-6 sm:py-3.5 sm:text-[15px];
-    background: linear-gradient(120deg, hsl(var(--wine-700)) 0%, hsl(var(--wine-600)) 50%, hsl(var(--wine-700)) 100%);
-    background-size: 200% 100%;
-    animation: gradientPan 6s ease-in-out infinite, breathe 3.2s ease-in-out infinite;
+    @apply relative inline-flex items-center gap-2.5 overflow-hidden rounded-full px-4 py-2.5 text-[14px] font-medium text-cream-50 sm:px-6 sm:py-3;
+    /* Same raised 3D treatment as the page CTAs so the bar matches. */
+    background-image: linear-gradient(
+      180deg,
+      hsl(var(--wine-500)) 0%,
+      hsl(var(--wine-700)) 55%,
+      hsl(var(--wine-800)) 100%
+    );
+    box-shadow:
+      inset 0 1.5px 0 hsl(0 0% 100% / 0.35),
+      inset 0 -3px 8px hsl(var(--ink-900) / 0.35),
+      0 10px 24px -8px hsl(var(--wine-700) / 0.7),
+      0 2px 5px hsl(var(--ink-900) / 0.25);
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s;
+  }
+  .sticky-cta:hover {
+    transform: translateY(-1.5px);
+    box-shadow:
+      inset 0 1.5px 0 hsl(0 0% 100% / 0.45),
+      inset 0 -3px 8px hsl(var(--ink-900) / 0.3),
+      0 16px 32px -8px hsl(var(--wine-700) / 0.75),
+      0 3px 7px hsl(var(--ink-900) / 0.28);
+  }
+  .sticky-cta:active {
+    transform: translateY(1px);
   }
   .sticky-cta::before {
     content: "";
@@ -487,24 +591,30 @@
       transparent 65%,
       transparent 100%
     );
-    transform: translateX(-120%) skewX(-12deg);
-    transition: transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+    transform: translateX(-140%) skewX(-12deg);
     pointer-events: none;
+    /* Runs continuously so the CTA keeps catching the eye, with a long pause
+       between sweeps so it reads as premium rather than busy. Reduced-motion
+       users get it neutralised by the global media query at the end of file. */
+    animation: btnSheen 4.2s cubic-bezier(0.16, 1, 0.3, 1) infinite;
   }
   .btn-shimmer:hover::after {
-    transform: translateX(120%) skewX(-12deg);
+    animation-duration: 1.6s;
   }
 
   /* ─── Live pulsing dot (for marquee + eyebrow) ───────────────────────── */
   .live-dot {
     @apply relative inline-flex h-2 w-2 shrink-0;
   }
+  /* NOTE: this used to reference an undefined `--color-brand`, which made the
+     expanding ring invalid (invisible) — the dot looked static. Uses the wine
+     ramp now so the pulse actually renders. */
   .live-dot::before {
     content: "";
     position: absolute;
     inset: 0;
     border-radius: 9999px;
-    background: rgb(var(--color-brand));
+    background: hsl(var(--wine-500) / 0.6);
     animation: pulseRingStrong 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   }
   .live-dot::after {
@@ -661,4 +771,142 @@ video:fullscreen {
 video:-webkit-full-screen {
   object-fit: contain;
   background-color: #000;
+}
+
+/* ─── CTA sheen sweep ──────────────────────────────────────────────────────
+   Sweeps across, then idles off-screen for the rest of the cycle. */
+@keyframes btnSheen {
+  0%   { transform: translateX(-140%) skewX(-12deg); }
+  35%  { transform: translateX(140%) skewX(-12deg); }
+  100% { transform: translateX(140%) skewX(-12deg); }
+}
+
+/* ─── Section title underline ──────────────────────────────────────────────
+   The accent phrase in each section heading carries its own rule instead of
+   the centred `section-divider` that used to float below the whole heading.
+   Offset and thickness are in `em` so the rule tracks the heading size across
+   breakpoints rather than needing a per-section tweak.
+
+   Applied to the accent <span>, which must be inline-block for the absolutely
+   positioned rule to inherit its width. Several accent spans use
+   background-clip:text for the gradient fill; the rule is a separate ::after
+   box, so it is unaffected by that clip. */
+.title-underline {
+  position: relative;
+  display: inline-block;
+  /* Italic faces overhang their inline box on the right. Most accent spans
+     also use background-clip:text, which paints ONLY inside that box — so the
+     overhanging part of the last glyph (the tail of a "y", say) received no
+     gradient and read as a cut-off letter. The padding widens the paint box;
+     the matching negative margin keeps the layout/centring unchanged. */
+  padding-right: 0.12em;
+  margin-right: -0.12em;
+}
+.title-underline::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  /* Offset by the same padding so the rule still hugs the text. */
+  right: 0.12em;
+  bottom: -0.17em;
+  height: 0.06em;
+  min-height: 2px;
+  border-radius: 9999px;
+  background: linear-gradient(
+    to right,
+    rgba(214, 156, 77, 0.35) 0%,
+    #bd7f35 50%,
+    rgba(214, 156, 77, 0.35) 100%
+  );
+}
+/* On the wine/dark panels the rule has to sit lighter than gold-500 to read. */
+.title-underline-dark::after {
+  background: linear-gradient(
+    to right,
+    rgba(242, 210, 155, 0.35) 0%,
+    #e6b870 50%,
+    rgba(242, 210, 155, 0.35) 100%
+  );
+}
+
+/* ─── Container-aware CTA label ────────────────────────────────────────────
+   The CTA line is 45 unbreakable characters, so a viewport-based font size
+   overflows whenever the button sits in a narrow container (the pricing card)
+   and wastes space when it sits full-width. Making the button its own inline
+   container lets the label size off the BUTTON instead, so one rule fits the
+   hero, the pricing card and the sticky bar without per-instance tuning. */
+.cta-fit {
+  container-type: inline-size;
+}
+
+/* ─── Urgency countdown block ──────────────────────────────────────────────
+   Built to the client's reference: a flat red block holding the numerals,
+   white unit labels stacked underneath, split by white colons. */
+.countdown-block {
+  background-image: linear-gradient(
+    180deg,
+    hsl(2 84% 57%) 0%,
+    hsl(2 80% 50%) 100%
+  );
+  box-shadow: 0 4px 12px -4px hsl(2 80% 45% / 0.5);
+}
+/* On the warm wine closer the red block sits too close to the background in
+   value and goes flat, so the dark variant gets a light ring plus a deeper
+   drop shadow to lift it off the surface. */
+.countdown-block-dark {
+  box-shadow:
+    0 0 0 1.5px hsl(0 0% 100% / 0.38),
+    0 10px 24px -6px hsl(var(--ink-900) / 0.6);
+}
+
+/* ─── Symptom pills (hero) ─────────────────────────────────────────────────
+   Raised 3D chips in a fixed 3x2 grid, each led by a live pulsing dot.
+   Text auto-scales so the three columns hold from 320px up without clipping. */
+.symptom-pill {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  border-radius: 9999px;
+  padding: 0.45rem 0.5rem;
+  text-align: center;
+  font-size: clamp(8.5px, 2.5vw, 12.5px);
+  font-weight: 500;
+  line-height: 1.2;
+  color: hsl(var(--wine-800));
+  /* Mobile stays flat — the raised/3D treatment reads as noise at chip size on
+     a phone. The gradient + inset lighting only switch on from sm up. */
+  background: hsl(var(--wine-50));
+  border: 1px solid hsl(var(--wine-200) / 0.85);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s;
+}
+@media (min-width: 640px) {
+  .symptom-pill {
+    padding: 0.55rem 0.9rem;
+    background-image: linear-gradient(
+      180deg,
+      hsl(0 0% 100% / 0.96) 0%,
+      hsl(var(--wine-50)) 55%,
+      hsl(var(--wine-100)) 100%
+    );
+    box-shadow:
+      inset 0 1px 0 hsl(0 0% 100%),
+      inset 0 -2px 4px hsl(var(--wine-300) / 0.28),
+      0 3px 8px -2px hsl(var(--wine-800) / 0.16),
+      0 1px 2px hsl(var(--wine-800) / 0.1);
+  }
+  .symptom-pill:hover {
+    transform: translateY(-1.5px);
+    box-shadow:
+      inset 0 1px 0 hsl(0 0% 100%),
+      inset 0 -2px 4px hsl(var(--wine-300) / 0.24),
+      0 8px 16px -4px hsl(var(--wine-800) / 0.22),
+      0 2px 4px hsl(var(--wine-800) / 0.12);
+  }
+}
+/* Gold variant of the live dot for use inside the pills. */
+.live-dot-gold::before { background: hsl(38 70% 50% / 0.55); }
+.live-dot-gold::after {
+  background: linear-gradient(135deg, hsl(38 78% 58%) 0%, hsl(30 70% 45%) 100%);
+  box-shadow: 0 0 0 1.5px hsl(var(--wine-50) / 0.9), 0 0 8px hsl(38 78% 55% / 0.5);
 }

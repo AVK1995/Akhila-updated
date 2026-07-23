@@ -209,9 +209,10 @@ function BookACallTop() {
             </Reveal>
             <Reveal delay={0.12}>
               <p className="mx-auto mt-3.5 max-w-xl text-[14.5px] leading-relaxed text-ink-500 sm:mt-5 sm:text-[15.5px]">
-                This is your 30-minute consultation call with Akhila.
-                Block a slot in the next 7 days for the fastest start. Dr.
-                Aditya joins your protocol once you enrol.
+                This is your 30-minute consultation call with Akhila &mdash;
+                where you find out what is actually driving your PCOS. Block a
+                slot in the next 7 days for the fastest start. Dr. Aditya joins
+                your protocol once you enrol.
               </p>
             </Reveal>
           </div>
@@ -275,7 +276,7 @@ function BookACallTop() {
                 ) : calendlyEmbedSrc ? (
                   <div className="h-[720px] w-full sm:h-[760px] lg:h-[820px]">
                     <iframe
-                      title="Schedule your assessment call"
+                      title="Schedule your consultation call"
                       src={calendlyEmbedSrc}
                       width="100%"
                       height="100%"
@@ -374,7 +375,7 @@ function HighlightRow() {
     {
       icon: CalendarIcon,
       title: "30 minutes, one-on-one with Akhila",
-      body: "Not a sales call. A clinical conversation with Akhila about your specific case. Dr. Aditya joins your protocol only after you enrol.",
+      body: "Not a sales call. A clinical conversation about your specific case, aimed at naming the root cause behind your PCOS. Dr. Aditya joins your protocol only after you enrol.",
     },
     {
       icon: ClockIcon,
@@ -383,8 +384,8 @@ function HighlightRow() {
     },
     {
       icon: CheckIcon,
-      title: "Honest fit assessment",
-      body: "If the programme is not right for you, Akhila will tell you. No pressure, no upsell.",
+      title: "A clear direction, either way",
+      body: "You leave knowing what is driving your pattern and what to do next. If the programme is not right for you, Akhila will tell you. No pressure, no upsell.",
     },
   ];
   return (
