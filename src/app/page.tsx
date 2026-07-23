@@ -11,7 +11,6 @@
  * Edit copy/layout/animations inside the relevant section file.
  */
 
-import { FREE_FUNNEL_MODE } from "@/lib/funnel";
 import { Marquee, StickyCTA, Footer } from "@/components/site-chrome";
 import { HeroSection } from "@/components/landing/sections/hero";
 import { DeliverablesSection } from "@/components/landing/sections/deliverables";
@@ -20,8 +19,6 @@ import { AkshitaTestimonialSection } from "@/components/landing/sections/akshita
 import { TeamSection } from "@/components/landing/sections/team";
 import { ApproachSection } from "@/components/landing/sections/approach";
 import { EligibilitySection } from "@/components/landing/sections/eligibility";
-import { InvestmentSection } from "@/components/landing/sections/investment";
-import { GuaranteeSection } from "@/components/landing/sections/guarantee";
 import { FAQSection } from "@/components/landing/sections/faq";
 import { CloserSection } from "@/components/landing/sections/closer";
 
@@ -40,10 +37,6 @@ export default function LandingPage() {
         <TeamSection />
         <ApproachSection />
         <DeliverablesSection />
-        {/* Investment (pricing) + Guarantee (money-back/refund) are payment-
-            specific — hidden in free mode, restored when FREE_FUNNEL_MODE=false. */}
-        {!FREE_FUNNEL_MODE && <InvestmentSection />}
-        {!FREE_FUNNEL_MODE && <GuaranteeSection />}
         {/* Objections last, then the closing CTA has the final word. */}
         <FAQSection />
         <CloserSection />

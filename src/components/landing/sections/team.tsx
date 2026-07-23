@@ -73,7 +73,9 @@ export function TeamSection() {
           </Reveal>
 
           <Reveal delay={0.08}>
-            <div className="space-y-5">
+            {/* Centred on mobile, left-aligned from lg where the copy sits in
+                its own column beside the portraits. */}
+            <div className="space-y-5 text-center lg:text-left">
               <p className="body-prose">
                 Dr. Aditya has spent more than{" "}
                 <strong className="font-semibold text-ink-800">
