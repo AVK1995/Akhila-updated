@@ -15,7 +15,7 @@ import { publicEnv } from "@/lib/env";
 
 export const metadata: Metadata = {
   title: "Refund Policy",
-  description: `How refunds work for the ${publicEnv.assessmentFeeDisplay} PCOS Metabolic Assessment Call and the Programme.`,
+  description: `How refunds work for the ${publicEnv.assessmentFeeDisplay} PCOS Consultation Call and the Programme.`,
 };
 
 /* Navbar + Footer live in src/components/site-chrome.tsx — see import at top. */
@@ -29,13 +29,13 @@ export default function RefundPage() {
   const updatedOn = "May 15, 2026";
   const fee = publicEnv.assessmentFeeDisplay;
   const intro =
-    `We stand behind the value of the assessment call. This Policy explains exactly when and how refunds are issued for the ${fee} assessment fee and for the longer Programme.`;
+    `We stand behind the value of the consultation call. This Policy explains exactly when and how refunds are issued for the ${fee} consultation fee and for the longer Programme.`;
 
   const sections: { heading: string; body: string | string[] }[] = [
     {
       heading: `1. The ${fee} Assessment Call`,
       body: [
-        "The assessment fee is fully refundable if you complete the 30-minute call with Akhila and feel no clarity was gained on your specific case. We are confident enough in the value of the call to make this offer unconditional.",
+        "The consultation fee is fully refundable if you complete the 30-minute call with Akhila and feel no clarity was gained on your specific case. We are confident enough in the value of the call to make this offer unconditional.",
         "To request a refund: email draditya.cim@gmail.com within 7 days of completing the call, using the same email you booked with. We will process the refund within 7–10 working days back to your original payment method.",
       ],
     },
@@ -46,7 +46,7 @@ export default function RefundPage() {
     {
       heading: "3. The 90-Day Programme",
       body: [
-        "Programme pricing is determined after your assessment call, based on your specific case. We do not collect Programme fees online without first having had the assessment conversation.",
+        "Programme pricing is determined after your consultation call, based on your specific case. We do not collect Programme fees online without first having had the consultation.",
         "Programme refunds, where applicable, are governed by the written agreement signed at the time of enrolment. Because the Programme includes time-bound, personalised inputs delivered on a schedule, pro-rated refunds depend on the stage at which a cancellation request is made.",
       ],
     },

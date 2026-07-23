@@ -2,229 +2,122 @@
 
 import Image from "next/image";
 import { Reveal } from "../shared-client";
-import { ImagePlaceholder, withPmos } from "../shared-static";
+import { Pmos } from "../shared-static";
 
-function PersonCard({
-  name,
-  heading,
-  credential,
-  bio,
-  quote,
-  stats,
-  imageSrc,
-  imageHint,
-  reversed = false,
-}: {
-  name: string;
-  heading: string;
-  credential: string;
-  bio: string;
-  quote?: string;
-  stats: string[];
-  imageSrc?: string;
-  imageHint?: string;
-  reversed?: boolean;
-}) {
+/* =============================================================================
+ * OUR CLINICAL TEAM
+ * =============================================================================
+ * Two-column: paired portraits + the "why this pairing works" narrative.
+ *
+ * NOTE: the approved copy calls for ONE photo of Dr. Aditya and Akhila
+ * together. That asset doesn't exist yet, so the two existing portraits are
+ * shown as a pair. Drop a combined shot in /public/images/team/ and swap the
+ * <PortraitPair/> below for a single <Image/> when it lands.
+ * =============================================================================
+ */
+
+function PortraitPair() {
+  const people = [
+    { name: "Akhila", role: "Clinical Nutritionist", src: "/images/team/Akhila.jpeg" },
+    { name: "Dr. Aditya", role: "Senior Family Physician", src: "/images/team/Dr%20Aditya.jpeg" },
+  ];
   return (
-    <div className={`grid items-center gap-8 sm:gap-10 lg:grid-cols-2 lg:items-stretch lg:gap-14 ${reversed ? "lg:[&>*:first-child]:order-2" : ""}`}>
-      <Reveal className="lg:h-full">
-        <div className="relative lg:h-full">
-          <div className="absolute -inset-3 -z-10 rounded-3xl bg-gradient-to-br from-wine-50/60 to-gold-50/60 blur-2xl" />
-          {imageSrc ? (
-            <div className="group/portrait relative aspect-[4/3] w-full transform-gpu overflow-hidden rounded-3xl bg-cream-100 shadow-premium-lg ring-1 ring-inset ring-white/40 transition-all duration-700 ease-smooth [backface-visibility:hidden] hover:shadow-premium-xl hover:ring-gold-200/70 lg:aspect-auto lg:h-full lg:min-h-[460px]">
-              {/* Portrait */}
-              <Image
-                src={imageSrc}
-                alt={`Portrait of ${name}`}
-                fill
-                sizes="(min-width: 1024px) 50vw, 100vw"
-                className="object-cover object-center transition-transform duration-[1200ms] ease-smooth group-hover/portrait:scale-[1.06]"
-              />
-
-              {/* Soft wine-tinted vignette — always slightly visible, deepens on hover */}
-              <div
-                aria-hidden="true"
-                className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink-900/60 via-ink-900/10 to-transparent opacity-70 transition-opacity duration-700 ease-smooth group-hover/portrait:opacity-100"
-              />
-
-              {/* Subtle animated gold sheen on hover — premium niche feel */}
-              <div
-                aria-hidden="true"
-                className="pointer-events-none absolute -inset-px rounded-3xl opacity-0 transition-opacity duration-700 ease-smooth group-hover/portrait:opacity-100"
-                style={{
-                  background:
-                    "conic-gradient(from 0deg, rgba(193,150,50,0.18), rgba(115,42,61,0.18), rgba(193,150,50,0.18))",
-                  mixBlendMode: "screen",
-                }}
-              />
-
-              {/* Top-right gold sparkle — rotates in on hover */}
-              <span
-                aria-hidden="true"
-                className="pointer-events-none absolute right-5 top-5 text-[18px] leading-none text-gold-300 opacity-0 transition-all duration-500 ease-smooth group-hover/portrait:rotate-12 group-hover/portrait:opacity-100"
-              >
-                ✦
-              </span>
-
-              {/* Identity caption. Touch devices (< lg) can't hover, so it's
-                  always shown there — with its own dark gradient for legibility.
-                  Desktop (lg+) keeps the slide-up-on-hover reveal, untouched. */}
-              <div className="pointer-events-none absolute inset-x-0 bottom-0 translate-y-0 opacity-100 transition-all duration-500 ease-smooth lg:translate-y-3 lg:opacity-0 lg:group-hover/portrait:translate-y-0 lg:group-hover/portrait:opacity-100">
-                <div className="bg-gradient-to-t from-ink-900/85 via-ink-900/35 to-transparent px-5 pb-5 pt-16 sm:px-6 sm:pb-6 lg:from-transparent lg:via-transparent lg:pt-14">
-                  <p className="font-display text-[16px] font-medium leading-tight text-cream-50 sm:text-[18px]">
-                    {name}
-                  </p>
-                  <p className="mt-1 text-[10.5px] font-semibold uppercase tracking-[0.16em] text-gold-200 sm:text-[11.5px]">
-                    {credential.split(" · ")[0]}
-                  </p>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <ImagePlaceholder
-              ratio="4/3"
-              rounded="3xl"
-              label={`Portrait · ${name}`}
-              hint={imageHint}
-              className="shadow-premium-lg lg:!aspect-auto lg:h-full lg:min-h-[460px]"
-            />
-          )}
-        </div>
-      </Reveal>
-      <Reveal delay={0.08}>
-        <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gold-700 sm:text-xs">{name}</p>
-          <h3 className="mt-3 font-display text-2xl font-medium leading-[1.12] text-ink-800 sm:text-[28px]">{heading}</h3>
-          <p className="mt-4 text-[13px] font-medium uppercase tracking-[0.06em] text-wine-700 sm:text-sm">{credential}</p>
-          <p className="body-prose mt-5">{withPmos(bio)}</p>
-          {quote && (
-            <figure className="relative mt-6 overflow-hidden rounded-2xl border border-gold-200/70 bg-gradient-to-br from-gold-50/80 via-cream-50 to-wine-50/40 px-5 py-5 shadow-premium-sm sm:px-6 sm:py-6">
-              <span
-                aria-hidden="true"
-                className="absolute inset-y-3 left-0 w-[3px] rounded-full bg-gradient-to-b from-gold-300 via-gold-500 to-wine-700"
-              />
-              <span
-                aria-hidden="true"
-                className="absolute -top-1 left-4 select-none font-display text-[44px] leading-none text-gold-400/70 sm:text-[52px]"
-              >
-                &ldquo;
-              </span>
-              <blockquote className="relative pt-4 font-display text-[15.5px] font-medium italic leading-snug text-ink-700 sm:text-[17px]">
-                {withPmos(quote)}
-              </blockquote>
-              <figcaption className="mt-3 text-[10.5px] font-semibold uppercase tracking-[0.18em] text-wine-700 sm:text-[11.5px]">
-                {name}
-              </figcaption>
-            </figure>
-          )}
-          <div className="mt-6 flex flex-wrap gap-x-3 gap-y-2">
-            {stats.map((stat) => (
-              <span key={stat} className="inline-flex items-center rounded-full border border-ink-100 bg-white px-3 py-1.5 text-[11px] font-medium text-ink-600 shadow-premium-sm sm:text-[12px]">
-                {stat}
-              </span>
-            ))}
+    <div className="grid grid-cols-2 gap-3 sm:gap-4">
+      {people.map((p) => (
+        <div
+          key={p.name}
+          className="group/portrait relative aspect-[3/4] w-full overflow-hidden rounded-3xl bg-cream-100 shadow-premium-lg ring-1 ring-inset ring-white/40"
+        >
+          <Image
+            src={p.src}
+            alt={`Portrait of ${p.name}, ${p.role}`}
+            fill
+            sizes="(min-width: 1024px) 25vw, 45vw"
+            className="object-cover object-center transition-transform duration-[1200ms] ease-smooth group-hover/portrait:scale-[1.05]"
+          />
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink-900/75 via-ink-900/10 to-transparent"
+          />
+          <div className="absolute inset-x-0 bottom-0 px-3 pb-3 sm:px-4 sm:pb-4">
+            <p className="font-display text-[14px] font-medium leading-tight text-cream-50 sm:text-[16px]">
+              {p.name}
+            </p>
+            <p className="mt-0.5 text-[9.5px] font-semibold uppercase tracking-[0.14em] text-gold-200 sm:text-[10.5px]">
+              {p.role}
+            </p>
           </div>
         </div>
-      </Reveal>
+      ))}
     </div>
   );
 }
 
 export function TeamSection() {
-  const supportTeam = [
-    { name: "Metabolic Specialist", role: "Lab Review and Markers", body: "Reviews your fasting insulin, HOMA-IR, inflammatory markers, and hormonal panels behind the scenes before any protocol is finalised. Not a separate consultation you book." },
-    { name: "IV Protocol Physician", role: "Infusion Formulation", body: "Designs your IV formulation based on your inflammatory load, insulin resistance severity, and gut status. Works behind the scenes; no separate appointment required." },
-    { name: "Clinical Support", role: "Weekly Check-ins & Progress Monitoring", body: "Conducts your weekly check-ins, tracks your markers, and flags changes to Dr. Aditya and Akhila for real-time programme adjustments. Built into the programme, not an add-on call." },
-  ];
   return (
     <section id="team" className="relative scroll-mt-20 py-14 sm:py-20 lg:py-24">
       <div className="container-tight">
         <Reveal>
           <div className="mx-auto max-w-2xl text-center">
-            <span className="section-label">The Clinical Team Behind The Programme</span>
+            <span className="section-label">Our Clinical Team</span>
             <h2 className="display-headline text-display-lg sm:text-display-xl">
-              Meet the team <span className="italic text-wine-700">behind the method.</span>
+              Meet The Team Behind{" "}
+              <span className="title-underline text-gradient-wine italic">Our Root Cause Approach</span>
             </h2>
-            <div className="section-divider mt-6" />
           </div>
         </Reveal>
 
-        {/* Akhila leads: the ads are Akhila-fronted and she takes the first
-            call, so hers is the first face after the VSL. Dr. Aditya follows. */}
-        <div className="mt-16 space-y-20 sm:mt-20 sm:space-y-24 lg:space-y-28">
-          <PersonCard
-            name="Akhila"
-            heading="The nutritionist behind the results."
-            credential="Clinical Nutritionist · Metabolic Nutrition · Gut-Hormone Axis"
-            bio="Akhila handles the nutrition architecture of this programme. Every plan is built after your assessment, not before it. Her focus is blood sugar stabilisation, the gut-skin axis, and the gut-stress axis. These are the three nutritional levers that directly drive hormonal rhythm in PCOS."
-            quote="The goal is food that works with your body, that you actually want to eat, and that holds across three months and beyond."
-            stats={["Gut-Skin Axis Protocol", "4-Week Update Cycle", "2× / Month Direct Sessions", "90 Days"]}
-            imageSrc="/images/team/Akhila.jpeg"
-          />
-          <PersonCard
-            name="Dr. Aditya"
-            heading="The physician behind the method."
-            credential="Senior Family Physician · 15 Years of Experience"
-            bio="Dr. Aditya is a family physician, not a gynaecologist. In 15 years of practice, he has never done a five-minute appointment. He looks at your sleep, your stress, your metabolic markers, and your full history together, not one part at a time."
-            quote="When PCOS is involved, the pattern is almost always metabolic. And almost always missed by the time a woman reaches us."
-            stats={["15 Yrs Experience", "30 Min Minimum", "0 Five-Minute Appointments"]}
-            imageSrc="/images/team/Dr%20Aditya.jpeg"
-            reversed
-          />
-        </div>
-
-        <div className="mt-24 sm:mt-28">
+        <div className="mt-12 grid items-center gap-10 sm:mt-14 lg:grid-cols-2 lg:gap-14">
           <Reveal>
-            <div className="mx-auto max-w-2xl text-center">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gold-700 sm:text-xs">
-                The Clinical Support Team
-              </p>
-              <h3 className="mt-3 font-display text-xl font-medium text-ink-800 sm:text-2xl">
-                The team working behind the scenes.
-              </h3>
-              <p className="body-prose mt-4">
-                Dr. Aditya and Akhila are supported by a dedicated clinical
-                team who work behind the scenes, reviewing assessments,
-                validating protocols, and ensuring your progress is monitored
-                every week. You do not book separate appointments with them.
-                They are part of how the programme is run, not additions to
-                your calendar.
-              </p>
-            </div>
+            <PortraitPair />
           </Reveal>
 
-          <div className="mt-12 grid gap-5 sm:mt-14 sm:gap-6 lg:grid-cols-3">
-            {supportTeam.map((m, i) => (
-              <Reveal key={m.name} delay={i * 0.06}>
-                <article className="group relative h-full overflow-hidden rounded-3xl border border-ink-100/80 bg-gradient-to-br from-white via-white to-cream-100/40 p-7 shadow-premium transition-all duration-500 ease-smooth hover:-translate-y-1 hover:border-gold-200/80 hover:shadow-premium-lg sm:p-8">
-                  <span
-                    aria-hidden="true"
-                    className="absolute inset-x-8 top-0 h-px origin-center scale-x-0 bg-gradient-to-r from-transparent via-gold-400 to-transparent transition-transform duration-700 ease-smooth group-hover:scale-x-100"
-                  />
-                  <span
-                    aria-hidden="true"
-                    className="pointer-events-none absolute -right-12 -top-12 h-40 w-40 rounded-full bg-wine-100/0 blur-[60px] transition-colors duration-700 group-hover:bg-wine-100/60"
-                  />
-                  <span
-                    aria-hidden="true"
-                    className="pointer-events-none absolute right-5 top-5 text-[14px] leading-none text-gold-300/70 transition-all duration-500 group-hover:rotate-12 group-hover:text-gold-500"
-                  >
-                    ✦
-                  </span>
+          <Reveal delay={0.08}>
+            <div className="space-y-5">
+              <p className="body-prose">
+                Dr. Aditya has spent more than{" "}
+                <strong className="font-semibold text-ink-800">
+                  15 years treating over 30,000 patients
+                </strong>{" "}
+                across a{" "}
+                <strong className="font-semibold text-ink-800">
+                  wide range of chronic health conditions
+                </strong>
+                . Through years of clinical practice, he noticed the same
+                pattern repeatedly. Women with <Pmos /> were often receiving the
+                same diagnosis, yet the underlying drivers were completely
+                different.
+              </p>
 
-                  <div className="relative">
-                    <span className="inline-flex items-center rounded-full border border-wine-200/80 bg-wine-50/80 px-3 py-1 text-[10.5px] font-semibold uppercase tracking-[0.14em] text-wine-700 backdrop-blur-sm sm:text-[11.5px]">
-                      {m.role}
-                    </span>
-                    <h4 className="mt-4 font-display text-lg font-medium leading-snug text-ink-800 sm:text-[1.2rem]">
-                      {m.name}
-                    </h4>
-                    <p className="body-prose mt-3 text-[14px] sm:text-[15px]">{m.body}</p>
-                  </div>
-                </article>
-              </Reveal>
-            ))}
-          </div>
+              <p className="body-prose">
+                Akhila brings the{" "}
+                <strong className="font-semibold text-ink-800">
+                  functional nutrition perspective
+                </strong>{" "}
+                that helps bridge the{" "}
+                <strong className="font-semibold text-ink-800">
+                  gap between diagnosis and day-to-day recovery
+                </strong>
+                . Instead of generic meal plans, she builds nutrition and
+                lifestyle strategies around each woman&rsquo;s metabolic health,
+                symptoms and routine.
+              </p>
+
+              <div className="rounded-2xl border border-gold-200/70 bg-gradient-to-br from-gold-50/80 via-cream-50 to-wine-50/40 px-5 py-4 shadow-premium-sm sm:px-6 sm:py-5">
+                <p className="text-[14.5px] leading-relaxed text-ink-700 sm:text-[15.5px]">
+                  Together, they{" "}
+                  <strong className="font-semibold text-ink-800">
+                    combine medicine with functional nutrition
+                  </strong>{" "}
+                  to create{" "}
+                  <strong className="font-semibold text-ink-800">
+                    one personalised roadmap
+                  </strong>{" "}
+                  designed around the woman, not just the diagnosis.
+                </p>
+              </div>
+            </div>
+          </Reveal>
         </div>
       </div>
     </section>

@@ -14,7 +14,8 @@
  * re-evaluates), which is the correct moment to re-check the IP.
  */
 
-export const URGENCY_MINUTES = 15;
+/** Countdown window shown by <UrgencyTimer/>. Copy spec: "OFFER ENDS IN" 5 hours. */
+export const URGENCY_MINUTES = 5 * 60;
 const WINDOW_MS = URGENCY_MINUTES * 60 * 1000;
 const COOKIE = "akhila_urgency_v1";
 

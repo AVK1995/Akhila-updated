@@ -31,7 +31,7 @@ export default function TermsPage() {
   const updatedOn = "May 15, 2026";
   const fee = publicEnv.assessmentFeeDisplay;
   const intro =
-    `These Terms govern your access to and use of this website and any services offered through it, including the ${fee} metabolic assessment call. By using this site or booking a call, you agree to these Terms.`;
+    `These Terms govern your access to and use of this website and any services offered through it, including the ${fee} consultation call. By using this site or booking a call, you agree to these Terms.`;
 
   const sections: { heading: string; body: string | string[] }[] = [
     {
@@ -42,7 +42,7 @@ export default function TermsPage() {
       heading: "2. Nature of the services",
       body: [
         `The services offered through this site include a paid consultation call (${fee}) and, where appropriate, enrolment into the Programme. The services constitute personalised medical, nutritional and lifestyle guidance.`,
-        "Nothing on this site constitutes a diagnosis on its own. A clinical relationship begins only after the assessment call and, where applicable, written confirmation of enrolment.",
+        "Nothing on this site constitutes a diagnosis on its own. A clinical relationship begins only after the consultation call and, where applicable, written confirmation of enrolment.",
       ],
     },
     {
@@ -62,7 +62,7 @@ export default function TermsPage() {
     },
     {
       heading: "6. Refunds",
-      body: `The ${fee} assessment fee is fully refundable if you finish the call and feel no clarity was gained on your specific case. Please review our separate Refund Policy for full conditions.`,
+      body: `The ${fee} consultation fee is fully refundable if you finish the call and feel no clarity was gained on your specific case. Please review our separate Refund Policy for full conditions.`,
     },
     {
       heading: "7. Intellectual property",

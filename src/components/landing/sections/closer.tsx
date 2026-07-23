@@ -2,11 +2,9 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { animate, useInView, useReducedMotion } from "motion/react";
-import { Reveal, CtaLink } from "../shared-client";
-import { ArrowRightIcon } from "../icons";
+import { Reveal } from "../shared-client";
+import { CtaBlock } from "../cta-block";
 import { publicEnv } from "@/lib/env";
-import { FREE_FUNNEL_MODE } from "@/lib/funnel";
-import { UrgencyTimer } from "@/components/urgency-timer";
 
 /**
  * StatCounter: animates a numeric value when it scrolls into view.
@@ -83,7 +81,7 @@ export function CloserSection() {
               The Reality
             </span>
             <h2 className="mt-7 font-display text-display-xl font-medium text-cream-50 sm:text-display-2xl">
-              You already <span className="italic text-gold-200">know.</span>
+              You already <span className="title-underline title-underline-dark italic text-gold-200">know.</span>
             </h2>
             <p className="mx-auto mt-6 max-w-xl text-base leading-relaxed text-cream-100/85 sm:text-lg">
               Every day you wait is another day of insulin resistance
@@ -120,32 +118,10 @@ export function CloserSection() {
 
         <Reveal delay={0.2}>
           <div className="mt-12 flex flex-col items-center gap-4 sm:mt-14">
-            <CtaLink
-              href="/checkout"
-              variant="primary-inverse-lg"
-              label={
-                <>
-                  Book Your Metabolic Assessment
-                  {!FREE_FUNNEL_MODE && <>{" · "}{publicEnv.assessmentFeeDisplay}</>}
-                </>
-              }
-              ariaLabel={
-                FREE_FUNNEL_MODE
-                  ? "Book your metabolic assessment"
-                  : `Book your metabolic assessment for ${publicEnv.assessmentFeeDisplay}`
-              }
-              className="max-w-full [&>span]:whitespace-nowrap [&>span]:leading-tight [&>span]:text-[clamp(11px,3.2vw,16px)]"
-              trailing={
-                <ArrowRightIcon
-                  className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5"
-                  strokeWidth={2}
-                />
-              }
-            />
+            <CtaBlock variant="dark" className="w-full" />
             <p className="text-center text-[13px] leading-relaxed text-cream-100/70 sm:text-sm">
               You will not leave the call with Akhila confused. Click above and secure your slot.
             </p>
-            {FREE_FUNNEL_MODE && <UrgencyTimer variant="dark" />}
           </div>
         </Reveal>
       </div>

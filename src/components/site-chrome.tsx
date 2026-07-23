@@ -29,6 +29,7 @@ import { trackGa4EventOnce } from "@/lib/ga4";
 import { fireAddToCartOnce } from "@/lib/meta-client";
 import { FREE_FUNNEL_MODE, openLeadModal } from "@/lib/funnel";
 import { Pmos } from "./landing/shared-static";
+import { CheckIcon, ShieldIcon, StarIcon } from "./landing/icons";
 
 /* ─────────────────────────────────────────────────────────────────────────────
  * Local icon — only the right-arrow chevron used inside StickyCTA
@@ -58,33 +59,37 @@ function ArrowRightIcon({ className, strokeWidth = 2 }: { className?: string; st
  * ─────────────────────────────────────────────────────────────────────────────
  */
 export function Marquee() {
+  // Static (no scroll) so both signals are always readable, and sized to fit
+  // one line from 320px up.
+  // Each entry splits into a highlighted figure + the rest, so the numbers can
+  // carry a brand accent that stays legible on the wine gradient.
   const items = [
-    "Nutrition Support Included",
-    "90-Day Structured Programme",
-    "15 Years of Experience",
-    "Dr. Aditya & Akhila",
-    "Expert-Led Programme",
-    `${publicEnv.assessmentFeeDisplay} · Refundable Assessment`,
-    "Money-Back Guarantee",
+    { figure: "15+ Years", rest: "Of Clinical Experience" },
+    { figure: "30,000+", rest: "Patients Treated" },
   ];
-  const loop = [...items, ...items];
   return (
     <div
       role="region"
       aria-label="Trust signals"
-      className="relative z-40 overflow-hidden border-b border-gold-300/20 bg-wine-gradient"
+      className="relative z-40 border-b border-gold-300/20 bg-wine-gradient"
     >
-      <div aria-hidden="true" className="pointer-events-none absolute inset-y-0 left-0 z-10 w-16 bg-gradient-to-r from-wine-800 to-transparent sm:w-24" />
-      <div aria-hidden="true" className="pointer-events-none absolute inset-y-0 right-0 z-10 w-16 bg-gradient-to-l from-wine-800 to-transparent sm:w-24" />
-      <div className="flex w-max animate-marquee py-2 sm:py-2.5">
-        {loop.map((text, i) => (
-          <div
-            key={`${text}-${i}`}
-            className="flex shrink-0 items-center gap-3 px-5 sm:gap-4 sm:px-7"
-          >
-            <span aria-hidden="true" className="text-gold-300/90">✦</span>
-            <span className="whitespace-nowrap text-[11px] font-medium uppercase tracking-[0.18em] text-cream-100/95 sm:text-[12px]">
-              {text}
+      <div className="container-tight flex items-center justify-center gap-3 py-2 max-[359px]:px-2 sm:gap-6 sm:py-2.5">
+        {/* Mobile: no star glyphs, both signals joined into one plain line.
+            The clamp keeps that single line intact from 320px up. */}
+        <span className="whitespace-nowrap text-[clamp(8px,2.5vw,12px)] font-medium uppercase tracking-[0.06em] text-cream-100/95 max-[359px]:tracking-[0.02em] sm:hidden">
+          <span className="font-bold text-gold-200">{items[0].figure}</span> {items[0].rest}{" "}
+          &amp; <span className="font-bold text-gold-200">{items[1].figure}</span>{" "}
+          {items[1].rest}
+        </span>
+
+        {/* Desktop keeps the gold star separators. */}
+        {items.map((item) => (
+          <div key={item.figure} className="hidden min-w-0 items-center gap-3 sm:flex">
+            <span aria-hidden="true" className="shrink-0 text-[12px] text-gold-300/90">
+              ✦
+            </span>
+            <span className="whitespace-nowrap text-[12px] font-medium uppercase tracking-[0.16em] text-cream-100/95">
+              <span className="font-bold text-gold-200">{item.figure}</span> {item.rest}
             </span>
           </div>
         ))}
@@ -148,43 +153,46 @@ export function StickyCTA() {
         <div aria-hidden="true" className="pointer-events-none absolute -left-32 top-1/2 h-48 w-72 -translate-y-1/2 rounded-full bg-wine-700/40 blur-[80px]" />
         <div aria-hidden="true" className="pointer-events-none absolute -right-32 top-1/2 h-48 w-72 -translate-y-1/2 rounded-full bg-gold-500/15 blur-[80px]" />
 
-        <div className="container-tight relative flex items-center gap-3 px-4 py-3 sm:gap-6 sm:px-5 sm:py-4">
-          <div className="hidden flex-1 items-center gap-3.5 sm:flex">
-            <span className="relative flex h-2.5 w-2.5 shrink-0">
-              <span className="absolute inline-flex h-full w-full animate-pulse-ring-strong rounded-full bg-gold-300/95" />
-              <span
-                className="relative inline-flex h-2.5 w-2.5 rounded-full bg-gradient-to-br from-gold-300 to-gold-500"
-                style={{ boxShadow: "0 0 12px rgba(214, 156, 77, 0.85), 0 0 0 1.5px rgba(255, 249, 245, 0.2)" }}
-              />
-            </span>
-            <div className="flex flex-col leading-tight">
-              <p className="font-display text-[15px] font-medium text-cream-50 sm:text-[16px] lg:text-[17px]">
-                Ready to address the <span className="italic text-gold-200">root?</span>
-              </p>
-              <p className="mt-0.5 text-[10.5px] font-medium uppercase tracking-[0.16em] text-cream-100/65 sm:text-[11px]">
-                Consultation with Akhila · Refundable · No pressure
-              </p>
-            </div>
-          </div>
-
+        {/* Mobile: CTA stacked over its trust row.
+            Desktop (lg): the three trust signals stacked on the left, the CTA
+            on the right. No countdown in this bar — the sections carry it. */}
+        <div className="container-tight relative flex flex-col items-stretch gap-2 px-4 py-2.5 sm:px-5 sm:py-3 lg:flex-row lg:items-center lg:justify-between lg:gap-10">
           <Link
             href="/checkout"
             onClick={onClick}
-            aria-label={
-              FREE_FUNNEL_MODE
-                ? "Book your metabolic assessment"
-                : `Book your metabolic assessment for ${publicEnv.assessmentFeeDisplay}`
-            }
-            className="sticky-cta group flex-1 justify-center sm:flex-initial"
+            aria-label="Get your personalised diagnosis and PCOS recovery plan"
+            className="sticky-cta btn-shimmer group order-1 w-full justify-center max-[359px]:gap-1.5 max-[359px]:px-3 lg:order-2 lg:w-auto lg:shrink-0"
           >
-            <span className="whitespace-nowrap text-[clamp(11px,3.2vw,15px)] leading-tight">
-              Book Your Metabolic Assessment
-              {!FREE_FUNNEL_MODE && <>{" · "}{publicEnv.assessmentFeeDisplay}</>}
+            {/* Two lines up to lg, one line from lg. Sized in vw, NOT cqw: this
+                button is shrink-to-fit at lg, and container-type would stop its
+                width depending on its contents and collapse it. The bar spans
+                the viewport, so vw tracks the available width here anyway. */}
+            <span className="text-center text-[clamp(10px,3.2vw,14px)] leading-[1.3] lg:whitespace-nowrap lg:text-[14px]">
+              <span className="whitespace-nowrap">Click Here To Get Your Personalised Diagnosis</span>
+              <br className="lg:hidden" />{" "}
+              <span className="whitespace-nowrap">&amp; PCOS Recovery Plan</span>
             </span>
-            <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-cream-50/15 transition-transform duration-300 group-hover:translate-x-0.5 sm:h-7 sm:w-7">
+            <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-cream-50/15 transition-transform duration-300 group-hover:translate-x-0.5 sm:h-7 sm:w-7">
               <ArrowRightIcon className="h-3.5 w-3.5" strokeWidth={2} />
             </span>
           </Link>
+
+          {/* Mobile: 2-then-1 under the CTA, sized so the longest label holds
+              one line. Desktop: a left-hand stack of three, one per row. */}
+          <ul className="order-2 grid w-full grid-cols-2 justify-items-center gap-x-2.5 gap-y-1 text-[clamp(7px,1.92vw,10.5px)] font-medium uppercase leading-snug tracking-[0.05em] text-cream-100/70 sm:gap-x-4 lg:order-1 lg:flex lg:w-auto lg:flex-col lg:items-start lg:gap-y-1 lg:text-[11px] lg:tracking-[0.08em] [&>li:last-child]:col-span-2">
+            <li className="flex items-start gap-1.5 lg:whitespace-nowrap">
+              <StarIcon className="mt-[1px] h-3 w-3 shrink-0 text-gold-300" />
+              <span className="min-w-0">100% Customer Satisfaction</span>
+            </li>
+            <li className="flex items-start gap-1.5 lg:whitespace-nowrap">
+              <ShieldIcon className="mt-[1px] h-3 w-3 shrink-0 text-gold-300" />
+              <span className="min-w-0">15+ Years Of Clinical Experience</span>
+            </li>
+            <li className="flex items-start gap-1.5 lg:whitespace-nowrap">
+              <CheckIcon className="mt-[1px] h-3 w-3 shrink-0 text-gold-300" strokeWidth={2.5} />
+              <span className="min-w-0">Trusted By Career-Driven Women</span>
+            </li>
+          </ul>
         </div>
       </div>
     </div>
