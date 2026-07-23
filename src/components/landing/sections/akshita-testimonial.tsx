@@ -23,13 +23,6 @@ export function AkshitaTestimonialSection() {
       body: "Akhila built a plan where every craving had a healthier version. No deprivation, no restart.",
     },
   ];
-  const tags = [
-    "Conceived in 90 Days",
-    "PCOS Pattern Identified",
-    "Insulin Resistance Understood",
-    "Weight Finally Moving",
-    "Now a Mom",
-  ];
   return (
     <section
       id="akshita-story"
@@ -109,23 +102,11 @@ export function AkshitaTestimonialSection() {
                 beautiful baby girl.
               </blockquote>
 
-              <div className="mt-5 flex flex-wrap gap-1.5">
-                {tags.map((t) => (
-                  <span
-                    key={t}
-                    className="inline-flex items-center gap-1.5 rounded-full border border-gold-200/70 bg-gold-50/70 px-2.5 py-1 text-[11px] font-medium text-gold-800 backdrop-blur-sm sm:text-[11.5px]"
-                  >
-                    <StarIcon className="h-2.5 w-2.5 text-gold-500" />
-                    {withPmos(t)}
-                  </span>
-                ))}
-              </div>
-
               <div className="mt-7">
                 <div className="flex items-center gap-3">
                   <div className="h-px flex-1 bg-gradient-to-r from-transparent via-gold-300/60 to-transparent" />
                   <p className="text-[10.5px] font-semibold uppercase tracking-[0.2em] text-gold-700 sm:text-[11px]">
-                    Her journey, in four beats
+                    Her journey
                   </p>
                   <div className="h-px flex-1 bg-gradient-to-l from-transparent via-gold-300/60 to-transparent" />
                 </div>

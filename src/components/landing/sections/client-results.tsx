@@ -36,34 +36,34 @@ type CaseStudy = {
 
 const CASES: CaseStudy[] = [
   {
-    name: "Rhea",
-    age: "26 Years",
-    role: "IT Professional",
+    name: "Ananya",
+    age: "34 Years",
+    role: "HR Professional",
     before: [
-      "Period delayed by 17+ days",
-      "Weight gain around the abdomen",
-      "Brain fog & fatigue",
-      "Migraines after OCPs",
-      "Irregular cycles",
+      "Irregular ovulation",
+      "Weight gain",
+      "Three unsuccessful IVF cycles",
+      "Persistent stress & anxiety",
+      "Nine years of infertility",
     ],
     after: [
-      "Cycles became regular",
-      "Weight stabilised",
-      "Better energy & mental clarity",
-      "Migraines significantly reduced",
-      "Improved without hormonal suppression",
+      "Regular menstrual cycles",
+      "Better metabolic health",
+      "Improved sleep",
+      "Natural conception",
+      "Restored hormonal balance",
     ],
     happening:
-      "Night shifts, poor sleep and chronic stress disrupted her circadian rhythm and insulin sensitivity, contributing to hormonal imbalance and PCOS symptoms.",
+      "Years of chronic stress affected cortisol, insulin sensitivity and ovulation. Supporting her nervous system became just as important as supporting her reproductive system.",
     approach: [
-      "Sleep correction despite shift work",
-      "Blood sugar stabilisation",
-      "Metabolic conditioning",
       "Stress regulation",
-      "Lifestyle education",
+      "Lifestyle correction",
+      "Sleep optimisation",
+      "Blood sugar management",
+      "Metabolic recovery",
     ],
     outcome:
-      "Her energy improved, migraines reduced, weight stabilised and her cycles became regular naturally.",
+      "As her stress chemistry improved, her hormonal rhythm recovered and she conceived naturally.",
   },
   {
     name: "Kirti",
@@ -96,6 +96,36 @@ const CASES: CaseStudy[] = [
       "As her nervous system recovered, her hormones followed. Energy improved, skin cleared and her cycles returned naturally.",
   },
   {
+    name: "Rhea",
+    age: "26 Years",
+    role: "IT Professional",
+    before: [
+      "Period delayed by 17+ days",
+      "Weight gain around the abdomen",
+      "Brain fog & fatigue",
+      "Migraines after OCPs",
+      "Irregular cycles",
+    ],
+    after: [
+      "Cycles became regular",
+      "Weight stabilised",
+      "Better energy & mental clarity",
+      "Migraines significantly reduced",
+      "Improved without hormonal suppression",
+    ],
+    happening:
+      "Night shifts, poor sleep and chronic stress disrupted her circadian rhythm and insulin sensitivity, contributing to hormonal imbalance and PCOS symptoms.",
+    approach: [
+      "Sleep correction despite shift work",
+      "Blood sugar stabilisation",
+      "Metabolic conditioning",
+      "Stress regulation",
+      "Lifestyle education",
+    ],
+    outcome:
+      "Her energy improved, migraines reduced, weight stabilised and her cycles became regular naturally.",
+  },
+  {
     name: "Saloni",
     age: "21 Years",
     role: "Law Student",
@@ -124,36 +154,6 @@ const CASES: CaseStudy[] = [
     ],
     outcome:
       "Sleep normalised, cycles became predictable and her skin improved by addressing the root cause.",
-  },
-  {
-    name: "Ananya",
-    age: "34 Years",
-    role: "HR Professional",
-    before: [
-      "Irregular ovulation",
-      "Weight gain",
-      "Three unsuccessful IVF cycles",
-      "Persistent stress & anxiety",
-      "Nine years of infertility",
-    ],
-    after: [
-      "Regular menstrual cycles",
-      "Better metabolic health",
-      "Improved sleep",
-      "Natural conception",
-      "Restored hormonal balance",
-    ],
-    happening:
-      "Years of chronic stress affected cortisol, insulin sensitivity and ovulation. Supporting her nervous system became just as important as supporting her reproductive system.",
-    approach: [
-      "Stress regulation",
-      "Lifestyle correction",
-      "Sleep optimisation",
-      "Blood sugar management",
-      "Metabolic recovery",
-    ],
-    outcome:
-      "As her stress chemistry improved, her hormonal rhythm recovered and she conceived naturally.",
   },
 ];
 
