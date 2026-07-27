@@ -255,9 +255,10 @@ export function Footer({ hasSticky = false }: { hasSticky?: boolean }) {
               </span>
             </div>
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-ink-500">
-              A physician-led <Pmos /> metabolic programme. We address the
-              root, not the symptom. Fasting insulin, HOMA-IR, cortisol, gut
-              markers first. Protocol second.
+              A physician-led <Pmos /> metabolic programme. We treat the root
+              cause, not just the symptoms. Every plan begins with understanding
+              your body&rsquo;s unique imbalances&mdash;then we build a
+              personalised protocol around them.
             </p>
           </div>
           <div>
